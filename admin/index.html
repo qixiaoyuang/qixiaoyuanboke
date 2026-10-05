@@ -364,7 +364,8 @@ $("savePayBtn").onclick = async () => {
 };
 
 const b64 = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
-const b64dec = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g, "")), c => c.charCodeAt(0)));
+const b64dec = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/
+/g, "")), c => c.charCodeAt(0)));
 
 async function gh(path, token, method, body) {
   const res = await fetch("https://api.github.com/repos/" + OWNER + "/" + REPO + "/contents/" + path, {
@@ -409,7 +410,8 @@ async function startEditPost(p){
     $("postTitle").value = p.title || meta.title || "";
     $("postDate").value = p.date || meta.date || "";
     $("postExcerpt").value = p.excerpt || meta.excerpt || "";
-    $("postBody").value = (body || "").replace(/\n$/, "");
+    $("postBody").value = (body || "").replace(/
+$/, "");
     $("postImgStatus").textContent = "";
     const n = articleImgCount();
     if (n) $("postImgStatus").textContent = "已包含 " + n + " 张图片。";
@@ -437,9 +439,20 @@ $("postSave").onclick = async () => {
       const f = await gh("posts/" + file, token);
       const { meta } = parsePostMd(b64dec(f.content));
       const category = meta.category || "生活";
-      const md = "---\ntitle: " + title.replace(/\n/g, " ") +
-        "\ndate: " + date + "\ncategory: " + String(category).replace(/\n/g, " ") +
-        "\nexcerpt: " + excerpt.replace(/\n/g, " ") + "\n---\n\n" + body + "\n";
+      const md = "---
+title: " + title.replace(/
+/g, " ") +
+        "
+date: " + date + "
+category: " + String(category).replace(/
+/g, " ") +
+        "
+excerpt: " + excerpt.replace(/
+/g, " ") + "
+---
+
+" + body + "
+";
       await gh("posts/" + file, token, "PUT", {
         message: "修改文章：" + title,
         content: b64(md),
@@ -462,9 +475,20 @@ $("postSave").onclick = async () => {
       setStatus("正在发布…", "info");
       const category = "生活";
       const file = date + "-" + Date.now().toString(36) + ".md";
-      const md = "---\ntitle: " + title.replace(/\n/g, " ") +
-        "\ndate: " + date + "\ncategory: " + category.replace(/\n/g, " ") +
-        "\nexcerpt: " + excerpt.replace(/\n/g, " ") + "\n---\n\n" + body + "\n";
+      const md = "---
+title: " + title.replace(/
+/g, " ") +
+        "
+date: " + date + "
+category: " + category.replace(/
+/g, " ") +
+        "
+excerpt: " + excerpt.replace(/
+/g, " ") + "
+---
+
+" + body + "
+";
       await gh("posts/" + file, token, "PUT", {
         message: "发布文章：" + title,
         content: b64(md),
@@ -571,10 +595,14 @@ async function deletePost(p, btn) {
 
 /* ===== 修改已发布文章（与编辑器共用 startEditPost） ===== */
 function parsePostMd(text){
-  const m = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  const m = text.match(/^---
+([\s\S]*?)
+---
+([\s\S]*)$/);
   const meta = {};
   if(m){
-    m[1].split("\n").forEach(l => {
+    m[1].split("
+").forEach(l => {
       const i = l.indexOf(":");
       if(i > 0) meta[l.slice(0, i).trim()] = l.slice(i + 1).trim();
     });
@@ -631,7 +659,9 @@ async function articleDirectUpload(file){
 }
 function insertImageToBody(url){
   const ta = $("postBody");
-  const tag = "\n![](" + url + ")\n";
+  const tag = "
+![](" + url + ")
+";
   const s = (ta.selectionStart != null) ? ta.selectionStart : ta.value.length;
   const e = (ta.selectionEnd != null) ? ta.selectionEnd : ta.value.length;
   ta.value = ta.value.slice(0, s) + tag + ta.value.slice(e);
@@ -1024,9 +1054,15 @@ async function loadSbOrders(){
       const pr = await fetch("https://qixiaoyuang.github.io/qixiaoyuanboke/products.json").then(x => x.json());
       (pr || []).forEach(x => { ptypeMap[x.id] = x.ptype === "physical" ? "physical" : "virtual"; });
     }catch(e){}
+    let chainLabelMap = {bsc:"BSC",arb:"Arbitrum",eth:"Ethereum",plasma:"Plasma",aptos:"Aptos",sol:"SOL",tron:"TRON",freebie:"免费领取"};
+    try{
+      const pc = await fetch("https://qixiaoyuang.github.io/qixiaoyuanboke/payment.json").then(x => x.json());
+      const bd = {bsc:"BSC（BEP20）",arb:"Arbitrum One（USDT0）",eth:"Ethereum（ERC20）",plasma:"Plasma（USDT0）",aptos:"Aptos",sol:"Solana",tron:"TRON（TRC20）"};
+      if(pc && pc.chains) Object.keys(pc.chains).forEach(id => { const lb = pc.chains[id].label || bd[id]; if(lb) chainLabelMap[id] = lb; });
+    }catch(e){}
     const list = (r.data || []).map(o => ({
       id: o.id, productId: o.product_id, productName: o.product_name, price: o.price,
-      chain: o.chain, chainLabel: ({bsc:"BSC",arb:"Arbitrum",eth:"Ethereum",plasma:"Plasma",aptos:"Aptos",sol:"SOL",tron:"TRON",freebie:"免费领取"})[o.chain] || o.chain || "",
+      chain: o.chain, chainLabel: chainLabelMap[o.chain] || o.chain || "",
       tx: o.tx, time: fmtT(o.created_at), status: o.status, buyer: buyerMap[o.id] || "",
       ship: normShip(o.ship), address: o.address || null, cancelledAt: o.cancelled_at || null, updatedAt: o.updated_at || null
     }));
@@ -1127,7 +1163,10 @@ function renderOrders(list){
   });
 }
 async function revokeOrder(o, btn){
-  if(!confirm("确定撤销这笔订单吗？\n\n撤销后：买家会看到「已撤销」，已售数量扣减、库存释放。" + (o.chain === "freebie" ? "" : "\n注意：链上已收的款不会自动退回，需要你手动给买家退款。"))) return;
+  if(!confirm("确定撤销这笔订单吗？
+
+撤销后：买家会看到「已撤销」，已售数量扣减、库存释放。" + (o.chain === "freebie" ? "" : "
+注意：链上已收的款不会自动退回，需要你手动给买家退款。"))) return;
   btn.disabled = true;
   try{
     setStatus("正在撤销订单…", "info");
@@ -1200,7 +1239,8 @@ async function loadCodes(){
   });
 }
 $("codeAddBtn").onclick = async function(){
-  const txt = $("codeBatch").value.split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
+  const txt = $("codeBatch").value.split("
+").map(function(s){ return s.trim(); }).filter(Boolean);
   if(!txt.length) return ($("codeStatus").textContent = "请先粘贴卡密，每行一条。");
   $("codeAddBtn").disabled = true;
   const r = await sbs.from("ship_codes").insert(txt.map(function(code){ return { product_id: codePid, code: code }; }));
