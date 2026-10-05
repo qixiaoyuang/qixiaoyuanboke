@@ -104,7 +104,6 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
 <button id="tabPosts" class="active" onclick="showTab('posts')">文章管理</button>
   <button id="tabShop" onclick="showTab('shop')">商品管理</button>
   <button id="tabOrders" onclick="showTab('orders')">订单管理</button>
-  <button id="tabPay" onclick="showTab('pay')">收款设置</button>
   
 </div>
 
@@ -153,23 +152,6 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
 <label>月度统计</label>
 <div id="statBox"><div class="empty">加载订单后自动统计</div></div>
 </div>
-</div>
-
-<div id="panePay" class="hidden">
-<p class="hint">USDT 收款地址设置。修改后商城付款页即时生效（几分钟缓存），自动到账扫描下次运行时生效（约15分钟）。改错地址会导致收不到款，改前请核对。</p>
-<button class="load" id="loadPayBtn" style="margin-bottom:12px">加载收款设置</button>
-<div id="payChainList"></div>
-<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-top:14px">
-<div style="font-weight:700;margin-bottom:8px">＋ 添加收款链</div>
-<div class="row"><div><label>显示名称 *</label><input type="text" id="ncLabel" placeholder="例如：Optimism"></div><div><label>链ID *（小写字母数字）</label><input type="text" id="ncId" placeholder="例如：op"></div></div>
-<div><label>收款地址 *</label><input type="text" id="ncSeller" placeholder="USDT 收款地址"></div>
-<div class="row"><div><label>链类型</label><select id="ncKind" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"><option value="evm">EVM 兼容链</option><option value="aptos">Aptos</option><option value="solana">Solana</option></select></div><div><label>USDT 合约/token（自动到账需要）</label><input type="text" id="ncToken" placeholder="留空则只显示地址，需手动确认"></div></div>
-<div class="row"><div><label>精度</label><input type="text" id="ncDec" inputmode="numeric" placeholder="默认 6"></div><div><label>RPC 节点（自动到账需要）</label><input type="text" id="ncRpc" placeholder="https://…"></div></div>
-<div><label>区块浏览器（可选）</label><input type="text" id="ncScan" placeholder="https://…/tx/"></div>
-<p class="hint">不填合约和 RPC 时，该链只显示收款地址，买家付款后需你手动查钱包再发货。</p>
-<button class="publish" id="addChainBtn">添加</button>
-</div>
-<button class="publish" id="savePayBtn" style="margin-top:14px">保存收款设置</button>
 </div>
 
 <div id="cropModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:999;align-items:center;justify-content:center;padding:16px">
@@ -262,11 +244,9 @@ function showTab(which) {
   $("panePosts").classList.toggle("hidden", which !== "posts");
   $("paneShop").classList.toggle("hidden", which !== "shop");
   $("paneOrders").classList.toggle("hidden", which !== "orders");
-  $("panePay").classList.toggle("hidden", which !== "pay");
   $("tabPosts").classList.toggle("active", which === "posts");
   $("tabShop").classList.toggle("active", which === "shop");
   $("tabOrders").classList.toggle("active", which === "orders");
-  $("tabPay").classList.toggle("active", which === "pay");
 }
 
 function setStatus(msg, kind) {
@@ -274,94 +254,6 @@ function setStatus(msg, kind) {
   el.textContent = msg;
   el.className = kind || "";
 }
-
-/* ===== 收款设置：USDT 收款地址自定义（payment.json） ===== */
-const PAY_BUILTIN = ["bsc","arb","eth","plasma","aptos","sol","tron"];
-const PAY_DEFAULTS = {
-  bsc:    {label:"BSC（BEP20）", seller:"0x5a93d426357cfc7b83d27cec9d4776b05fc73149"},
-  arb:    {label:"Arbitrum One（USDT0）", seller:"0x5a93d426357cfc7b83d27cec9d4776b05fc73149"},
-  eth:    {label:"Ethereum（ERC20）", seller:"0x5a93d426357cfc7b83d27cec9d4776b05fc73149"},
-  plasma: {label:"Plasma（USDT0）", seller:"0x5a93d426357cfc7b83d27cec9d4776b05fc73149"},
-  aptos:  {label:"Aptos", seller:"0x2727508a879fa5df26da24be64481c49020d8b99ce1219b153e7c14bd7c489b2"},
-  sol:    {label:"Solana", seller:"4ubaQ8zwDZcxSeAJPQbuqAVhcspkyPumRQnRDePnshos"},
-  tron:   {label:"TRON（TRC20）", seller:"TB3CqRHMjTY1fNt1GzmJeUg4Y4owTfjm4j"}
-};
-let payCfg = null, paySha = null;
-$("loadPayBtn").onclick = async () => {
-  const token = $("token").value.trim();
-  if (!token) return setStatus("请先填写 GitHub 访问令牌。", "err");
-  try {
-    setStatus("正在加载…", "info");
-    const cur = await gh("payment.json", token);
-    payCfg = JSON.parse(b64dec(cur.content)); paySha = cur.sha;
-  } catch(e) {
-    payCfg = { order: PAY_BUILTIN.slice(), chains: {} };
-    PAY_BUILTIN.forEach(id => { payCfg.chains[id] = { seller: PAY_DEFAULTS[id].seller, enabled: true }; });
-    paySha = null;
-  }
-  renderPayChains();
-  setStatus("已加载收款设置。", "ok");
-};
-function renderPayChains(){
-  const box = $("payChainList"); box.innerHTML = "";
-  const order = (payCfg.order && payCfg.order.length) ? payCfg.order : Object.keys(payCfg.chains);
-  order.forEach(id => {
-    const c = payCfg.chains[id]; if(!c) return;
-    const isBuiltin = PAY_BUILTIN.indexOf(id) >= 0;
-    const label = c.label || (PAY_DEFAULTS[id] && PAY_DEFAULTS[id].label) || id;
-    const div = document.createElement("div");
-    div.className = "post"; div.style.marginBottom = "10px";
-    div.innerHTML = '<div class="meta"><div class="t"></div><div class="d" style="word-break:break-all"></div></div>' +
-      '<div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">' +
-      '<label style="font-weight:400"><input type="checkbox" data-act="en"> 启用</label>' +
-      (isBuiltin ? '<span class="hint">内置链（只能改地址/开关）</span>' : '<button class="del" data-act="del">删除</button>') +
-      '</div>';
-    div.querySelector(".t").textContent = label + "（" + id + "）";
-    div.querySelector(".d").textContent = "当前地址：" + (c.seller || "未设置");
-    const inp = document.createElement("input");
-    inp.type = "text"; inp.value = c.seller || ""; inp.placeholder = "USDT 收款地址"; inp.style.marginTop = "8px";
-    div.appendChild(inp);
-    const en = div.querySelector('[data-act="en"]'); en.checked = c.enabled !== false;
-    en.onchange = () => { c.enabled = en.checked; };
-    inp.oninput = () => { c.seller = inp.value.trim(); div.querySelector(".d").textContent = "当前地址：" + (c.seller || "未设置"); };
-    const del = div.querySelector('[data-act="del"]');
-    if (del) del.onclick = () => { if(!confirm("删除收款链「"+label+"」吗？")) return; delete payCfg.chains[id]; payCfg.order = (payCfg.order||[]).filter(x => x !== id); renderPayChains(); };
-    box.appendChild(div);
-  });
-}
-$("addChainBtn").onclick = () => {
-  if (!payCfg) return setStatus("请先点「加载收款设置」。", "err");
-  const label = $("ncLabel").value.trim(), id = $("ncId").value.trim().toLowerCase(), seller = $("ncSeller").value.trim();
-  if(!label || !id || !seller) return setStatus("显示名称、链ID、收款地址不能为空。", "err");
-  if(!/^[a-z0-9]{2,12}$/.test(id)) return setStatus("链ID 只能用 2-12 位小写字母/数字。", "err");
-  if(payCfg.chains[id]) return setStatus("链ID 已存在。", "err");
-  payCfg.chains[id] = {
-    label: label, kind: $("ncKind").value, seller: seller,
-    token: $("ncToken").value.trim(), dec: parseInt($("ncDec").value.trim() || "6", 10) || 6,
-    rpc: $("ncRpc").value.trim(), scan: $("ncScan").value.trim(), enabled: true
-  };
-  payCfg.order = payCfg.order || Object.keys(payCfg.chains);
-  if(payCfg.order.indexOf(id) < 0) payCfg.order.push(id);
-  ["ncLabel","ncId","ncSeller","ncToken","ncDec","ncRpc","ncScan"].forEach(k => { $(k).value = ""; });
-  renderPayChains();
-  setStatus("已添加「"+label+"」，记得点「保存收款设置」。", "ok");
-};
-$("savePayBtn").onclick = async () => {
-  const token = $("token").value.trim();
-  if (!token) return setStatus("请先填写 GitHub 访问令牌。", "err");
-  if (!payCfg) return setStatus("请先点「加载收款设置」。", "err");
-  for (const id of Object.keys(payCfg.chains)) {
-    if(!payCfg.chains[id].seller) return setStatus("「"+id+"」的收款地址不能为空。", "err");
-  }
-  try {
-    setStatus("正在保存…", "info");
-    const body = { message: "更新收款设置", content: b64(JSON.stringify(payCfg)), branch: BRANCH };
-    if (paySha) body.sha = paySha;
-    const r = await gh("payment.json", token, "PUT", body);
-    paySha = r.content.sha;
-    setStatus("已保存！商城几分钟后生效，自动到账约15分钟后生效。", "ok");
-  } catch(e) { setStatus("保存失败：" + e.message, "err"); }
-};
 
 const b64 = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
 const b64dec = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/
