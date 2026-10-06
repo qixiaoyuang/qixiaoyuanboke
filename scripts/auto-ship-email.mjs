@@ -1,4 +1,4 @@
-// 虚拟商品自动补发邮件：随「自动同步订单」每 15 分钟运行一次。
+// 虚拟商品自动补发邮件：随「自动同步订单」每 5 分钟运行一次。
 // 扫描 Supabase 里 status=shipped、ship.content 非空、尚未标记 emailed 的订单，
 // 自动把发货内容（卡密等）发邮件给买家。幂等：成功写 ship.emailed=true，失败写 false 下轮重试。
 // 手动发货走的 repository_dispatch（ship-virtual）也会写 emailed 标记，两边不会重复发送。
