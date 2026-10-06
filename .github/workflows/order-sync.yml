@@ -2,12 +2,16 @@ name: 自动同步订单
 on:
   schedule:
     - cron: "*/5 * * * *"
+
   workflow_dispatch:
+
 concurrency:
   group: order-sync
   cancel-in-progress: false
+
 permissions:
   contents: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -16,7 +20,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: 循环检测并发货（每分钟一轮）
+      - name: 循环检测并发货（定时触发，每分钟一轮）
+        if: github.event_name == 'schedule'
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
@@ -35,10 +40,19 @@ jobs:
             node scripts/auto-ship-email.mjs || echo "email failed"
             sleep 60
           done
-      - name: 提交订单更新
+      - name: 单次检测并发货（手动/外部触发）
+        if: github.event_name != 'schedule'
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add orders.json .order-sync.json
-          git diff --cached --quiet || git commit -m "自动同步订单"
-          git push
+          node scripts/order-sync.mjs || echo "scan failed"
+          node scripts/auto-fulfill.mjs || echo "fulfill failed"
+          node scripts/auto-ship-email.mjs || echo "email failed"
