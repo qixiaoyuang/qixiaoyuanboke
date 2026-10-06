@@ -314,7 +314,7 @@ function renderUserMenu(){
     var em = document.createElement("div"); em.className = "uemail"; em.textContent = myUser.email || "已登录";
     m.appendChild(em);
     var od = document.createElement("button"); od.textContent = "我的订单";
-    od.onclick = function(){ toggleUserMenu(false); stopOrder(); stopStatus(); loadMyOrders(); show("view-myorders"); };
+    od.onclick = function(){ toggleUserMenu(false); goMyOrders(); };
     m.appendChild(od);
     var out = document.createElement("button"); out.textContent = "退出";
     out.onclick = function(){ toggleUserMenu(false); revealedShips = {}; if(sb) sb.auth.signOut(); };
@@ -681,9 +681,10 @@ function showFreebieSuccess(p, orderId, email, auto){
   box.appendChild(row("领取时间", new Date().toLocaleString("zh-CN",{hour12:false})));
   if(auto && auto.ok){
     box.appendChild(row("卡密", "已自动发出 🎉"));
-    var ah = document.createElement("div"); ah.style.cssText = "color:var(--muted);font-size:.85rem;margin:2px 0 8px;";
-    ah.textContent = "去「我的订单」输入登录密码查看。";
-    box.appendChild(ah);
+    var goBtn = document.createElement("button"); goBtn.className = "check-btn"; goBtn.style.cssText = "margin:6px 0 10px;font-size:.9rem;padding:10px 24px;";
+    goBtn.textContent = "去我的订单查看卡密 →";
+    goBtn.onclick = function(){ goMyOrders(orderId); };
+    box.appendChild(goBtn);
   } else if(auto && auto.noCodes){
     box.appendChild(row("卡密", "暂时不足，卖家补充后自动发货"));
   }
@@ -994,9 +995,10 @@ function showPaidSuccess(txl, key, net, prod, orderId, auto){
   txrow.appendChild(ka); txrow.appendChild(va); box.appendChild(txrow);
   if(auto && auto.ok){
     box.appendChild(row("发货状态", "✅ 已自动发货"));
-    var ah = document.createElement("div"); ah.style.cssText = "color:var(--muted);font-size:.85rem;margin:2px 0 8px;";
-    ah.textContent = "卡密已发到该订单，去「我的订单」输入登录密码查看。";
-    box.appendChild(ah);
+    var goBtn2 = document.createElement("button"); goBtn2.className = "check-btn"; goBtn2.style.cssText = "margin:6px 0 10px;font-size:.9rem;padding:10px 24px;";
+    goBtn2.textContent = "去我的订单查看卡密 →";
+    goBtn2.onclick = function(){ goMyOrders(orderId); };
+    box.appendChild(goBtn2);
   } else if(auto && auto.noCodes){
     box.appendChild(row("发货状态", "待发货（卡密暂时不足，卖家补充后自动发出）"));
   }
@@ -1022,6 +1024,8 @@ function normShip(o){
   return s || {};
 }
 var revealedShips = {};
+var focusOrderId = null;
+function goMyOrders(orderId){ stopOrder(); stopStatus(); focusOrderId = orderId || null; loadMyOrders(); show("view-myorders"); }
 function shipBox(o){
   var ship = normShip(o);
   if(!ship.type) return null;
@@ -1107,7 +1111,7 @@ function renderMyOrders(){
     var box = document.getElementById("myOrderList"); box.innerHTML = "";
     if(!list.length){ box.innerHTML = '<div class="empty">还没有订单</div>'; return; }
     list.forEach(function(o){
-      var div = document.createElement("div"); div.className = "ord";
+      var div = document.createElement("div"); div.className = "ord"; div.id = "ord-" + o.id;
       var t = document.createElement("div"); t.className = "t";
       t.textContent = (o.product_name || "商品") + " · " + fmtPrice(o.price) + " ";
       var badge = document.createElement("span"); badge.className = "obadge " + (o.status||"pending"); badge.textContent = OSTATUS_BADGE[o.status] || o.status;
@@ -1133,6 +1137,15 @@ function renderMyOrders(){
       }
       box.appendChild(div);
     });
+    if(focusOrderId){
+      var target = document.getElementById("ord-" + focusOrderId);
+      focusOrderId = null;
+      if(target){
+        target.scrollIntoView({ block: "center" });
+        var pin = target.querySelector('input[type="password"]');
+        if(pin) setTimeout(function(){ pin.focus(); }, 60);
+      }
+    }
 }
 document.getElementById("userBtn").onclick = function(e){ e.stopPropagation(); toggleUserMenu(); };
 document.addEventListener("click", function(){ toggleUserMenu(false); });
