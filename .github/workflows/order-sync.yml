@@ -1,17 +1,13 @@
 name: 自动同步订单
-
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
-
 concurrency:
   group: order-sync
   cancel-in-progress: false
-
 permissions:
   contents: write
-
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -25,6 +21,11 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
         run: node scripts/order-sync.mjs
+      - name: 卡密商品自动发货
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/auto-fulfill.mjs
       - name: 自动补发虚拟商品邮件
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
