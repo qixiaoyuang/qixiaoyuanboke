@@ -1097,7 +1097,7 @@ var myOrdersRaw = [];
 function loadMyOrders(){
   if(!myUser || !sb) return;
   document.getElementById("myOrderList").innerHTML = '<p class="empty">加载中…</p>';
-  sb.from("orders").select("*").order("created_at",{ascending:false}).then(function(r){
+  sb.from("orders").select("*").eq("user_id", myUser.id).order("created_at",{ascending:false}).then(function(r){
     myOrdersRaw = r.data || [];
     renderMyOrders();
   });
