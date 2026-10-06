@@ -938,31 +938,43 @@ function onPaid(tx){
   order.lastTry=txl;
   if(!sb || !myUser){ stopOrder(); setStatus("登录已失效，请重新登录后再点「我已付款，立即检测」。"); return; }
   setStatus('<span class="spin">⏳</span> 已检测到付款，正在登记订单…');
-  var job;
-  if(dbId){
-    job = sb.from("orders").update({ tx: txl, status: "pending" }).eq("id", dbId).select("id").then(function(r){ if(r.error) throw r.error; return dbId; });
-  } else {
-    job = sb.from("orders").insert({ user_id: myUser.id, product_id: prod.id, product_name: prod.name, price: prod.price, chain: key, tx: txl, status: "pending" }).select("id").then(function(r){
-      if(r.error) throw r.error;
-      if(r.data && r.data[0]) return r.data[0].id;
-      return sb.from("orders").select("id").eq("user_id", myUser.id).eq("tx", txl).limit(1).then(function(r2){ return (r2.data && r2.data[0]) ? r2.data[0].id : null; });
+  // 后端自动发货可能已先完成（买家曾离开页面）：先查状态，已发货则直接展示，避免重复登记/重复发码
+  function doClaim(){
+    var job;
+    if(dbId){
+      job = sb.from("orders").update({ tx: txl, status: "pending" }).eq("id", dbId).select("id").then(function(r){ if(r.error) throw r.error; return dbId; });
+    } else {
+      job = sb.from("orders").insert({ user_id: myUser.id, product_id: prod.id, product_name: prod.name, price: prod.price, chain: key, tx: txl, status: "pending" }).select("id").then(function(r){
+        if(r.error) throw r.error;
+        if(r.data && r.data[0]) return r.data[0].id;
+        return sb.from("orders").select("id").eq("user_id", myUser.id).eq("tx", txl).limit(1).then(function(r2){ return (r2.data && r2.data[0]) ? r2.data[0].id : null; });
+      });
+    }
+    job.then(function(id){
+      return tryAutoShip(id).then(function(a){
+        showPaidSuccess(txl, key, net, prod, id, a);
+      });
+    }).catch(function(e){
+      if(e && (e.code === "23505" || String(e.message || "").indexOf("duplicate") >= 0)){
+        sb.from("orders").select("id").eq("user_id", myUser.id).eq("tx", txl).limit(1).then(function(r2){
+          var id = (r2.data && r2.data[0]) ? r2.data[0].id : null;
+          if(id){ tryAutoShip(id).then(function(a){ showPaidSuccess(txl, key, net, prod, id, a); }); }
+          else { setStatus("这笔交易已被其他订单登记，请确认是你本人的付款后再试。"); }
+        });
+      } else {
+        setStatus("订单登记失败：" + (e.message || e) + "。请点「我已付款，立即检测」重试。");
+      }
     });
   }
-  job.then(function(id){
-    return tryAutoShip(id).then(function(a){
-      showPaidSuccess(txl, key, net, prod, id, a);
-    });
-  }).catch(function(e){
-    if(e && (e.code === "23505" || String(e.message || "").indexOf("duplicate") >= 0)){
-      sb.from("orders").select("id").eq("user_id", myUser.id).eq("tx", txl).limit(1).then(function(r2){
-        var id = (r2.data && r2.data[0]) ? r2.data[0].id : null;
-        if(id){ tryAutoShip(id).then(function(a){ showPaidSuccess(txl, key, net, prod, id, a); }); }
-        else { setStatus("这笔交易已被其他订单登记，请确认是你本人的付款后再试。"); }
-      });
-    } else {
-      setStatus("订单登记失败：" + (e.message || e) + "。请点「我已付款，立即检测」重试。");
-    }
-  });
+  if(dbId){
+    sb.from("orders").select("status").eq("id", dbId).limit(1).then(function(r){
+      var st = r.data && r.data[0] && r.data[0].status;
+      if(st === "shipped"){ stopOrder(); showPaidSuccess(txl, key, net, prod, dbId, { ok:true }); }
+      else { doClaim(); }
+    }).catch(function(){ doClaim(); });
+  } else {
+    doClaim();
+  }
 }
 function showPaidSuccess(txl, key, net, prod, orderId, auto){
   stopOrder(); show("view-success");
