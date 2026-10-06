@@ -16,18 +16,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: 扫描链上收款并同步订单
+      - name: 循环检测并发货（每分钟一轮）
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
-        run: node scripts/order-sync.mjs
-      - name: 卡密商品自动发货
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: node scripts/auto-fulfill.mjs
-      - name: 自动补发虚拟商品邮件
-        env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
@@ -35,7 +27,14 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           SMTP_FROM: ${{ secrets.SMTP_FROM }}
-        run: node scripts/auto-ship-email.mjs
+        run: |
+          for i in 1 2 3 4; do
+            echo "=== 第 $i 轮 ==="
+            node scripts/order-sync.mjs || echo "scan failed"
+            node scripts/auto-fulfill.mjs || echo "fulfill failed"
+            node scripts/auto-ship-email.mjs || echo "email failed"
+            sleep 60
+          done
       - name: 提交订单更新
         run: |
           git config user.name "github-actions[bot]"
