@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>购物 · 祁萧远</title>
+<title>购物 · 万能手</title>
 <meta name="description" content="商品列表，支持 USDT 支付">
 <link rel="stylesheet" href="styles.css?v=10">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -93,7 +93,7 @@
 <body>
 <header class="site-header">
 <div class="wrap header-inner">
-<span class="brand-row"><img src="logo.png?v=2" class="brand-logo" alt="" id="logoGate" style="user-select:none;-webkit-user-select:none;"><a class="brand" href="index.html">祁萧远</a></span>
+<span class="brand-row"><a class="brand" href="index.html" id="brandGate">万能手</a></span>
 <nav class="main-nav">
 <a href="index.html" aria-label="文章"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></a>
 <a href="shop.html" aria-label="购物"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></a>
@@ -1230,19 +1230,23 @@ document.getElementById("cancelOrder").onclick=function(){
 };
 </script>
 <script>
-/* 头像入口：已登录管理员点一下直接进后台，其他人点无反应 */
+/* 标题入口：管理员点一下直接进后台，其他人点回商城首页 */
 (function(){
-  var lg = document.getElementById("logoGate");
-  if(!lg) return;
-  lg.addEventListener("click", async function(){
+  var bg = document.getElementById("brandGate");
+  if(!bg) return;
+  bg.addEventListener("click", async function(e){
+    e.preventDefault();
     try{
-      if(typeof sb === "undefined" || !sb) return;
-      var s = await sb.auth.getSession();
-      var u = (s.data && s.data.session) ? s.data.session.user : null;
-      if(!u) return;
-      var p = await sb.from("profiles").select("is_admin").eq("id", u.id).single();
-      if(p.data && p.data.is_admin) location.href = "admin/";
+      if(typeof sb !== "undefined" && sb){
+        var s = await sb.auth.getSession();
+        var u = (s.data && s.data.session) ? s.data.session.user : null;
+        if(u){
+          var p = await sb.from("profiles").select("is_admin").eq("id", u.id).single();
+          if(p.data && p.data.is_admin){ location.href = "admin/"; return; }
+        }
+      }
     }catch(e){}
+    location.href = "index.html";
   });
 })();
 </script>

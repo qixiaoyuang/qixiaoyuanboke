@@ -1,4 +1,4 @@
-/* 祁萧远的博客 —— 文章从 posts.json + posts/*.md 加载。
+/* 万能手 —— 文章从 posts.json + posts/*.md 加载。
  * 写新文章请用「写文章」后台页面，或按 posts/ 下的格式手动添加。 */
 
 let POSTS = [];
