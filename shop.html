@@ -105,6 +105,7 @@
 </div>
 <button class="icon-btn" id="searchToggle" aria-label="搜索">🔍</button>
 <button class="icon-btn" id="themeToggle" aria-label="切换深色模式">🌙</button>
+<button class="icon-btn" id="contactBtn" aria-label="联系商家">💬</button>
 </div>
 </div>
 <div class="wrap search-bar hidden" id="searchBar">
@@ -201,6 +202,9 @@
 </div>
 <div id="payMethodModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9999;">
   <div id="payMethodBox" style="background:var(--card,#fff);border-radius:14px;padding:24px;width:320px;max-width:88vw;color:var(--text,#1a1a1a);"></div>
+</div>
+<div id="contactModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9999;">
+  <div id="contactBox" style="background:var(--card,#fff);border-radius:14px;padding:24px;width:320px;max-width:88vw;color:var(--text,#1a1a1a);"></div>
 </div>
 <script src="js/pay-icons.js?v=1"></script>
 <script>
@@ -454,6 +458,7 @@ function loadSold(){
   }).catch(function(){});
 }
 loadRate();
+loadContactInfo();
 fetch("payment.json").then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }).then(function(cfg){ applyPaymentConfig(cfg); return fetch("products.json?v=" + Date.now()); }).then(function(r){ return r.json(); }).then(function(d){ PRODUCTS=d; return loadSold(); }).then(function(){ render(); fillClaimProds(); fillClaimNets(); }).catch(function(){ document.getElementById("emptyShop").classList.remove("hidden"); });
 function stockLeft(p){
   if(p.stock === null || p.stock === undefined || p.stock === "") return null;
@@ -1016,6 +1021,55 @@ function refreshOrderStatus(){
   sb.from("orders").select("status").eq("id", paidOrderId).single().then(function(r){ if(r.data) setOrderStatus(r.data.status); });
 }
 function stopStatus(){ if(statusTimer){ clearInterval(statusTimer); statusTimer=null; } paidOrder=null; paidOrderId=null; }
+/* ===== 联系商家 ===== */
+var CONTACT = null;
+function loadContactInfo(){
+  fetch("contact.json?v=" + Date.now()).then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(c){ CONTACT = c || {}; })
+    .catch(function(){ CONTACT = {}; });
+}
+function tgLink(tg){
+  tg = (tg || "").trim();
+  if(!tg) return "";
+  if(/^https?:\/\//i.test(tg)) return tg;
+  return "https://t.me/" + tg.replace(/^@/, "");
+}
+function openContact(){
+  var box = document.getElementById("contactBox");
+  box.innerHTML = "";
+  var h = document.createElement("div"); h.style.cssText = "font-weight:700;font-size:1.05rem;margin-bottom:12px;";
+  h.textContent = "联系商家"; box.appendChild(h);
+  var c = CONTACT || {};
+  var qq = (c.qq != null) ? String(c.qq).trim() : "";
+  var tg = (c.telegram != null) ? String(c.telegram).trim() : "";
+  function row(label, value, link, recommended){
+    var d = document.createElement("div");
+    d.style.cssText = "display:flex;align-items:center;gap:8px;margin:10px 0;padding:10px 12px;border:1px solid var(--border);border-radius:10px;";
+    var l = document.createElement("span"); l.style.cssText = "font-weight:700;min-width:64px;"; l.textContent = label;
+    var v = link ? document.createElement("a") : document.createElement("span");
+    if(link){ v.href = link; v.target = "_blank"; v.rel = "noopener"; v.style.color = "var(--link)"; }
+    v.textContent = value; v.style.cssText += "flex:1;word-break:break-all;";
+    var cp = document.createElement("button"); cp.className = "copy-btn"; cp.style.fontSize = ".78rem"; cp.textContent = "复制";
+    cp.onclick = function(){ try{ navigator.clipboard.writeText(value); cp.textContent = "已复制"; setTimeout(function(){ cp.textContent = "复制"; }, 1200); }catch(e){} };
+    d.appendChild(l); d.appendChild(v); d.appendChild(cp);
+    if(recommended){ var b = document.createElement("span"); b.style.cssText = "font-size:.72rem;background:#e33;color:#fff;border-radius:8px;padding:2px 8px;white-space:nowrap;"; b.textContent = "推荐"; d.appendChild(b); }
+    return d;
+  }
+  if(!qq && !tg){
+    var p = document.createElement("p"); p.style.color = "var(--muted)"; p.textContent = "商家暂未设置联系方式。";
+    box.appendChild(p);
+  }else{
+    if(qq) box.appendChild(row("QQ", qq, "", c.recommended === "qq"));
+    if(tg) box.appendChild(row("Telegram", tg, tgLink(tg), c.recommended === "telegram"));
+  }
+  var cls = document.createElement("button"); cls.className = "check-btn"; cls.style.cssText = "width:100%;margin-top:8px;";
+  cls.textContent = "关闭"; cls.onclick = closeContact;
+  box.appendChild(cls);
+  document.getElementById("contactModal").classList.remove("hidden");
+}
+function closeContact(){ document.getElementById("contactModal").classList.add("hidden"); }
+document.getElementById("contactBtn").onclick = openContact;
+document.getElementById("contactModal").addEventListener("click", function(e){ if(e.target && e.target.id === "contactModal") closeContact(); });
 /* ===== 发货信息展示 ===== */
 function normShip(o){
   var s = o.ship;
