@@ -104,6 +104,7 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
 <button id="tabPosts" class="active" onclick="showTab('posts')">文章管理</button>
   <button id="tabShop" onclick="showTab('shop')">商品管理</button>
   <button id="tabOrders" onclick="showTab('orders')">订单管理</button>
+  <button id="tabContact" onclick="showTab('contact');loadContact()">联系方式</button>
   
 </div>
 
@@ -221,6 +222,20 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
 </div>
 </div>
 
+<div id="paneContact" class="hidden">
+  <label>QQ 号</label>
+  <input type="text" id="ctQQ" placeholder="例如：12345678" inputmode="numeric">
+  <label>Telegram</label>
+  <input type="text" id="ctTg" placeholder="用户名，如 @xxxx">
+  <label>推荐联系方式（买家端会打上"推荐"标记）</label>
+  <div style="margin:6px 0 12px">
+    <label style="display:inline-block;margin-right:18px;font-weight:400"><input type="radio" name="ctRec" value="qq" checked> QQ</label>
+    <label style="display:inline-block;font-weight:400"><input type="radio" name="ctRec" value="telegram"> Telegram</label>
+  </div>
+  <button class="publish" id="ctSaveBtn">保存联系方式</button>
+  <p class="hint">保存后写入仓库 contact.json，几分钟后买家在商城点"联系商家"就能看到。</p>
+</div>
+
 <div id="status"></div>
 
 <details>
@@ -244,9 +259,11 @@ function showTab(which) {
   $("panePosts").classList.toggle("hidden", which !== "posts");
   $("paneShop").classList.toggle("hidden", which !== "shop");
   $("paneOrders").classList.toggle("hidden", which !== "orders");
+  $("paneContact").classList.toggle("hidden", which !== "contact");
   $("tabPosts").classList.toggle("active", which === "posts");
   $("tabShop").classList.toggle("active", which === "shop");
   $("tabOrders").classList.toggle("active", which === "orders");
+  $("tabContact").classList.toggle("active", which === "contact");
 }
 
 function setStatus(msg, kind) {
@@ -829,6 +846,38 @@ if(p.ptype !== "physical"){
 div.appendChild(stk); div.appendChild(del);;box.appendChild(div);;});;refreshCodeCounts();};async function deleteProduct(p, btn) {;const token = $("token").value.trim();;if (!token) return setStatus("请先填写 GitHub 访问令牌。", "err");;if (!confirm("确定下架「" + p.name + "」吗？")) return;;btn.disabled = true;;try {;setStatus("正在下架「" + p.name + "」…", "info");;const cur = await gh("products.json", token);;const list = JSON.parse(b64dec(cur.content)).filter(x => x.id !== p.id);;await gh("products.json", token, "PUT", { message: "下架商品：" + p.name, content: b64(JSON.stringify(list)), sha: cur.sha, branch: BRANCH });;const keptF = {};;list.forEach(x => allImgUrls(x).forEach(u => { keptF[u] = 1; }));;for (const u of allImgUrls(p)) {;if (!keptF[u]) {;const ipath = repoImgPath(u);;if (ipath) await deleteRepoImage(ipath, token, "删除下架商品图片");;};};;renderProducts(list);;setStatus("已下架「" + p.name + "」。", "ok");;} catch (e) { setStatus("下架失败：" + e.message, "err"); btn.disabled = false; };};async function editStock(p) {;const token = $("token").value.trim();;if (!token) return setStatus("请先填写 GitHub 访问令牌。", "err");;const cur0 = (p.stock != null && p.stock !== "") ? String(p.stock) : "";;const v = prompt("修改「" + p.name + "」的库存（件），留空表示不限：", cur0);;if (v === null) return;;const s = v.trim();;if (s !== "" && !/^\d+$/.test(s)) return setStatus("库存请输入整数，留空表示不限。", "err");;try {;setStatus("正在更新库存…", "info");;const cur = await gh("products.json", token);;const list = JSON.parse(b64dec(cur.content));;const it = list.find(x => x.id === p.id);;if (!it) return setStatus("商品不存在，可能已被删除。", "err");;it.stock = s === "" ? null : parseInt(s, 10);;await gh("products.json", token, "PUT", { message: "更新库存：" + p.name, content: b64(JSON.stringify(list)), sha: cur.sha, branch: BRANCH });;renderProducts(list);;setStatus("库存已更新，几分钟后商城页生效。", "ok");;} catch (e) { setStatus("更新失败：" + e.message, "err"); };};window.addEventListener("beforeunload", () => { $("token").value = ""; });
 </script>
 <script>
+/* ===== 联系方式（contact.json，买家端"联系商家"读取） ===== */
+async function loadContact(){
+  const token = $("token").value.trim();
+  if(!token) return;
+  try{
+    setStatus("正在加载联系方式…", "info");
+    const cur = await gh("contact.json", token);
+    const c = JSON.parse(b64dec(cur.content));
+    $("ctQQ").value = c.qq || "";
+    $("ctTg").value = c.telegram || "";
+    const rec = c.recommended || "qq";
+    const r = document.querySelector('input[name="ctRec"][value="' + rec + '"]');
+    if(r) r.checked = true;
+    setStatus("已加载当前联系方式。", "ok");
+  }catch(e){ setStatus("加载失败：" + e.message, "err"); }
+}
+$("ctSaveBtn").onclick = async () => {
+  const token = $("token").value.trim();
+  if(!token) return setStatus("请先填写 GitHub 访问令牌。", "err");
+  const qq = $("ctQQ").value.trim(), tg = $("ctTg").value.trim();
+  const rec = (document.querySelector('input[name="ctRec"]:checked') || {}).value || "qq";
+  const btn = $("ctSaveBtn"); btn.disabled = true;
+  try{
+    setStatus("正在保存…", "info");
+    let sha; try{ const cur = await gh("contact.json", token); sha = cur.sha; }catch(e){}
+    const body = { message: "更新联系方式", content: b64(JSON.stringify({ qq: qq, telegram: tg, recommended: rec, updated_at: new Date().toISOString() }, null, 2)), branch: BRANCH };
+    if(sha) body.sha = sha;
+    await gh("contact.json", token, "PUT", body);
+    setStatus("已保存！几分钟后买家在商城点「联系商家」就能看到。", "ok");
+  }catch(e){ setStatus("保存失败：" + e.message, "err"); }
+  finally{ btn.disabled = false; }
+};
 /* ===== 订单管理（Supabase） ===== */
 var SB_URL = "https://vvwyheyojnmeyzbisxnq.supabase.co";
 var SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2d3loZXlvam5tZXl6YmlzeG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MTE0MTQsImV4cCI6MjEwNjE4NzQxNH0.U2ZMJZbgm-5cxP7M383ymjX22UW9ZuvtgU8owXV8oR8";
