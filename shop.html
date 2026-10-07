@@ -1037,30 +1037,35 @@ function tgLink(tg){
 function openContact(){
   var box = document.getElementById("contactBox");
   box.innerHTML = "";
-  var h = document.createElement("div"); h.style.cssText = "font-weight:700;font-size:1.05rem;margin-bottom:12px;";
+  var h = document.createElement("div"); h.style.cssText = "font-weight:700;font-size:1.05rem;margin-bottom:2px;text-align:center;";
   h.textContent = "联系商家"; box.appendChild(h);
+  var hint = document.createElement("div"); hint.style.cssText = "color:var(--muted);font-size:.8rem;text-align:center;";
+  hint.textContent = "点击图标直接跳转"; box.appendChild(hint);
   var c = CONTACT || {};
   var qq = (c.qq != null) ? String(c.qq).trim() : "";
   var tg = (c.telegram != null) ? String(c.telegram).trim() : "";
-  function row(label, value, link, recommended){
-    var d = document.createElement("div");
-    d.style.cssText = "display:flex;align-items:center;gap:8px;margin:10px 0;padding:10px 12px;border:1px solid var(--border);border-radius:10px;";
-    var l = document.createElement("span"); l.style.cssText = "font-weight:700;min-width:64px;"; l.textContent = label;
-    var v = link ? document.createElement("a") : document.createElement("span");
-    if(link){ v.href = link; v.target = "_blank"; v.rel = "noopener"; v.style.color = "var(--link)"; }
-    v.textContent = value; v.style.cssText += "flex:1;word-break:break-all;";
-    var cp = document.createElement("button"); cp.className = "copy-btn"; cp.style.fontSize = ".78rem"; cp.textContent = "复制";
-    cp.onclick = function(){ try{ navigator.clipboard.writeText(value); cp.textContent = "已复制"; setTimeout(function(){ cp.textContent = "复制"; }, 1200); }catch(e){} };
-    d.appendChild(l); d.appendChild(v); d.appendChild(cp);
-    if(recommended){ var b = document.createElement("span"); b.style.cssText = "font-size:.72rem;background:#e33;color:#fff;border-radius:8px;padding:2px 8px;white-space:nowrap;"; b.textContent = "推荐"; d.appendChild(b); }
-    return d;
+  var QQ_SVG = '<svg viewBox="0 0 48 48" width="64" height="64"><circle cx="24" cy="24" r="23" fill="#ffffff" stroke="#e2e2e2" stroke-width="1"/><ellipse cx="24" cy="27" rx="13.5" ry="14.5" fill="#232323"/><ellipse cx="24" cy="24" rx="8.8" ry="7.6" fill="#ffffff"/><circle cx="20.6" cy="23" r="1.9" fill="#232323"/><circle cx="27.4" cy="23" r="1.9" fill="#232323"/><ellipse cx="24" cy="28.6" rx="2.3" ry="1.6" fill="#ff9f1c"/><rect x="11.5" y="34.5" width="25" height="5.6" rx="2.8" fill="#e0342b"/></svg>';
+  var TG_SVG = '<svg viewBox="0 0 48 48" width="64" height="64"><circle cx="24" cy="24" r="24" fill="#229ED9"/><g transform="translate(12,13)"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="#ffffff"/></g></svg>';
+  function iconBtn(svg, href, label, recommended){
+    var a = document.createElement("a");
+    a.href = href; a.target = "_blank"; a.rel = "noopener"; a.setAttribute("aria-label", label);
+    a.style.cssText = "position:relative;display:block;width:64px;height:64px;";
+    a.innerHTML = svg;
+    if(recommended){
+      var b = document.createElement("span");
+      b.style.cssText = "position:absolute;top:-8px;right:-16px;font-size:.68rem;background:#e33;color:#fff;border-radius:8px;padding:2px 7px;white-space:nowrap;";
+      b.textContent = "推荐"; a.appendChild(b);
+    }
+    return a;
   }
   if(!qq && !tg){
-    var p = document.createElement("p"); p.style.color = "var(--muted)"; p.textContent = "商家暂未设置联系方式。";
+    var p = document.createElement("p"); p.style.color = "var(--muted)"; p.style.textAlign = "center"; p.textContent = "商家暂未设置联系方式。";
     box.appendChild(p);
   }else{
-    if(qq) box.appendChild(row("QQ", qq, "", c.recommended === "qq"));
-    if(tg) box.appendChild(row("Telegram", tg, tgLink(tg), c.recommended === "telegram"));
+    var wrap = document.createElement("div"); wrap.style.cssText = "display:flex;gap:32px;justify-content:center;margin:16px 0 8px;";
+    if(qq) wrap.appendChild(iconBtn(QQ_SVG, "https://wpa.qq.com/msgrd?v=3&uin=" + encodeURIComponent(qq) + "&site=qq&menu=yes", "QQ", c.recommended === "qq"));
+    if(tg) wrap.appendChild(iconBtn(TG_SVG, tgLink(tg), "Telegram", c.recommended === "telegram"));
+    box.appendChild(wrap);
   }
   var cls = document.createElement("button"); cls.className = "check-btn"; cls.style.cssText = "width:100%;margin-top:8px;";
   cls.textContent = "关闭"; cls.onclick = closeContact;
