@@ -227,10 +227,13 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
   <input type="text" id="ctQQ" placeholder="例如：12345678" inputmode="numeric">
   <label>Telegram</label>
   <input type="text" id="ctTg" placeholder="用户名，如 @xxxx">
+  <label>邮箱</label>
+  <input type="email" id="ctEmail" placeholder="例如：name@example.com">
   <label>推荐联系方式（买家端会打上"推荐"标记）</label>
   <div style="margin:6px 0 12px">
     <label style="display:inline-block;margin-right:18px;font-weight:400"><input type="radio" name="ctRec" value="qq" checked> QQ</label>
-    <label style="display:inline-block;font-weight:400"><input type="radio" name="ctRec" value="telegram"> Telegram</label>
+    <label style="display:inline-block;margin-right:18px;font-weight:400"><input type="radio" name="ctRec" value="telegram"> Telegram</label>
+    <label style="display:inline-block;font-weight:400"><input type="radio" name="ctRec" value="email"> 邮箱</label>
   </div>
   <button class="publish" id="ctSaveBtn">保存联系方式</button>
   <p class="hint">保存后写入仓库 contact.json，几分钟后买家在商城点"联系商家"就能看到。</p>
@@ -856,6 +859,7 @@ async function loadContact(){
     const c = JSON.parse(b64dec(cur.content));
     $("ctQQ").value = c.qq || "";
     $("ctTg").value = c.telegram || "";
+    $("ctEmail").value = c.email || "";
     const rec = c.recommended || "qq";
     const r = document.querySelector('input[name="ctRec"][value="' + rec + '"]');
     if(r) r.checked = true;
@@ -865,13 +869,13 @@ async function loadContact(){
 $("ctSaveBtn").onclick = async () => {
   const token = $("token").value.trim();
   if(!token) return setStatus("请先填写 GitHub 访问令牌。", "err");
-  const qq = $("ctQQ").value.trim(), tg = $("ctTg").value.trim();
+  const qq = $("ctQQ").value.trim(), tg = $("ctTg").value.trim(), em = $("ctEmail").value.trim();
   const rec = (document.querySelector('input[name="ctRec"]:checked') || {}).value || "qq";
   const btn = $("ctSaveBtn"); btn.disabled = true;
   try{
     setStatus("正在保存…", "info");
     let sha; try{ const cur = await gh("contact.json", token); sha = cur.sha; }catch(e){}
-    const body = { message: "更新联系方式", content: b64(JSON.stringify({ qq: qq, telegram: tg, recommended: rec, updated_at: new Date().toISOString() }, null, 2)), branch: BRANCH };
+    const body = { message: "更新联系方式", content: b64(JSON.stringify({ qq: qq, telegram: tg, email: em, recommended: rec, updated_at: new Date().toISOString() }, null, 2)), branch: BRANCH };
     if(sha) body.sha = sha;
     await gh("contact.json", token, "PUT", body);
     setStatus("已保存！几分钟后买家在商城点「联系商家」就能看到。", "ok");
