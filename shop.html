@@ -1044,8 +1044,10 @@ function openContact(){
   var c = CONTACT || {};
   var qq = (c.qq != null) ? String(c.qq).trim() : "";
   var tg = (c.telegram != null) ? String(c.telegram).trim() : "";
+  var em = (c.email != null) ? String(c.email).trim() : "";
   var QQ_SVG = '<svg viewBox="0 0 48 48" width="64" height="64"><circle cx="24" cy="24" r="23" fill="#ffffff" stroke="#e2e2e2" stroke-width="1"/><g transform="translate(13.5,12) scale(0.046875)" fill="#232323"><path d="M433.754 420.445c-11.526 1.393-44.86-52.741-44.86-52.741 0 31.345-16.136 72.247-51.051 101.786 16.842 5.192 54.843 19.167 45.803 34.421-7.316 12.343-125.51 7.881-159.632 4.037-34.122 3.844-152.316 8.306-159.632-4.037-9.045-15.25 28.918-29.214 45.783-34.415-34.92-29.539-51.059-70.445-51.059-101.792 0 0-33.334 54.134-44.859 52.741-5.37-.65-12.424-29.644 9.347-99.704 10.261-33.024 21.995-60.478 40.144-105.779C60.683 98.063 108.982.006 224 0c113.737.006 163.156 96.133 160.264 214.963 18.118 45.223 29.912 72.85 40.144 105.778 21.768 70.06 14.716 99.053 9.346 99.704z"/></g></svg>';
   var TG_SVG = '<svg viewBox="0 0 48 48" width="64" height="64"><circle cx="24" cy="24" r="23" fill="#ffffff" stroke="#e2e2e2" stroke-width="1"/><g transform="translate(12,12)" fill="#229ED9"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></g></svg>';
+  var EMAIL_SVG = '<svg viewBox="0 0 48 48" width="64" height="64"><circle cx="24" cy="24" r="23" fill="#ffffff" stroke="#e2e2e2" stroke-width="1"/><g transform="translate(12,12)" fill="#555555"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></g></svg>';
   function iconBtn(svg, href, label, recommended){
     var a = document.createElement("a");
     a.href = href; a.target = "_blank"; a.rel = "noopener"; a.setAttribute("aria-label", label);
@@ -1058,13 +1060,14 @@ function openContact(){
     }
     return a;
   }
-  if(!qq && !tg){
+  if(!qq && !tg && !em){
     var p = document.createElement("p"); p.style.color = "var(--muted)"; p.style.textAlign = "center"; p.textContent = "商家暂未设置联系方式。";
     box.appendChild(p);
   }else{
     var wrap = document.createElement("div"); wrap.style.cssText = "display:flex;gap:32px;justify-content:center;margin:16px 0 8px;";
     if(qq) wrap.appendChild(iconBtn(QQ_SVG, "https://wpa.qq.com/msgrd?v=3&uin=" + encodeURIComponent(qq) + "&site=qq&menu=yes", "QQ", c.recommended === "qq"));
     if(tg) wrap.appendChild(iconBtn(TG_SVG, tgLink(tg), "Telegram", c.recommended === "telegram"));
+    if(em) wrap.appendChild(iconBtn(EMAIL_SVG, "mailto:" + em, "邮箱", c.recommended === "email"));
     box.appendChild(wrap);
   }
   var cls = document.createElement("button"); cls.className = "check-btn"; cls.style.cssText = "width:100%;margin-top:8px;";
