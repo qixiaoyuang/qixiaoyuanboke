@@ -1327,6 +1327,8 @@ function closeContact(){
   document.getElementById("contactModal").classList.add("hidden");
   if (ctHumanChannel && sb) { try { sb.removeChannel(ctHumanChannel); } catch(e){} ctHumanChannel = null; }
 }
+document.getElementById("contactBtn").onclick = openContact;
+document.getElementById("contactModal").addEventListener("click", function(e){ if(e.target && e.target.id === "contactModal") closeContact(); });
 
 /* ===== 发货信息展示 ===== */
 function normShip(o){
