@@ -203,6 +203,24 @@
 <div id="payMethodModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9999;">
   <div id="payMethodBox" style="background:var(--card,#fff);border-radius:14px;padding:24px;width:320px;max-width:88vw;color:var(--text,#1a1a1a);"></div>
 </div>
+<style>
+.ct-tab{flex:1;padding:9px 0;border:none;background:#f0f0f0;color:#555;font-size:14px;cursor:pointer;border-radius:8px;font-weight:600}
+.ct-tab.active{background:#2563eb;color:#fff}
+.ct-panel{display:flex;flex-direction:column;flex:1;min-height:0}
+.ct-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;background:#f5f7fa;border-radius:8px;min-height:200px;max-height:320px}
+.ct-msg{max-width:85%;padding:8px 11px;border-radius:12px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.ct-bot{background:#fff;color:#222;align-self:flex-start;border:1px solid #e5e7eb;border-bottom-left-radius:4px}
+.ct-user{background:#2563eb;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.ct-seller{background:#fff;color:#222;align-self:flex-start;border:1px solid #e5e7eb;border-bottom-left-radius:4px}
+.ct-buyer{background:#059669;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.ct-sys{color:#888;font-size:12px;align-self:center;text-align:center}
+.ct-typing{color:#888;font-size:13px;align-self:flex-start}
+.ct-form{display:flex;gap:8px;margin-top:10px}
+.ct-input{flex:1;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:14px;outline:none;min-width:0}
+.ct-send{border:none;background:#2563eb;color:#fff;padding:0 18px;border-radius:8px;font-size:14px;cursor:pointer;flex-shrink:0}
+.ct-to-human{margin-top:8px;width:100%;padding:9px;border:1px dashed #059669;background:#f0fdf4;color:#059669;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600}
+.ct-to-human:hover{background:#dcfce7}
+</style>
 <div id="contactModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9999;">
   <div id="contactBox" style="background:var(--card,#fff);border-radius:14px;padding:24px;width:320px;max-width:88vw;color:var(--text,#1a1a1a);"></div>
 </div>
@@ -1021,26 +1039,250 @@ function refreshOrderStatus(){
   sb.from("orders").select("status").eq("id", paidOrderId).single().then(function(r){ if(r.data) setOrderStatus(r.data.status); });
 }
 function stopStatus(){ if(statusTimer){ clearInterval(statusTimer); statusTimer=null; } paidOrder=null; paidOrderId=null; }
-/* ===== 联系商家 ===== */
+
+/* ===== 统一联系商家 ===== */
 var CONTACT = null;
 function loadContactInfo(){
   fetch("contact.json?v=" + Date.now()).then(function(r){ if(!r.ok) throw 0; return r.json(); })
     .then(function(c){ CONTACT = c || {}; })
     .catch(function(){ CONTACT = {}; });
 }
-function tgLink(tg){
-  tg = (tg || "").trim();
-  if(!tg) return "";
-  if(/^https?:\/\//i.test(tg)) return tg;
-  return "https://t.me/" + tg.replace(/^@/, "");
+
+var CT_WORKER = "https://wannengshou-kefu.qixiaoyuan.workers.dev";
+var ctAiHistory = [];
+var ctHumanTid = null;
+var ctHumanChannel = null;
+var ctHumanOn = false; // 人工客服是否已激活
+
+function ctSwitchTab(which) {
+  var tabs = document.querySelectorAll(".ct-tab");
+  tabs.forEach(function(t){ t.classList.toggle("active", t.getAttribute("data-ct") === which); });
+  ["ai", "human", "other"].forEach(function(k){
+    var p = document.getElementById("ct-" + k);
+    if (p) p.style.display = (k === which) ? "flex" : "none";
+  });
+  if (which === "human") ctHumanInit();
 }
-function openContact(){
-  var box = document.getElementById("contactBox");
+
+function ctAddMsg(boxId, text, who) {
+  var box = document.getElementById(boxId);
+  var d = document.createElement("div");
+  d.className = "ct-msg " + who;
+  d.textContent = text;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+  return d;
+}
+
+// ---- AI客服 ----
+async function ctAiAsk(text) {
+  ctAddMsg("ct-ai-msgs", text, "ct-user");
+  ctAiHistory.push({role: "user", parts: [{text: text}]});
+  var typing = document.createElement("div");
+  typing.className = "ct-typing";
+  typing.textContent = "正在输入…";
+  document.getElementById("ct-ai-msgs").appendChild(typing);
+  document.getElementById("ct-ai-msgs").scrollTop = document.getElementById("ct-ai-msgs").scrollHeight;
+  try {
+    var r = await fetch(CT_WORKER + "/chat", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({message: text, history: ctAiHistory.slice(0, -1).slice(-8)})
+    });
+    var d = await r.json();
+    typing.remove();
+    var reply = (d && d.reply) ? d.reply : "抱歉，服务开小差了，请稍后再试。";
+    ctAddMsg("ct-ai-msgs", reply, "ct-bot");
+    ctAiHistory.push({role: "model", parts: [{text: reply}]});
+    // 检测用户想转人工的关键词
+    if (/人工|转人工|真人|客服/.test(text) && !/AI|机器人/.test(text)) {
+      ctAddMsg("ct-ai-msgs", "好的，为你转接人工客服。", "ct-sys");
+      setTimeout(ctToHuman, 800);
+    }
+  } catch(e) {
+    typing.remove();
+    ctAddMsg("ct-ai-msgs", "网络开小差了，请稍后再试。", "ct-bot");
+  }
+}
+
+function ctToHuman() {
+  if (!sb || !myUser) {
+    if (typeof openAuth === "function") {
+      closeContact();
+      openAuth("使用人工客服需要先登录 / 注册。");
+    }
+    return;
+  }
+  ctHumanOn = true;
+  document.getElementById("ctHumanTab").style.display = "";
+  ctSwitchTab("human");
+}
+
+// ---- 人工客服 ----
+async function ctHumanInit() {
+  if (!sb || !myUser) return;
+  if (!ctHumanTid) {
+    var r = await sb.from("chat_threads").select("id")
+      .eq("user_id", myUser.id).order("created_at", {ascending: false}).limit(1);
+    if (r.data && r.data.length > 0) {
+      ctHumanTid = r.data[0].id;
+    } else {
+      var r2 = await sb.from("chat_threads").insert({
+        user_id: myUser.id, buyer_email: myUser.email || null
+      }).select("id").single();
+      if (r2.data) ctHumanTid = r2.data.id;
+    }
+  }
+  if (!ctHumanTid) return;
+  // 加载历史
+  var box = document.getElementById("ct-human-msgs");
   box.innerHTML = "";
-  var h = document.createElement("div"); h.style.cssText = "font-weight:700;font-size:1.05rem;margin-bottom:2px;text-align:center;";
-  h.textContent = "联系商家"; box.appendChild(h);
-  var hint = document.createElement("div"); hint.style.cssText = "color:var(--muted);font-size:.8rem;text-align:center;";
-  hint.textContent = "点击图标直接跳转"; box.appendChild(hint);
+  var h = await sb.from("chat_messages").select("sender,content")
+    .eq("thread_id", ctHumanTid).order("created_at", {ascending: true}).limit(100);
+  if (h.data && h.data.length > 0) {
+    h.data.forEach(function(m){
+      ctAddMsg("ct-human-msgs", m.content, m.sender === "buyer" ? "ct-buyer" : "ct-seller");
+    });
+  } else {
+    ctAddMsg("ct-human-msgs", "你好，我是人工客服，有什么可以帮你？", "ct-sys");
+  }
+  // 标记已读
+  try { await sb.from("chat_threads").update({unread_buyer: 0}).eq("id", ctHumanTid); } catch(e){}
+  // 订阅
+  if (ctHumanChannel) { try { sb.removeChannel(ctHumanChannel); } catch(e){} }
+  ctHumanChannel = sb.channel("ct-hc-" + ctHumanTid)
+    .on("postgres_changes", {
+      event: "INSERT", schema: "public", table: "chat_messages",
+      filter: "thread_id=eq." + ctHumanTid
+    }, function(payload){
+      var m = payload.new;
+      if (m && m.sender === "seller") {
+        ctAddMsg("ct-human-msgs", m.content, "ct-seller");
+        try { sb.from("chat_threads").update({unread_buyer: 0}).eq("id", ctHumanTid); } catch(e){}
+      }
+    })
+    .subscribe();
+}
+
+async function ctHumanSend(text) {
+  if (!text || !ctHumanTid || !sb) return;
+  ctAddMsg("ct-human-msgs", text, "ct-buyer");
+  try {
+    await sb.from("chat_messages").insert({
+      thread_id: ctHumanTid, sender: "buyer", content: text
+    });
+    var r = await sb.from("chat_threads").select("unread_seller").eq("id", ctHumanTid).single();
+    var un = (r.data && r.data.unread_seller) || 0;
+    await sb.from("chat_threads").update({
+      last_message_at: new Date().toISOString(),
+      unread_seller: un + 1
+    }).eq("id", ctHumanTid);
+  } catch(e) {
+    ctAddMsg("ct-human-msgs", "发送失败，请重试。", "ct-sys");
+  }
+}
+
+// ---- 重写 openContact ----
+function openContact(){
+  var modal = document.getElementById("contactModal");
+  var box = document.getElementById("contactBox");
+  // 加大弹窗以容纳聊天
+  box.style.width = "380px";
+  box.style.maxWidth = "92vw";
+  box.style.height = "540px";
+  box.style.maxHeight = "88vh";
+  box.style.display = "flex";
+  box.style.flexDirection = "column";
+  box.innerHTML = "";
+
+  var h = document.createElement("div");
+  h.style.cssText = "font-weight:700;font-size:1.05rem;margin-bottom:10px;text-align:center;flex-shrink:0;";
+  h.textContent = "联系商家";
+  box.appendChild(h);
+
+  var tabs = document.createElement("div");
+  tabs.style.cssText = "display:flex;gap:8px;margin-bottom:10px;flex-shrink:0;";
+  tabs.innerHTML =
+    '<button class="ct-tab active" data-ct="ai">AI客服</button>' +
+    '<button class="ct-tab" data-ct="human" id="ctHumanTab" style="display:none">人工客服</button>' +
+    '<button class="ct-tab" data-ct="other">其他方式</button>';
+  box.appendChild(tabs);
+  tabs.querySelectorAll(".ct-tab").forEach(function(t){
+    t.onclick = function(){ ctSwitchTab(t.getAttribute("data-ct")); };
+  });
+
+  // AI面板
+  var aiP = document.createElement("div");
+  aiP.id = "ct-ai"; aiP.className = "ct-panel";
+  aiP.innerHTML =
+    '<div id="ct-ai-msgs" class="ct-msgs"></div>' +
+    '<button class="ct-to-human" id="ctToHumanBtn">转人工客服</button>' +
+    '<form class="ct-form" id="ct-ai-form"><input class="ct-input" id="ct-ai-input" placeholder="输入问题…" autocomplete="off" maxlength="500"/>' +
+    '<button class="ct-send" type="submit">发送</button></form>';
+  box.appendChild(aiP);
+
+  // 人工面板
+  var huP = document.createElement("div");
+  huP.id = "ct-human"; huP.className = "ct-panel"; huP.style.display = "none";
+  huP.innerHTML =
+    '<div id="ct-human-msgs" class="ct-msgs"></div>' +
+    '<form class="ct-form" id="ct-human-form"><input class="ct-input" id="ct-human-input" placeholder="输入消息…" autocomplete="off" maxlength="2000"/>' +
+    '<button class="ct-send" type="submit" style="background:#059669">发送</button></form>';
+  box.appendChild(huP);
+
+  // 其他方式面板
+  var otP = document.createElement("div");
+  otP.id = "ct-other"; otP.className = "ct-panel"; otP.style.display = "none";
+  otP.innerHTML = '<div id="ct-other-body" style="flex:1;overflow-y:auto"></div>';
+  box.appendChild(otP);
+  ctRenderOther(document.getElementById("ct-other-body"));
+
+  // 关闭按钮
+  var cls = document.createElement("button");
+  cls.className = "check-btn";
+  cls.style.cssText = "width:100%;margin-top:10px;flex-shrink:0;";
+  cls.textContent = "关闭";
+  cls.onclick = closeContact;
+  box.appendChild(cls);
+
+  // 事件绑定
+  document.getElementById("ct-ai-form").onsubmit = function(e){
+    e.preventDefault();
+    var v = document.getElementById("ct-ai-input").value.trim();
+    if (!v) return;
+    document.getElementById("ct-ai-input").value = "";
+    ctAiAsk(v);
+  };
+  document.getElementById("ctToHumanBtn").onclick = ctToHuman;
+  document.getElementById("ct-human-form").onsubmit = function(e){
+    e.preventDefault();
+    var v = document.getElementById("ct-human-input").value.trim();
+    if (!v) return;
+    document.getElementById("ct-human-input").value = "";
+    ctHumanSend(v);
+  };
+
+  // AI欢迎语
+  ctAiHistory = [];
+  document.getElementById("ct-ai-msgs").innerHTML = "";
+  ctAddMsg("ct-ai-msgs", "你好，我是万能手 AI 客服，可以问我：怎么下单、USDT 怎么付、卡密多久到、没收到货怎么办。需要真人帮助请点“转人工客服”。", "ct-bot");
+
+  // 重置人工状态
+  ctHumanOn = false;
+  ctHumanTid = null;
+  if (ctHumanChannel) { try { sb.removeChannel(ctHumanChannel); } catch(e){} ctHumanChannel = null; }
+  document.getElementById("ctHumanTab").style.display = "none";
+  ctSwitchTab("ai");
+
+  modal.classList.remove("hidden");
+}
+
+function ctRenderOther(body) {
+  body.innerHTML = "";
+  var hint = document.createElement("div");
+  hint.style.cssText = "color:var(--muted);font-size:.8rem;text-align:center;margin-bottom:4px;";
+  hint.textContent = "点击图标直接跳转";
+  body.appendChild(hint);
   var c = CONTACT || {};
   var qq = (c.qq != null) ? String(c.qq).trim() : "";
   var tg = (c.telegram != null) ? String(c.telegram).trim() : "";
@@ -1060,24 +1302,32 @@ function openContact(){
     }
     return a;
   }
+  function tgLink(tg){
+    tg = (tg || "").trim();
+    if(!tg) return "";
+    if(/^https?:\/\//i.test(tg)) return tg;
+    return "https://t.me/" + tg.replace(/^@/, "");
+  }
   if(!qq && !tg && !em){
-    var p = document.createElement("p"); p.style.color = "var(--muted)"; p.style.textAlign = "center"; p.textContent = "商家暂未设置联系方式。";
-    box.appendChild(p);
-  }else{
-    var wrap = document.createElement("div"); wrap.style.cssText = "display:flex;gap:32px;justify-content:center;margin:16px 0 8px;";
+    var p = document.createElement("p");
+    p.style.color = "var(--muted)"; p.style.textAlign = "center";
+    p.textContent = "商家暂未设置联系方式。";
+    body.appendChild(p);
+  } else {
+    var wrap = document.createElement("div");
+    wrap.style.cssText = "display:flex;gap:32px;justify-content:center;margin:16px 0 8px;";
     if(qq) wrap.appendChild(iconBtn(QQ_SVG, "https://wpa.qq.com/msgrd?v=3&uin=" + encodeURIComponent(qq) + "&site=qq&menu=yes", "QQ", c.recommended === "qq"));
     if(tg) wrap.appendChild(iconBtn(TG_SVG, tgLink(tg), "Telegram", c.recommended === "telegram"));
     if(em) wrap.appendChild(iconBtn(EMAIL_SVG, "mailto:" + em, "邮箱", c.recommended === "email"));
-    box.appendChild(wrap);
+    body.appendChild(wrap);
   }
-  var cls = document.createElement("button"); cls.className = "check-btn"; cls.style.cssText = "width:100%;margin-top:8px;";
-  cls.textContent = "关闭"; cls.onclick = closeContact;
-  box.appendChild(cls);
-  document.getElementById("contactModal").classList.remove("hidden");
 }
-function closeContact(){ document.getElementById("contactModal").classList.add("hidden"); }
-document.getElementById("contactBtn").onclick = openContact;
-document.getElementById("contactModal").addEventListener("click", function(e){ if(e.target && e.target.id === "contactModal") closeContact(); });
+
+function closeContact(){
+  document.getElementById("contactModal").classList.add("hidden");
+  if (ctHumanChannel && sb) { try { sb.removeChannel(ctHumanChannel); } catch(e){} ctHumanChannel = null; }
+}
+
 /* ===== 发货信息展示 ===== */
 function normShip(o){
   var s = o.ship;
@@ -1312,188 +1562,8 @@ document.getElementById("cancelOrder").onclick=function(){
   });
 })();
 </script>
-<!-- 人工客服悬浮窗（Supabase 实时聊天） -->
-<style>
-#hc-btn{position:fixed;right:88px;bottom:18px;width:56px;height:56px;border-radius:50%;border:none;background:#059669;color:#fff;font-size:26px;cursor:pointer;z-index:999998;box-shadow:0 4px 14px rgba(0,0,0,.25)}
-#hc-panel{position:fixed;right:18px;bottom:86px;width:340px;max-width:calc(100vw - 36px);height:460px;max-height:calc(100vh - 120px);background:#fff;border-radius:14px;z-index:999999;display:none;flex-direction:column;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.25);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC','Microsoft YaHei',sans-serif}
-#hc-panel.open{display:flex}
-#hc-head{background:#059669;color:#fff;padding:12px 14px;font-size:15px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
-#hc-close{background:none;border:none;color:#fff;font-size:18px;cursor:pointer}
-#hc-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f5f7fa}
-.hc-msg{max-width:82%;padding:8px 11px;border-radius:12px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
-.hc-buyer{background:#059669;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
-.hc-seller{background:#fff;color:#222;align-self:flex-start;border:1px solid #e5e7eb;border-bottom-left-radius:4px}
-.hc-sys{color:#888;font-size:12px;align-self:center;text-align:center}
-#hc-form{display:flex;border-top:1px solid #e5e7eb;background:#fff}
-#hc-input{flex:1;border:none;outline:none;padding:12px;font-size:14px;min-width:0}
-#hc-send{border:none;background:#059669;color:#fff;padding:0 18px;font-size:14px;cursor:pointer;flex-shrink:0}
-#hc-unread{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:11px;min-width:20px;height:20px;border-radius:10px;display:none;align-items:center;justify-content:center;font-weight:700;padding:0 5px}
-#hc-btn{position:fixed}
-</style>
-<button id="hc-btn" title="人工客服">👤<span id="hc-unread"></span></button>
-<div id="hc-panel">
-  <div id="hc-head"><span>人工客服</span><button id="hc-close">✕</button></div>
-  <div id="hc-msgs"></div>
-  <form id="hc-form"><input id="hc-input" placeholder="输入消息…" autocomplete="off" maxlength="2000"/><button id="hc-send" type="submit">发送</button></form>
-</div>
-<script>
-(function(){
-  var btn = document.getElementById("hc-btn");
-  var panel = document.getElementById("hc-panel");
-  var msgs = document.getElementById("hc-msgs");
-  var form = document.getElementById("hc-form");
-  var input = document.getElementById("hc-input");
-  var unreadBadge = document.getElementById("hc-unread");
-  var threadId = null;
-  var channel = null;
 
-  function addMsg(text, who) {
-    var d = document.createElement("div");
-    d.className = "hc-msg " + (who === "buyer" ? "hc-buyer" : who === "seller" ? "hc-seller" : "hc-sys");
-    d.textContent = text;
-    msgs.appendChild(d);
-    msgs.scrollTop = msgs.scrollHeight;
-  }
 
-  function updateBadge(n) {
-    n = n || 0;
-    if (n > 0) {
-      unreadBadge.style.display = "flex";
-      unreadBadge.textContent = n > 99 ? "99+" : String(n);
-    } else {
-      unreadBadge.style.display = "none";
-      unreadBadge.textContent = "";
-    }
-  }
 
-  async function ensureThread() {
-    if (!sb || !myUser) return null;
-    // Get existing thread (most recent)
-    var r = await sb.from("chat_threads").select("id,unread_buyer")
-      .eq("user_id", myUser.id).order("created_at", {ascending: false}).limit(1);
-    if (r.data && r.data.length > 0) {
-      threadId = r.data[0].id;
-      updateBadge(r.data[0].unread_buyer || 0);
-      return threadId;
-    }
-    // Create new thread
-    var r2 = await sb.from("chat_threads").insert({
-      user_id: myUser.id,
-      buyer_email: myUser.email || null
-    }).select("id").single();
-    if (r2.data) {
-      threadId = r2.data.id;
-      updateBadge(0);
-      return threadId;
-    }
-    return null;
-  }
-
-  async function loadMessages() {
-    if (!threadId) return;
-    var r = await sb.from("chat_messages").select("sender,content")
-      .eq("thread_id", threadId).order("created_at", {ascending: true}).limit(100);
-    msgs.innerHTML = "";
-    if (r.data && r.data.length > 0) {
-      r.data.forEach(function(m) { addMsg(m.content, m.sender); });
-    } else {
-      addMsg("你好！有什么可以帮你？请直接留言，客服看到会回复。", "sys");
-    }
-  }
-
-  function subscribe() {
-    if (channel) { try { sb.removeChannel(channel); } catch(e){} channel = null; }
-    if (!threadId || !sb) return;
-    channel = sb.channel("hc-" + threadId)
-      .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "chat_messages",
-        filter: "thread_id=eq." + threadId
-      }, function(payload) {
-        var m = payload.new;
-        if (m && m.sender === "seller") {
-          addMsg(m.content, "seller");
-          if (panel.classList.contains("open")) {
-            markRead();
-          } else {
-            var cur = parseInt(unreadBadge.textContent) || 0;
-            updateBadge(cur + 1);
-          }
-        }
-      })
-      .subscribe();
-  }
-
-  async function markRead() {
-    if (!threadId || !sb) return;
-    try {
-      await sb.from("chat_threads").update({unread_buyer: 0}).eq("id", threadId);
-    } catch(e){}
-    updateBadge(0);
-  }
-
-  btn.onclick = async function() {
-    if (!sb) return;
-    if (!myUser) {
-      if (typeof openAuth === "function") openAuth("使用人工客服需要先登录 / 注册。");
-      return;
-    }
-    panel.classList.toggle("open");
-    if (panel.classList.contains("open")) {
-      var tid = await ensureThread();
-      if (tid) {
-        await loadMessages();
-        subscribe();
-        markRead();
-      } else {
-        addMsg("创建会话失败，请刷新页面重试。", "sys");
-      }
-    } else {
-      if (channel) { try { sb.removeChannel(channel); } catch(e){} channel = null; }
-    }
-  };
-
-  document.getElementById("hc-close").onclick = function() {
-    panel.classList.remove("open");
-    if (channel) { try { sb.removeChannel(channel); } catch(e){} channel = null; }
-  };
-
-  form.onsubmit = async function(e) {
-    e.preventDefault();
-    var v = input.value.trim();
-    if (!v || !threadId || !sb) return;
-    input.value = "";
-    addMsg(v, "buyer");
-    try {
-      await sb.from("chat_messages").insert({
-        thread_id: threadId,
-        sender: "buyer",
-        content: v
-      });
-      var r = await sb.from("chat_threads").select("unread_seller").eq("id", threadId).single();
-      var un = (r.data && r.data.unread_seller) || 0;
-      await sb.from("chat_threads").update({
-        last_message_at: new Date().toISOString(),
-        unread_seller: un + 1
-      }).eq("id", threadId);
-    } catch(err) {
-      addMsg("发送失败，请重试。", "sys");
-    }
-  };
-
-  // 定期检查未读（面板关闭时）
-  setInterval(async function() {
-    if (!sb || !myUser || panel.classList.contains("open")) return;
-    try {
-      var r = await sb.from("chat_threads").select("unread_buyer")
-        .eq("user_id", myUser.id).order("created_at", {ascending: false}).limit(1);
-      if (r.data && r.data.length > 0) updateBadge(r.data[0].unread_buyer || 0);
-    } catch(e){}
-  }, 30000);
-})();
-</script>
-
-<script src="https://wannengshou-kefu.qixiaoyuan.workers.dev/widget.js"></script>
 </body>
 </html>
