@@ -104,6 +104,8 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
   <button id="tabShop" class="active" onclick="showTab('shop')">商品管理</button>
   <button id="tabOrders" onclick="showTab('orders')">订单管理</button>
   <button id="tabContact" onclick="showTab('contact');loadContact()">联系方式</button>
+  <!-- 在线客服标签页 -->
+<button id="tabChat" onclick="showTab('chat');loadChatThreads()">在线客服 <span id="chatTabBadge" style="background:#ef4444;color:#fff;font-size:11px;border-radius:10px;padding:1px 7px;display:none;font-weight:700"></span></button>
   
 </div>
 
@@ -209,6 +211,26 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
   <p class="hint">保存后写入仓库 contact.json，几分钟后买家在商城点"联系商家"就能看到。</p>
 </div>
 
+<div id="paneChat" class="hidden">
+  <div style="display:flex;gap:12px;min-height:480px">
+    <div style="width:280px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="padding:10px 12px;font-weight:700;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <span>会话列表</span>
+        <button class="mini" onclick="loadChatThreads()" style="padding:4px 10px">刷新</button>
+      </div>
+      <div id="chatThreadList" style="flex:1;overflow-y:auto"></div>
+    </div>
+    <div style="flex:1;border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
+      <div id="chatViewHead" style="padding:10px 12px;font-weight:700;border-bottom:1px solid var(--border)">选择一个会话</div>
+      <div id="chatMsgs" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f5f7fa;min-height:300px"></div>
+      <form id="chatForm" style="display:flex;border-top:1px solid var(--border)">
+        <input id="chatInput" placeholder="输入回复…" autocomplete="off" maxlength="2000" style="flex:1;border:none;outline:none;padding:12px;font-size:14px;min-width:0"/>
+        <button type="submit" class="publish" style="border-radius:0;margin:0;padding:0 20px">发送</button>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div id="status"></div>
 
 <details>
@@ -232,9 +254,11 @@ function showTab(which) {
   $("paneShop").classList.toggle("hidden", which !== "shop");
   $("paneOrders").classList.toggle("hidden", which !== "orders");
   $("paneContact").classList.toggle("hidden", which !== "contact");
+  $("paneChat").classList.toggle("hidden", which !== "chat");
   $("tabShop").classList.toggle("active", which === "shop");
   $("tabOrders").classList.toggle("active", which === "orders");
   $("tabContact").classList.toggle("active", which === "contact");
+  $("tabChat").classList.toggle("active", which === "chat");
 }
 
 function setStatus(msg, kind) {
@@ -962,6 +986,161 @@ function renderStats(list){
   html = '<p style="margin:8px 0 0;font-size:.95rem">本月（' + ym + '）：营业额 <b>' + cur.rev.toFixed(2) + ' USD</b>，订单 <b>' + cur.count + '</b> 笔</p>' + html;
   box.innerHTML = html;
 }
+</script>
+<script>
+/* ===== 在线客服（人工实时聊天） ===== */
+let chatThreads = [];
+let curChatThread = null;
+let chatMsgChannel = null;
+let chatListChannel = null;
+
+function chatTabBadgeUpdate() {
+  var total = chatThreads.reduce(function(s, t){ return s + (t.unread_seller || 0); }, 0);
+  var badge = document.getElementById("chatTabBadge");
+  if (total > 0) {
+    badge.style.display = "inline-block";
+    badge.textContent = total > 99 ? "99+" : String(total);
+  } else {
+    badge.style.display = "none";
+  }
+}
+
+function renderThreadList() {
+  var box = document.getElementById("chatThreadList");
+  if (!chatThreads.length) {
+    box.innerHTML = '<div style="padding:20px;text-align:center;color:#888">暂无会话</div>';
+    return;
+  }
+  box.innerHTML = "";
+  chatThreads.forEach(function(t) {
+    var d = document.createElement("div");
+    d.style.cssText = "padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer" +
+      (curChatThread === t.id ? ";background:#e8f0fe" : "");
+    var unread = t.unread_seller || 0;
+    var time = t.last_message_at ? new Date(t.last_message_at).toLocaleString("zh-CN", {month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}) : "";
+    d.innerHTML = '<div style="font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
+        (t.buyer_email || t.user_id.slice(0, 8)) +
+        (unread > 0 ? ' <span style="background:#ef4444;color:#fff;font-size:11px;border-radius:10px;padding:1px 7px">' + unread + '</span>' : '') +
+      '</div><div style="font-size:12px;color:#888">' + time + '</div>';
+    d.onclick = function() { openChatThread(t.id); };
+    box.appendChild(d);
+  });
+}
+
+async function loadChatThreads() {
+  if (!sbs) return;
+  try {
+    var r = await sbs.from("chat_threads").select("id,user_id,buyer_email,last_message_at,unread_seller")
+      .order("last_message_at", {ascending: false}).limit(50);
+    if (r.data) {
+      chatThreads = r.data;
+      renderThreadList();
+      chatTabBadgeUpdate();
+    }
+  } catch(e) {}
+  subscribeChatList();
+}
+
+function subscribeChatList() {
+  if (chatListChannel || !sbs) return;
+  chatListChannel = sbs.channel("admin-chat-list")
+    .on("postgres_changes", {event: "INSERT", schema: "public", table: "chat_messages"}, function(payload) {
+      // 有新消息时刷新列表（简单处理）
+      loadChatThreadsSilent();
+      // 如果正在看这个会话，追加消息
+      var m = payload.new;
+      if (m && curChatThread && m.thread_id === curChatThread && m.sender === "buyer") {
+        addChatMsg(m.content, "buyer");
+        markThreadRead(curChatThread);
+      }
+    })
+    .on("postgres_changes", {event: "INSERT", schema: "public", table: "chat_threads"}, function() {
+      loadChatThreadsSilent();
+    })
+    .subscribe();
+}
+
+async function loadChatThreadsSilent() {
+  if (!sbs) return;
+  try {
+    var r = await sbs.from("chat_threads").select("id,user_id,buyer_email,last_message_at,unread_seller")
+      .order("last_message_at", {ascending: false}).limit(50);
+    if (r.data) {
+      chatThreads = r.data;
+      renderThreadList();
+      chatTabBadgeUpdate();
+    }
+  } catch(e) {}
+}
+
+function addChatMsg(text, who) {
+  var box = document.getElementById("chatMsgs");
+  var d = document.createElement("div");
+  d.style.cssText = "max-width:82%;padding:8px 11px;border-radius:12px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word;" +
+    (who === "seller"
+      ? "background:#2563eb;color:#fff;align-self:flex-end;border-bottom-right-radius:4px"
+      : "background:#fff;color:#222;align-self:flex-start;border:1px solid #e5e7eb;border-bottom-left-radius:4px");
+  d.textContent = text;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+
+async function openChatThread(threadId) {
+  curChatThread = threadId;
+  renderThreadList();
+  var t = chatThreads.find(function(x){ return x.id === threadId; });
+  document.getElementById("chatViewHead").textContent = t ? ("与 " + (t.buyer_email || t.user_id.slice(0, 8)) + " 的会话") : "会话";
+  var box = document.getElementById("chatMsgs");
+  box.innerHTML = '<div style="text-align:center;color:#888;font-size:13px">加载中…</div>';
+  try {
+    var r = await sbs.from("chat_messages").select("sender,content")
+      .eq("thread_id", threadId).order("created_at", {ascending: true}).limit(200);
+    box.innerHTML = "";
+    if (r.data) r.data.forEach(function(m){ addChatMsg(m.content, m.sender); });
+  } catch(e) {
+    box.innerHTML = '<div style="text-align:center;color:#888;font-size:13px">加载失败</div>';
+  }
+  markThreadRead(threadId);
+  subscribeChatThread(threadId);
+}
+
+async function markThreadRead(threadId) {
+  try {
+    await sbs.from("chat_threads").update({unread_seller: 0}).eq("id", threadId);
+    var t = chatThreads.find(function(x){ return x.id === threadId; });
+    if (t) { t.unread_seller = 0; renderThreadList(); chatTabBadgeUpdate(); }
+  } catch(e) {}
+}
+
+function subscribeChatThread(threadId) {
+  if (chatMsgChannel) { try { sbs.removeChannel(chatMsgChannel); } catch(e){} chatMsgChannel = null; }
+  // 已有全局列表订阅处理新消息，这里不需要重复订阅
+}
+
+document.getElementById("chatForm").onsubmit = async function(e) {
+  e.preventDefault();
+  var input = document.getElementById("chatInput");
+  var v = input.value.trim();
+  if (!v || !curChatThread || !sbs) return;
+  input.value = "";
+  addChatMsg(v, "seller");
+  try {
+    await sbs.from("chat_messages").insert({
+      thread_id: curChatThread,
+      sender: "seller",
+      content: v
+    });
+    var r = await sbs.from("chat_threads").select("unread_buyer").eq("id", curChatThread).single();
+    var un = (r.data && r.data.unread_buyer) || 0;
+    await sbs.from("chat_threads").update({
+      last_message_at: new Date().toISOString(),
+      unread_buyer: un + 1
+    }).eq("id", curChatThread);
+    loadChatThreadsSilent();
+  } catch(err) {
+    addChatMsg("发送失败，请重试。", "buyer");
+  }
+};
 </script>
 </body>
 </html>
