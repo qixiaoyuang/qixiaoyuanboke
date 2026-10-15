@@ -212,15 +212,22 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
 </div>
 
 <div id="paneChat" class="hidden">
-  <div style="display:flex;gap:12px;min-height:480px">
-    <div style="width:280px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column">
+  <style>
+  @media (max-width: 700px) {
+    #chatPanelWrap { flex-direction: column !important; }
+    #chatThreadPane { width: 100% !important; max-height: 200px; }
+    #chatViewPane { min-height: 400px; }
+  }
+  </style>
+  <div id="chatPanelWrap" style="display:flex;gap:12px;min-height:480px">
+    <div id="chatThreadPane" style="width:280px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column">
       <div style="padding:10px 12px;font-weight:700;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
         <span>会话列表</span>
         <button class="mini" onclick="loadChatThreads()" style="padding:4px 10px">刷新</button>
       </div>
       <div id="chatThreadList" style="flex:1;overflow-y:auto"></div>
     </div>
-    <div style="flex:1;border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
+    <div id="chatViewPane" style="flex:1;border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;overflow:hidden;min-width:0">
       <div id="chatViewHead" style="padding:10px 12px;font-weight:700;border-bottom:1px solid var(--border)">选择一个会话</div>
       <div id="chatMsgs" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f5f7fa;min-height:300px"></div>
       <form id="chatForm" style="display:flex;border-top:1px solid var(--border)">
