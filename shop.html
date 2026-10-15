@@ -477,7 +477,7 @@ function loadSold(){
 }
 loadRate();
 loadContactInfo();
-fetch("payment.json").then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }).then(function(cfg){ applyPaymentConfig(cfg); return fetch("products.json?v=" + Date.now()); }).then(function(r){ return r.json(); }).then(function(d){ PRODUCTS=d; return loadSold(); }).then(function(){ render(); fillClaimProds(); fillClaimNets(); }).catch(function(){ document.getElementById("emptyShop").classList.remove("hidden"); });
+fetch("payment.json").then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }).then(function(cfg){ applyPaymentConfig(cfg); return sb.from("products").select("id,name,price,ptype,image,images,desc,stock").order("created_at", {ascending:false}); }).then(function(r){ PRODUCTS=r.data||[]; return loadSold(); }).then(function(){ render(); fillClaimProds(); fillClaimNets(); }).catch(function(){ document.getElementById("emptyShop").classList.remove("hidden"); });
 function stockLeft(p){
   if(p.stock === null || p.stock === undefined || p.stock === "") return null;
   var s = Number(p.stock);
@@ -1043,8 +1043,9 @@ function stopStatus(){ if(statusTimer){ clearInterval(statusTimer); statusTimer=
 /* ===== 统一联系商家 ===== */
 var CONTACT = null;
 function loadContactInfo(){
-  fetch("contact.json?v=" + Date.now()).then(function(r){ if(!r.ok) throw 0; return r.json(); })
-    .then(function(c){ CONTACT = c || {}; })
+  if(!sb){ CONTACT = {}; return; }
+  sb.from("site_contact").select("qq,telegram,email,recommended").eq("id", 1).single()
+    .then(function(r){ CONTACT = r.data || {}; })
     .catch(function(){ CONTACT = {}; });
 }
 
