@@ -1050,6 +1050,7 @@ function loadContactInfo(){
 
 var CT_WORKER = "https://wannengshou-kefu.qixiaoyuan.workers.dev";
 var ctAiHistory = [];
+var ctMode = "ai"; // ai 或 human
 var ctHumanTid = null;
 var ctHumanChannel = null;
 var ctHumanOn = false; // 人工客服是否已激活
@@ -1057,11 +1058,11 @@ var ctHumanOn = false; // 人工客服是否已激活
 function ctSwitchTab(which) {
   var tabs = document.querySelectorAll(".ct-tab");
   tabs.forEach(function(t){ t.classList.toggle("active", t.getAttribute("data-ct") === which); });
-  ["ai", "human", "other"].forEach(function(k){
+  ["ai", "other"].forEach(function(k){
     var p = document.getElementById("ct-" + k);
     if (p) p.style.display = (k === which) ? "flex" : "none";
   });
-  if (which === "human") ctHumanInit();
+
 }
 
 function ctAddMsg(boxId, text, who) {
@@ -1082,17 +1083,14 @@ var ctAiHistory = [];
 // ---- 客服（AI） ----
 async function ctAiAsk(text) {
   ctAddMsg("ct-ai-msgs", text, "ct-user");
-  ctAiHistory.push({role: "user", parts: [{text: text}]});
 
-  // 关键词：人工 / 人工客服 → 解锁人工客服
+  // 关键词：人工 / 人工客服 → 直接转人工实时聊天
   if (/人工客服|人工/.test(text)) {
-    try { localStorage.setItem("wns_human_unlocked", "1"); } catch(e){}
-    ctAddMsg("ct-ai-msgs", "好的，已为你开通人工客服，请切换到“人工客服”标签与真人沟通（需要登录）。", "ct-sys");
-    document.getElementById("ctHumanTab").style.display = "";
-    ctAddMsg("ct-ai-msgs", "↑ 上方已出现“人工客服”标签，点击即可进入。", "ct-sys");
-    ctAiHistory.push({role: "model", parts: [{text: "已转人工"}]});
+    ctSwitchToHuman();
     return;
   }
+
+  ctAiHistory.push({role: "user", parts: [{text: text}]});
 
   var typing = document.createElement("div");
   typing.className = "ct-typing";
@@ -1116,55 +1114,75 @@ async function ctAiAsk(text) {
   }
 }
 
-// ---- 人工客服 ----
-async function ctHumanInit() {
-  if (!sb || !myUser) return;
-  if (!ctHumanTid) {
-    var r = await sb.from("chat_threads").select("id")
-      .eq("user_id", myUser.id).order("created_at", {ascending: false}).limit(1);
-    if (r.data && r.data.length > 0) {
-      ctHumanTid = r.data[0].id;
-    } else {
-      var r2 = await sb.from("chat_threads").insert({
-        user_id: myUser.id, buyer_email: myUser.email || null
-      }).select("id").single();
-      if (r2.data) ctHumanTid = r2.data.id;
+// ---- 转人工：在同一聊天框内切换为人工实时聊天 ----
+async function ctSwitchToHuman() {
+  if (!sb || !myUser) {
+    ctAddMsg("ct-ai-msgs", "使用人工客服需要先登录。", "ct-sys");
+    if (typeof openAuth === "function") {
+      setTimeout(function(){
+        closeContact();
+        openAuth("使用人工客服需要先登录 / 注册。");
+      }, 800);
     }
+    return;
   }
-  if (!ctHumanTid) return;
-  // 加载历史
-  var box = document.getElementById("ct-human-msgs");
-  box.innerHTML = "";
-  var h = await sb.from("chat_messages").select("sender,content")
-    .eq("thread_id", ctHumanTid).order("created_at", {ascending: true}).limit(100);
-  if (h.data && h.data.length > 0) {
-    h.data.forEach(function(m){
-      ctAddMsg("ct-human-msgs", m.content, m.sender === "buyer" ? "ct-buyer" : "ct-seller");
-    });
-  } else {
-    ctAddMsg("ct-human-msgs", "你好，我是人工客服，有什么可以帮你？", "ct-sys");
+  ctMode = "human";
+  ctAddMsg("ct-ai-msgs", "正在为你转接人工客服…", "ct-sys");
+  // 初始化 Supabase 会话
+  if (!ctHumanTid) {
+    try {
+      var r = await sb.from("chat_threads").select("id")
+        .eq("user_id", myUser.id).order("created_at", {ascending: false}).limit(1);
+      if (r.data && r.data.length > 0) {
+        ctHumanTid = r.data[0].id;
+      } else {
+        var r2 = await sb.from("chat_threads").insert({
+          user_id: myUser.id, buyer_email: myUser.email || null
+        }).select("id").single();
+        if (r2.data) ctHumanTid = r2.data.id;
+      }
+    } catch(e){}
   }
-  // 标记已读
-  try { await sb.from("chat_threads").update({unread_buyer: 0}).eq("id", ctHumanTid); } catch(e){}
-  // 订阅
+  if (!ctHumanTid) {
+    ctAddMsg("ct-ai-msgs", "转接失败，请稍后再试。", "ct-sys");
+    ctMode = "ai";
+    return;
+  }
+  // 加载历史消息
+  try {
+    var h = await sb.from("chat_messages").select("sender,content")
+      .eq("thread_id", ctHumanTid).order("created_at", {ascending: true}).limit(50);
+    if (h.data && h.data.length > 0) {
+      h.data.forEach(function(m){
+        ctAddMsg("ct-ai-msgs", m.content, m.sender === "buyer" ? "ct-buyer" : "ct-seller");
+      });
+    }
+    await sb.from("chat_threads").update({unread_buyer: 0}).eq("id", ctHumanTid);
+  } catch(e){}
+  ctAddMsg("ct-ai-msgs", "已接通人工客服，请直接发送消息。", "ct-sys");
+  // 订阅实时消息
   if (ctHumanChannel) { try { sb.removeChannel(ctHumanChannel); } catch(e){} }
-  ctHumanChannel = sb.channel("ct-hc-" + ctHumanTid)
+  var tid = ctHumanTid;
+  ctHumanChannel = sb.channel("ct-hc-" + tid)
     .on("postgres_changes", {
       event: "INSERT", schema: "public", table: "chat_messages",
-      filter: "thread_id=eq." + ctHumanTid
+      filter: "thread_id=eq." + tid
     }, function(payload){
       var m = payload.new;
-      if (m && m.sender === "seller") {
-        ctAddMsg("ct-human-msgs", m.content, "ct-seller");
-        try { sb.from("chat_threads").update({unread_buyer: 0}).eq("id", ctHumanTid); } catch(e){}
+      if (m && m.sender === "seller" && ctMode === "human") {
+        ctAddMsg("ct-ai-msgs", m.content, "ct-seller");
+        try { sb.from("chat_threads").update({unread_buyer: 0}).eq("id", tid); } catch(e){}
       }
     })
     .subscribe();
 }
 
+// ---- 人工客服 ----
+
+
 async function ctHumanSend(text) {
   if (!text || !ctHumanTid || !sb) return;
-  ctAddMsg("ct-human-msgs", text, "ct-buyer");
+  ctAddMsg("ct-ai-msgs", text, "ct-buyer");
   try {
     await sb.from("chat_messages").insert({
       thread_id: ctHumanTid, sender: "buyer", content: text
@@ -1176,7 +1194,7 @@ async function ctHumanSend(text) {
       unread_seller: un + 1
     }).eq("id", ctHumanTid);
   } catch(e) {
-    ctAddMsg("ct-human-msgs", "发送失败，请重试。", "ct-sys");
+    ctAddMsg("ct-ai-msgs", "发送失败，请重试。", "ct-sys");
   }
 }
 
@@ -1202,7 +1220,6 @@ function openContact(){
   tabs.style.cssText = "display:flex;gap:8px;margin-bottom:10px;flex-shrink:0;";
   tabs.innerHTML =
     '<button class="ct-tab active" data-ct="ai">客服</button>' +
-    '<button class="ct-tab" data-ct="human" id="ctHumanTab" style="display:none">人工客服</button>' +
     '<button class="ct-tab" data-ct="other">其他方式</button>';
   box.appendChild(tabs);
   tabs.querySelectorAll(".ct-tab").forEach(function(t){
@@ -1217,15 +1234,6 @@ function openContact(){
     '<form class="ct-form" id="ct-ai-form"><input class="ct-input" id="ct-ai-input" placeholder="输入问题…" autocomplete="off" maxlength="500"/>' +
     '<button class="ct-send" type="submit">发送</button></form>';
   box.appendChild(aiP);
-
-  // 人工面板
-  var huP = document.createElement("div");
-  huP.id = "ct-human"; huP.className = "ct-panel"; huP.style.display = "none";
-  huP.innerHTML =
-    '<div id="ct-human-msgs" class="ct-msgs"></div>' +
-    '<form class="ct-form" id="ct-human-form"><input class="ct-input" id="ct-human-input" placeholder="输入消息…" autocomplete="off" maxlength="2000"/>' +
-    '<button class="ct-send" type="submit" style="background:#059669">发送</button></form>';
-  box.appendChild(huP);
 
   // 其他方式面板
   var otP = document.createElement("div");
@@ -1248,24 +1256,18 @@ function openContact(){
     var v = document.getElementById("ct-ai-input").value.trim();
     if (!v) return;
     document.getElementById("ct-ai-input").value = "";
-    ctAiAsk(v);
+    if (ctMode === "human") {
+      ctHumanSend(v);
+    } else {
+      ctAiAsk(v);
+    }
   };
-    document.getElementById("ct-human-form").onsubmit = function(e){
-    e.preventDefault();
-    var v = document.getElementById("ct-human-input").value.trim();
-    if (!v) return;
-    document.getElementById("ct-human-input").value = "";
-    ctHumanSend(v);
-  };
+    
 
-  // 检查人工客服是否已解锁（在客服对话中发送"人工"/"人工客服"解锁）
-  var humanUnlocked = false;
-  try { humanUnlocked = localStorage.getItem("wns_human_unlocked") === "1"; } catch(e){}
-  ctHumanOn = humanUnlocked;
+  // 重置为AI模式
+  ctMode = "ai";
   ctHumanTid = null;
-  if (ctHumanChannel) { try { sb.removeChannel(ctHumanChannel); } catch(e){} ctHumanChannel = null; }
-  document.getElementById("ctHumanTab").style.display = humanUnlocked ? "" : "none";
-  // AI欢迎语
+  if (ctHumanChannel && sb) { try { sb.removeChannel(ctHumanChannel); } catch(e){} ctHumanChannel = null; }
   ctAiHistory = [];
   document.getElementById("ct-ai-msgs").innerHTML = "";
   ctAddMsg("ct-ai-msgs", "你好，我是万能手客服，可以问我：怎么下单、USDT 怎么付、卡密多久到、没收到货怎么办。如需人工帮助，请发送“人工客服”。", "ct-bot");
