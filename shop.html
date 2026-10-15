@@ -674,8 +674,8 @@ function ptypeLabel(p){ var t = ptypeOf(p); return t === "physical" ? "实物" :
 var catFilter = "";
 var CATS = [
   { k:"virtual", t:"虚拟商品", icon:"\u26a1", cls:"c-virtual" },
-  { k:"physical", t:"实物商品", icon:"\U0001f4e6", cls:"c-physical" },
-  { k:"freebie", t:"免费福利", icon:"\U0001f381", cls:"c-freebie" }
+  { k:"physical", t:"实物商品", icon:"📦", cls:"c-physical" },
+  { k:"freebie", t:"免费福利", icon:"🎁", cls:"c-freebie" }
 ];
 function catLabel(k){ for(var i=0;i<CATS.length;i++){ if(CATS[i].k===k) return CATS[i].t; } return "全部商品"; }
 function renderCats(){
