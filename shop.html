@@ -89,34 +89,169 @@
 .claim-sel { width:100%; padding:10px; font-size:.9rem; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); margin:6px 0; }
 
 </style>
-</head>
-<body>
-<header class="site-header">
-<div class="wrap header-inner">
-<span class="brand-row"><a class="brand" href="shop.html" id="brandGate">万能手</a></span>
-<nav class="main-nav">
+<style>
 
-<a href="shop.html" aria-label="购物"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></a>
+/* ===== 浅色极简商城风格 ===== */
+body.djn{ background:var(--djn-bg); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif; line-height:1.6; }
+body.djn::before, body.djn::after{ display:none; }
+:root{
+  --djn-bg:#F5F6FA; --djn-card:#FFFFFF; --djn-border:#E9ECF1;
+  --djn-text:#14161A; --djn-muted:#6B7280; --djn-faint:#9AA1AD;
+  --djn-primary:#6366F1; --djn-primary-d:#4F46E5;
+  --djn-shadow:0 2px 14px rgba(23,25,40,.07);
+  --djn-gbg:#DCFCE7; --djn-gtx:#15803D;
+  --djn-bbg:#DBEAFE; --djn-btx:#1D4ED8;
+  --djn-grbg:#F1F2F6; --djn-grtx:#6B7280;
+}
+html[data-theme="dark"]{
+  --djn-bg:#101218; --djn-card:#171B24; --djn-border:#262C38;
+  --djn-text:#EDEFF3; --djn-muted:#9AA1AD; --djn-faint:#6E7683;
+  --djn-primary:#818CF8; --djn-primary-d:#6366F1;
+  --djn-shadow:0 2px 14px rgba(0,0,0,.4);
+  --djn-gbg:rgba(34,197,94,.16); --djn-gtx:#4ADE80;
+  --djn-bbg:rgba(96,165,250,.16); --djn-btx:#93C5FD;
+  --djn-grbg:#232936; --djn-grtx:#9AA1AD;
+}
+.djn-wrap{ max-width:1180px; margin:0 auto; padding:0 20px; }
+.djn-header{ position:sticky; top:0; z-index:50; background:var(--djn-card); border-bottom:1px solid var(--djn-border); }
+.djn-header-in{ max-width:1180px; margin:0 auto; padding:0 20px; height:60px; display:flex; align-items:center; gap:26px; }
+.djn-brand{ display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--djn-text); font-weight:800; font-size:1.15rem; }
+.djn-logo{ width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#6366F1,#8B5CF6); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; flex-shrink:0; }
+.djn-nav{ display:flex; gap:22px; }
+.djn-nav a{ color:var(--djn-text); text-decoration:none; font-size:.95rem; font-weight:600; }
+.djn-nav a:hover{ color:var(--djn-primary); }
+.djn-tools{ margin-left:auto; display:flex; align-items:center; gap:6px; }
+.djn-iconbtn{ width:38px; height:38px; border-radius:50%; border:none; background:var(--djn-grbg); color:var(--djn-text); font-size:1.05rem; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
+.djn-iconbtn:hover{ background:var(--djn-border); }
+.djn-loginbtn{ border:none; background:var(--djn-primary); color:#fff; font-weight:700; font-size:.92rem; padding:9px 26px; border-radius:999px; cursor:pointer; margin-left:6px; }
+.djn-loginbtn:hover{ background:var(--djn-primary-d); }
+.djn-searchbar{ max-width:1180px; margin:0 auto; padding:0 20px 12px; }
+.djn-searchbar input{ width:100%; padding:11px 16px; border:1px solid var(--djn-border); border-radius:999px; background:var(--djn-bg); color:var(--djn-text); font-size:.95rem; outline:none; }
+.djn-searchbar input:focus{ border-color:var(--djn-primary); }
+.djn-cats-head{ display:flex; align-items:center; justify-content:space-between; margin:26px 0 14px; }
+.djn-cats-head h2{ margin:0; font-size:1.25rem; font-weight:800; color:var(--djn-text); }
+.djn-cats-head a{ color:var(--djn-muted); text-decoration:none; font-size:.88rem; }
+.djn-cats-head a:hover{ color:var(--djn-primary); }
+.djn-cats{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.djn-cat{ border:none; border-radius:16px; padding:24px 22px; color:#fff; text-align:left; cursor:pointer; display:flex; align-items:center; gap:14px; box-shadow:var(--djn-shadow); }
+.djn-cat .ic{ font-size:2rem; line-height:1; }
+.djn-cat .t{ font-weight:800; font-size:1.05rem; }
+.djn-cat .n{ font-size:.8rem; opacity:.88; }
+.djn-cat.c-virtual{ background:linear-gradient(135deg,#6366F1,#8B5CF6); }
+.djn-cat.c-physical{ background:linear-gradient(135deg,#14B8A6,#06B6D4); }
+.djn-cat.c-freebie{ background:linear-gradient(135deg,#A855F7,#EC4899); }
+.djn-cat.active{ outline:3px solid var(--djn-text); outline-offset:2px; }
+.djn-sec-head{ display:flex; align-items:center; justify-content:space-between; margin:30px 0 14px; }
+.djn-sec-head h2{ margin:0; font-size:1.25rem; font-weight:800; color:var(--djn-text); }
+.djn-pillbtn{ border:1px solid var(--djn-border); background:var(--djn-card); color:var(--djn-text); text-decoration:none; font-size:.85rem; font-weight:600; padding:8px 18px; border-radius:999px; cursor:pointer; }
+.djn-pillbtn:hover{ border-color:var(--djn-primary); color:var(--djn-primary); }
+.djn-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:44px; }
+@media(max-width:900px){ .djn-grid{ grid-template-columns:repeat(2,1fr); gap:12px; } .djn-cats{ grid-template-columns:1fr; } .djn-nav{ display:none; } }
+.djn-card{ background:var(--djn-card); border:1px solid var(--djn-border); border-radius:12px; overflow:hidden; box-shadow:var(--djn-shadow); display:flex; flex-direction:column; }
+.djn-imgwrap{ aspect-ratio:1/1; background:var(--djn-grbg); overflow:hidden; cursor:pointer; position:relative; }
+.djn-imgwrap > img{ width:100%; height:100%; object-fit:cover; display:block; }
+.djn-imgwrap .pimgs{ height:100%; }
+.djn-imgwrap .pimgs img{ height:100%; }
+.djn-imgwrap .pimg-dots{ position:absolute; bottom:8px; left:0; right:0; }
+.djn-imgwrap .pimg-dots span.on{ background:var(--djn-primary); }
+.djn-cbody{ padding:14px 14px 16px; display:flex; flex-direction:column; gap:7px; flex:1; }
+.djn-ccat{ margin:0; color:var(--djn-faint); font-size:.78rem; }
+.djn-cname{ margin:0; font-weight:700; font-size:.98rem; color:var(--djn-text); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.7em; cursor:pointer; }
+.djn-cbadges{ display:flex; flex-wrap:wrap; gap:6px; min-height:22px; }
+.djn-badge{ font-size:.7rem; font-weight:600; border-radius:999px; padding:2px 10px; }
+.djn-badge.b-green{ background:var(--djn-gbg); color:var(--djn-gtx); }
+.djn-badge.b-blue{ background:var(--djn-bbg); color:var(--djn-btx); }
+.djn-badge.b-gray{ background:var(--djn-grbg); color:var(--djn-grtx); }
+.djn-cfoot{ display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:8px; }
+.djn-cprice{ color:var(--djn-primary); font-weight:800; font-size:1.12rem; }
+.djn-cprice small{ color:var(--djn-faint); font-weight:400; font-size:.75rem; }
+.djn-buybtn{ border:none; background:var(--djn-primary); color:#fff; font-weight:700; font-size:.88rem; padding:9px 20px; border-radius:999px; cursor:pointer; white-space:nowrap; }
+.djn-buybtn:hover{ background:var(--djn-primary-d); }
+.djn-buybtn:disabled{ background:var(--djn-grtx); cursor:not-allowed; opacity:.65; }
+.djn-crumb{ color:var(--djn-muted); font-size:.85rem; margin:22px 0 16px; }
+.djn-crumb a{ color:var(--djn-muted); text-decoration:none; cursor:pointer; }
+.djn-crumb a:hover{ color:var(--djn-primary); }
+.djn-detail{ display:grid; grid-template-columns:1fr 1fr; gap:36px; background:var(--djn-card); border:1px solid var(--djn-border); border-radius:16px; padding:28px; box-shadow:var(--djn-shadow); }
+@media(max-width:760px){ .djn-detail{ grid-template-columns:1fr; gap:20px; padding:18px; } }
+.djn-detail-img{ border-radius:12px; overflow:hidden; background:var(--djn-grbg); position:relative; }
+.djn-detail-img img{ width:100%; aspect-ratio:1/1; object-fit:cover; display:block; }
+.djn-detail-img .pimg-dots{ position:absolute; bottom:10px; left:0; right:0; }
+.djn-detail-img .pimg-dots span.on{ background:var(--djn-primary); }
+.djn-dcat{ color:var(--djn-faint); font-size:.85rem; margin:0 0 6px; }
+.djn-dtitle{ margin:0 0 10px; font-size:1.5rem; font-weight:800; color:var(--djn-text); }
+.djn-plabel{ color:var(--djn-faint); font-size:.82rem; margin:14px 0 2px; }
+.djn-dprice{ margin:0; color:var(--djn-primary); font-weight:800; font-size:1.7rem; }
+.djn-dprice small{ color:var(--djn-faint); font-size:.85rem; font-weight:400; }
+.djn-hr{ border:none; border-top:1px solid var(--djn-border); margin:16px 0; }
+.djn-dstock{ color:var(--djn-text); font-size:.92rem; font-weight:600; margin:0 0 14px; }
+.djn-buybig{ width:100%; border:none; background:var(--djn-primary); color:#fff; font-size:1.05rem; font-weight:800; padding:14px; border-radius:12px; cursor:pointer; }
+.djn-buybig:hover{ background:var(--djn-primary-d); }
+.djn-buybig:disabled{ background:var(--djn-grtx); cursor:not-allowed; }
+.djn-tipbar{ margin-top:14px; background:var(--djn-bbg); color:var(--djn-btx); border-radius:10px; padding:10px 14px; font-size:.85rem; }
+.djn-tabs{ margin:26px 0 0; border-bottom:1px solid var(--djn-border); }
+.djn-tabs span{ display:inline-block; padding:10px 4px; font-weight:700; color:var(--djn-primary); border-bottom:2px solid var(--djn-primary); }
+.djn-desc{ background:var(--djn-card); border:1px solid var(--djn-border); border-top:none; border-radius:0 0 12px 12px; padding:20px 22px; color:var(--djn-text); white-space:pre-wrap; word-break:break-word; margin-bottom:50px; font-size:.93rem; }
+.djn-footer{ background:var(--djn-card); border-top:1px solid var(--djn-border); margin-top:20px; }
+.djn-fgrid{ display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:24px; padding-top:36px; padding-bottom:28px; }
+@media(max-width:760px){ .djn-fgrid{ grid-template-columns:1fr 1fr; } }
+.djn-fbrand{ display:flex; align-items:center; gap:10px; font-size:1.05rem; font-weight:800; color:var(--djn-text); margin-bottom:10px; }
+.djn-fintro{ color:var(--djn-muted); font-size:.88rem; margin:0; max-width:300px; }
+.djn-fh{ font-weight:800; color:var(--djn-text); margin:0 0 12px; font-size:.95rem; }
+.djn-fgrid a{ display:block; color:var(--djn-muted); text-decoration:none; font-size:.88rem; margin-bottom:9px; cursor:pointer; }
+.djn-fgrid a:hover{ color:var(--djn-primary); }
+.djn-fcopy{ border-top:1px solid var(--djn-border); text-align:center; color:var(--djn-faint); font-size:.82rem; padding:16px 20px; }
+
+</style>
+</head>
+<body class="djn">
+<header class="djn-header">
+<div class="djn-header-in">
+<a class="djn-brand" href="shop.html" id="brandGate"><span class="djn-logo">万</span><span>万能手</span></a>
+<nav class="djn-nav">
+<a href="#" id="navAll">全部商品</a>
+<a href="#" id="navContact">联系商家</a>
 </nav>
-<div class="header-tools">
-<div class="umenu-wrap">
-<button class="icon-btn gear-btn" id="userBtn" aria-label="用户菜单"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><defs><mask id="gearHole"><rect width="24" height="24" fill="#fff"/><circle cx="12" cy="12" r="2.6" fill="#000"/></mask></defs><g class="gear-fill" fill="#1a1a1a" mask="url(#gearHole)"><circle cx="12" cy="12" r="6.4"/><rect x="10.9" y="2.2" width="2.2" height="4.6" rx="1"/><rect x="10.9" y="2.2" width="2.2" height="4.6" rx="1" transform="rotate(45 12 12)"/><rect x="10.9" y="2.2" width="2.2" height="4.6" rx="1" transform="rotate(90 12 12)"/><rect x="10.9" y="2.2" width="2.2" height="4.6" rx="1" transform="rotate(135 12 12)"/><rect x="10.9" y="2.2" width="2.2" height="4.6" rx="1" transform="rotate(180 12 12)"/><rect x="10.9" y="2.2" width="2.2" height="4.6" rx="1" transform="rotate(225 12 12)"/><rect x="10.9" y="2.2" width="2.2" height="4.6" rx="1" transform="rotate(270 12 12)"/><rect x="10.9" y="2.2" width="2.2" height="4.6" rx="1" transform="rotate(315 12 12)"/></g></svg></button>
+<div class="djn-tools">
+<button class="djn-iconbtn" id="searchToggle" aria-label="搜索">🔍</button>
+<button class="djn-iconbtn" id="themeToggle" aria-label="切换主题">🌙</button>
+<button class="djn-iconbtn" id="contactBtn" aria-label="联系商家">💬</button>
+<span class="umenu-wrap" id="userWrap">
+<button class="djn-iconbtn" id="userBtn" aria-label="用户菜单">⚙️</button>
 <div class="umenu hidden" id="userMenu"></div>
-</div>
-<button class="icon-btn" id="searchToggle" aria-label="搜索">🔍</button>
-<button class="icon-btn" id="themeToggle" aria-label="切换深色模式">🌙</button>
-<button class="icon-btn" id="contactBtn" aria-label="联系商家">💬</button>
+</span>
+<button class="djn-loginbtn hidden" id="loginBtn">登录</button>
 </div>
 </div>
-<div class="wrap search-bar hidden" id="searchBar">
+<div class="djn-searchbar hidden" id="searchBar">
 <input type="search" id="searchInput" placeholder="搜索商品名称…">
 </div>
 </header>
-<main class="wrap">
+<main class="djn-wrap">
 <section id="view-list">
-<div class="section-head"><h2>商品</h2></div>
-<div id="productGrid" class="shop-grid"></div>
+<div class="djn-cats-head"><h2>按分类逛</h2><a href="#" id="catAll">全部分类 ›</a></div>
+<div class="djn-cats" id="catCards"></div>
+<div class="djn-sec-head"><h2 id="secTitle">精选商品</h2><a href="#" class="djn-pillbtn" id="viewAllBtn">查看全部商品</a></div>
+<div id="productGrid" class="djn-grid"></div>
 <div id="emptyShop" class="empty hidden">店主还未上架商品，敬请期待。</div>
+</section>
+<section id="view-detail" class="hidden">
+<p class="djn-crumb"><a id="crumbHome">首页</a> › <a id="crumbList">商品中心</a> › <span id="crumbName"></span></p>
+<div class="djn-detail">
+<div class="djn-detail-img" id="detailImg"></div>
+<div class="djn-detail-info">
+<p class="djn-dcat" id="detailCat"></p>
+<h1 class="djn-dtitle" id="detailName"></h1>
+<div class="djn-cbadges" id="detailBadges"></div>
+<p class="djn-plabel">价格</p>
+<p class="djn-dprice" id="detailPrice"></p>
+<hr class="djn-hr">
+<p class="djn-dstock" id="detailStock"></p>
+<button class="djn-buybig" id="detailBuy">⚡ 立即购买</button>
+<div class="djn-tipbar">⚡ 付款成功后，卡密即时送达订单页；虚拟商品发货内容仅你本人可见。</div>
+</div>
+</div>
+<div class="djn-tabs"><span>详细信息</span></div>
+<div class="djn-desc" id="detailDesc"></div>
 </section>
 <section id="view-order" class="hidden">
 <p><a class="back" href="#" id="backToList">← 返回商品列表</a></p>
@@ -162,7 +297,43 @@
 </div>
 </section>
 </main>
-<footer class="site-footer"><div class="wrap"><p class="footer-line">© <span id="year"></span></p></div></footer>
+<footer class="djn-footer">
+<div class="djn-wrap djn-fgrid">
+<div>
+<div class="djn-fbrand"><span class="djn-logo">万</span><span>万能手</span></div>
+<p class="djn-fintro">专业的在线商店，为您提供优质的商品和服务。</p>
+</div>
+<div>
+<p class="djn-fh">商城</p>
+<a id="fAll">全部商品</a>
+<a id="fOrders">我的订单</a>
+</div>
+<div>
+<p class="djn-fh">支持</p>
+<a id="fClaim">补登订单</a>
+<a id="fContact">联系商家</a>
+</div>
+<div>
+<p class="djn-fh">须知</p>
+<a id="fNotice">购买须知</a>
+</div>
+</div>
+<div class="djn-fcopy">© <span id="year"></span> 万能手</div>
+</footer>
+<div id="noticeModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9999;">
+  <div style="background:var(--djn-card,#fff);color:var(--djn-text,#1a1a1a);border-radius:14px;padding:24px;width:400px;max-width:90vw;max-height:82vh;overflow-y:auto;">
+    <p style="margin:0 0 10px;font-weight:800;font-size:1.05rem;">购买须知</p>
+    <div style="font-size:.9rem;color:var(--djn-muted);line-height:1.9;">
+      <p style="margin:0 0 8px;">1. 本店使用 USDT 结算，支持 BSC / Arbitrum / Ethereum / Plasma / Aptos / SOL / TRON 等网络。</p>
+      <p style="margin:0 0 8px;">2. 下单后请在 30 分钟内完成付款，实际到账必须 ≥ 应付金额（从交易所提币请把手续费算进去）。</p>
+      <p style="margin:0 0 8px;">3. 虚拟商品付款确认后自动发货，卡密显示在订单中，请妥善保管。</p>
+      <p style="margin:0 0 8px;">4. 实物商品请准确填写收货地址，商家会尽快发货。</p>
+      <p style="margin:0;">5. 遇到问题点右上角 💬 联系商家，AI 客服随时在线，发送"人工客服"可转人工。</p>
+    </div>
+    <button class="djn-buybig" id="noticeClose" style="margin-top:16px;">知道了</button>
+  </div>
+</div>
+
 <div id="authModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9999;">
   <div style="background:#fff;border-radius:14px;padding:26px 24px;width:320px;text-align:center;color:#1a1a1a;">
     <div id="authMainBox">
@@ -346,6 +517,9 @@ function renderUserMenu(){
     li.onclick = function(){ toggleUserMenu(false); openAuth(""); };
     m.appendChild(li);
   }
+  var lb = document.getElementById("loginBtn"), uw = document.getElementById("userWrap");
+  if(lb) lb.classList.toggle("hidden", !!myUser);
+  if(uw) uw.style.display = myUser ? "" : "none";
 }
 function toggleUserMenu(force){
   var m = document.getElementById("userMenu");
@@ -467,7 +641,7 @@ setTheme(saved);
 themeBtn.onclick = function(){
   setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
 };
-function show(id){ ["view-list","view-order","view-success","view-myorders"].forEach(function(v){ document.getElementById(v).classList.toggle("hidden", v!==id); }); window.scrollTo(0,0); }
+function show(id){ ["view-list","view-detail","view-order","view-success","view-myorders"].forEach(function(v){ document.getElementById(v).classList.toggle("hidden", v!==id); }); window.scrollTo(0,0); }
 function loadSold(){
   SOLD = {};
   if(!sb) return Promise.resolve();
@@ -477,7 +651,7 @@ function loadSold(){
 }
 loadRate();
 loadContactInfo();
-fetch("payment.json").then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }).then(function(cfg){ applyPaymentConfig(cfg); return sb.from("products").select("id,name,price,ptype,image,images,desc,stock").order("created_at", {ascending:false}); }).then(function(r){ PRODUCTS=r.data||[]; return loadSold(); }).then(function(){ render(); fillClaimProds(); fillClaimNets(); }).catch(function(){ document.getElementById("emptyShop").classList.remove("hidden"); });
+fetch("payment.json").then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }).then(function(cfg){ applyPaymentConfig(cfg); return sb.from("products").select("id,name,price,ptype,image,images,desc,stock").order("created_at", {ascending:false}); }).then(function(r){ PRODUCTS=r.data||[]; return loadSold(); }).then(function(){ renderCats(); render(); fillClaimProds(); fillClaimNets(); }).catch(function(){ document.getElementById("emptyShop").classList.remove("hidden"); });
 function stockLeft(p){
   if(p.stock === null || p.stock === undefined || p.stock === "") return null;
   var s = Number(p.stock);
@@ -497,49 +671,101 @@ function imgHtml(p){
 }
 function ptypeOf(p){ return (p && p.ptype === "physical") ? "physical" : ((p && p.ptype === "freebie") ? "freebie" : "virtual"); }
 function ptypeLabel(p){ var t = ptypeOf(p); return t === "physical" ? "实物" : (t === "freebie" ? "免费福利" : "虚拟"); }
+var catFilter = "";
+var CATS = [
+  { k:"virtual", t:"虚拟商品", icon:"\u26a1", cls:"c-virtual" },
+  { k:"physical", t:"实物商品", icon:"\U0001f4e6", cls:"c-physical" },
+  { k:"freebie", t:"免费福利", icon:"\U0001f381", cls:"c-freebie" }
+];
+function catLabel(k){ for(var i=0;i<CATS.length;i++){ if(CATS[i].k===k) return CATS[i].t; } return "全部商品"; }
+function renderCats(){
+  var box = document.getElementById("catCards"); if(!box) return; box.innerHTML = "";
+  CATS.forEach(function(c){
+    var n = PRODUCTS.filter(function(p){ return ptypeOf(p)===c.k; }).length;
+    var b = document.createElement("button");
+    b.className = "djn-cat " + c.cls + (catFilter===c.k ? " active" : "");
+    b.innerHTML = '<span class="ic">'+c.icon+'</span><span><span class="t">'+c.t+'</span><br><span class="n">'+n+' 件商品</span></span>';
+    b.onclick = function(){ catFilter = (catFilter===c.k) ? "" : c.k; renderCats(); render(); };
+    box.appendChild(b);
+  });
+  var st = document.getElementById("secTitle"); if(st) st.textContent = catFilter ? catLabel(catFilter) : "\u7cbe\u9009\u5546\u54c1";
+}
+function djnBadges(p, left){
+  var h = "";
+  var t = ptypeOf(p);
+  if(t==="virtual") h += '<span class="djn-badge b-green">\u81ea\u52a8\u4ea4\u4ed8</span>';
+  else if(t==="freebie") h += '<span class="djn-badge b-green">\u514d\u8d39\u9886\u53d6</span>';
+  else h += '<span class="djn-badge b-blue">\u5b9e\u7269\u5546\u54c1</span>';
+  if(left!==null){ h += left>0 ? '<span class="djn-badge b-green">\u6709\u5e93\u5b58</span>' : '<span class="djn-badge b-gray">\u552e\u7f44</span>'; }
+  return h;
+}
+function djnPriceHtml(p){
+  if(Number(p.price)===0) return "\u514d\u8d39";
+  var s = "$"+p.price;
+  if(USD_CNY>0 && !isNaN(Number(p.price))){
+    var cny = Math.round(Number(p.price)*USD_CNY*100)/100;
+    s += ' <small>\u2248 \u00a5'+cny+'</small>';
+  }
+  return s;
+}
+var detailP = null;
+function bindDots(root){
+  var wrap = root.querySelector(".pimgs"); if(!wrap) return;
+  var dots = root.querySelectorAll(".pimg-dots span");
+  wrap.addEventListener("scroll", function(){
+    var idx = Math.round(wrap.scrollLeft/Math.max(1,wrap.clientWidth));
+    for(var k=0;k<dots.length;k++){ dots[k].className = k===idx ? "on" : ""; }
+  }, {passive:true});
+}
+function openDetail(p){
+  detailP = p;
+  document.getElementById("crumbName").textContent = p.name || "";
+  document.getElementById("detailCat").textContent = catLabel(ptypeOf(p));
+  document.getElementById("detailName").textContent = p.name || "";
+  var left = stockLeft(p);
+  document.getElementById("detailBadges").innerHTML = djnBadges(p, left);
+  document.getElementById("detailPrice").innerHTML = djnPriceHtml(p);
+  var soldout = (left!==null && left<=0);
+  document.getElementById("detailStock").textContent = left===null ? ("\u5df2\u552e\u51fa "+(SOLD[p.id]||0)+" \u4ef6 \u00b7 \u5e93\u5b58\u5145\u8db3") : ("\u5df2\u552e\u51fa "+(SOLD[p.id]||0)+" \u4ef6 \u00b7 \u5269\u4f59 "+left+" \u4ef6");
+  var buy = document.getElementById("detailBuy");
+  if(soldout){ buy.textContent = "\u5df2\u552e\u7f44"; buy.disabled = true; buy.onclick = null; }
+  else { buy.textContent = "\u26a1 \u7acb\u5373\u8d2d\u4e70"; buy.disabled = false; buy.onclick = function(){ startOrder(detailP); }; }
+  var di = document.getElementById("detailImg");
+  di.innerHTML = imgHtml(p);
+  bindDots(di);
+  document.getElementById("detailDesc").textContent = p.desc || "\u6682\u65e0\u5546\u54c1\u8be6\u60c5\u3002";
+  show("view-detail");
+}
 function render(){
   var g = document.getElementById("productGrid"); g.innerHTML="";
   var list = PRODUCTS;
-  if(searchKw){ list = PRODUCTS.filter(function(p){ return ((p.name||"")+(p.desc||"")).toLowerCase().indexOf(searchKw) >= 0; }); }
+  if(catFilter){ list = list.filter(function(p){ return ptypeOf(p)===catFilter; }); }
+  if(searchKw){ list = list.filter(function(p){ return ((p.name||"")+(p.desc||"")).toLowerCase().indexOf(searchKw) >= 0; }); }
+  var st = document.getElementById("secTitle"); if(st) st.textContent = catFilter ? catLabel(catFilter) : "\u7cbe\u9009\u5546\u54c1";
   if(!list.length){ document.getElementById("emptyShop").classList.remove("hidden"); return; }
   document.getElementById("emptyShop").classList.add("hidden");
   list.forEach(function(p){
-    var div=document.createElement("div"); div.className="product";
-    div.innerHTML = imgHtml(p) + '<p class="longpress-hint">⚠️ 长按图片即可预览</p>' + '<div class="info"><p class="nm"></p><p class="ds"></p><p class="pr"></p><p class="sold"></p><p class="stk none"></p><button class="buy-btn">购买</button></div>';
-    div.querySelector(".nm").textContent=p.name;
-    var ptag = document.createElement("span"); ptag.className = "ptype-tag" + (ptypeOf(p) === "freebie" ? " free" : ""); ptag.textContent = ptypeLabel(p);
-    div.querySelector(".nm").appendChild(ptag);
-    div.querySelector(".ds").textContent=p.desc||"";
-    div.querySelector(".pr").textContent = (Number(p.price) === 0) ? "免费" : fmtPrice(p.price);
-    div.querySelector(".sold").textContent="已售出 "+(SOLD[p.id]||0)+" 件";
     var left = stockLeft(p);
-    var btn = div.querySelector(".buy-btn");
-    if(left !== null){
-      var stk = div.querySelector(".stk");
-      stk.classList.remove("none");
-      if(left <= 0){
-        stk.textContent = "已售罄";
-        btn.textContent = "已售罄";
-        btn.disabled = true;
-        btn.style.opacity = ".5";
-        btn.style.cursor = "not-allowed";
-      } else {
-        stk.textContent = "剩余 " + left + " 件";
-        btn.onclick = function(){ startOrder(p); };
-      }
-    } else {
-      btn.onclick = function(){ startOrder(p); };
-    }
-    (function(card){
-      var wrap = card.querySelector(".pimgs");
-      if(!wrap) return;
-      var dots = card.querySelectorAll(".pimg-dots span");
-      wrap.addEventListener("scroll", function(){
-        var idx = Math.round(wrap.scrollLeft / Math.max(1, wrap.clientWidth));
-        for(var k=0;k<dots.length;k++){ dots[k].className = k===idx ? "on" : ""; }
-      }, {passive:true});
-    })(div);
-    g.appendChild(div);
+    var soldout = (left!==null && left<=0);
+    var card = document.createElement("div"); card.className = "djn-card";
+    var iw = document.createElement("div"); iw.className = "djn-imgwrap";
+    iw.innerHTML = imgHtml(p);
+    iw.onclick = function(){ openDetail(p); };
+    var body = document.createElement("div"); body.className = "djn-cbody";
+    var cc = document.createElement("p"); cc.className = "djn-ccat"; cc.textContent = catLabel(ptypeOf(p));
+    var nm = document.createElement("p"); nm.className = "djn-cname"; nm.textContent = p.name || "";
+    nm.onclick = function(){ openDetail(p); };
+    var bd = document.createElement("div"); bd.className = "djn-cbadges"; bd.innerHTML = djnBadges(p, left);
+    var foot = document.createElement("div"); foot.className = "djn-cfoot";
+    var pr = document.createElement("span"); pr.className = "djn-cprice"; pr.innerHTML = djnPriceHtml(p);
+    var btn = document.createElement("button"); btn.className = "djn-buybtn";
+    if(soldout){ btn.textContent = "\u552e\u7f44"; btn.disabled = true; }
+    else { btn.textContent = "\u26a1\u8d2d\u4e70"; btn.onclick = function(){ startOrder(p); }; }
+    foot.appendChild(pr); foot.appendChild(btn);
+    body.appendChild(cc); body.appendChild(nm); body.appendChild(bd); body.appendChild(foot);
+    card.appendChild(iw); card.appendChild(body);
+    bindDots(card);
+    g.appendChild(card);
   });
 }
 function toUnits(s, dec){
@@ -1568,6 +1794,28 @@ document.getElementById("cancelOrder").onclick=function(){
 
 
 
+
+<script>
+/* 新版导航 / 页脚 / 详情页绑定 */
+(function(){
+  function toList(e){ if(e) e.preventDefault(); catFilter=""; var si=document.getElementById("searchInput"); if(si) si.value=""; searchKw=""; var bar=document.getElementById("searchBar"); if(bar) bar.classList.add("hidden"); renderCats(); render(); stopOrder(); stopStatus(); show("view-list"); }
+  function toOrders(e){ if(e) e.preventDefault(); if(!myUser){ openAuth("查看订单需要先登录 / 注册。"); return; } stopOrder(); stopStatus(); loadMyOrders(); show("view-myorders"); }
+  var navAll = document.getElementById("navAll"); if(navAll) navAll.onclick = toList;
+  var navContact = document.getElementById("navContact"); if(navContact) navContact.onclick = function(e){ e.preventDefault(); openContact(); };
+  var catAll = document.getElementById("catAll"); if(catAll) catAll.onclick = toList;
+  var viewAllBtn = document.getElementById("viewAllBtn"); if(viewAllBtn) viewAllBtn.onclick = toList;
+  var ch = document.getElementById("crumbHome"); if(ch) ch.onclick = toList;
+  var cl = document.getElementById("crumbList"); if(cl) cl.onclick = toList;
+  var fAll = document.getElementById("fAll"); if(fAll) fAll.onclick = toList;
+  var fOrders = document.getElementById("fOrders"); if(fOrders) fOrders.onclick = toOrders;
+  var fClaim = document.getElementById("fClaim"); if(fClaim) fClaim.onclick = toOrders;
+  var fContact = document.getElementById("fContact"); if(fContact) fContact.onclick = function(e){ e.preventDefault(); openContact(); };
+  var fNotice = document.getElementById("fNotice"); if(fNotice) fNotice.onclick = function(e){ e.preventDefault(); document.getElementById("noticeModal").classList.remove("hidden"); };
+  var noticeClose = document.getElementById("noticeClose"); if(noticeClose) noticeClose.onclick = function(){ document.getElementById("noticeModal").classList.add("hidden"); };
+  var noticeModal = document.getElementById("noticeModal"); if(noticeModal) noticeModal.addEventListener("click", function(e){ if(e.target && e.target.id==="noticeModal") noticeModal.classList.add("hidden"); });
+  var loginBtn = document.getElementById("loginBtn"); if(loginBtn) loginBtn.onclick = function(){ openAuth(""); };
+})();
+</script>
 
 </body>
 </html>
