@@ -105,7 +105,7 @@
 </div>
 <button class="icon-btn" id="searchToggle" aria-label="搜索">🔍</button>
 <button class="icon-btn" id="themeToggle" aria-label="切换深色模式">🌙</button>
-<button class="icon-btn" id="contactBtn" aria-label="联系商家" onclick="openContact()">💬</button>
+<button class="icon-btn" id="contactBtn" aria-label="联系商家">💬</button>
 </div>
 </div>
 <div class="wrap search-bar hidden" id="searchBar">
@@ -1243,7 +1243,6 @@ function openContact(){
   box.appendChild(cls);
 
   // 事件绑定
-  document.getElementById("ctToHumanBtn").onclick = ctToHuman;
   document.getElementById("ct-ai-form").onsubmit = function(e){
     e.preventDefault();
     var v = document.getElementById("ct-ai-input").value.trim();
