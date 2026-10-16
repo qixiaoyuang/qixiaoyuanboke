@@ -77,6 +77,15 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
 .scanrow { display:flex; gap:10px; align-items:flex-end; margin-top:6px; }
 .scanrow > div { flex:1; }
 .scanrow button { flex-shrink:0; }
+#chatBackBtn{display:none;margin-right:8px}
+@media (max-width:640px){
+  .tabs button{font-size:.85rem;white-space:nowrap;padding:10px 4px}
+  #chatPaneWrap{flex-direction:column;min-height:0}
+  #chatThreadPane{width:100% !important;max-height:230px}
+  #chatConvPane{min-height:430px}
+  body.chat-open #chatThreadPane{display:none}
+  body.chat-open #chatBackBtn{display:inline-block}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.css">
@@ -212,15 +221,15 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
 </div>
 
 <div id="paneChat" class="hidden">
-  <div style="display:flex;gap:12px;min-height:480px">
-    <div style="width:280px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column">
+  <div id="chatPaneWrap" style="display:flex;gap:12px;min-height:480px">
+    <div id="chatThreadPane" style="width:280px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column">
       <div style="padding:10px 12px;font-weight:700;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
         <span>会话列表</span>
         <button class="mini" onclick="loadChatThreads()" style="padding:4px 10px">刷新</button>
       </div>
       <div id="chatThreadList" style="flex:1;overflow-y:auto"></div>
     </div>
-    <div style="flex:1;border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
+    <div id="chatConvPane" style="flex:1;border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
       <div id="chatViewHead" style="padding:10px 12px;font-weight:700;border-bottom:1px solid var(--border)">选择一个会话</div>
       <div id="chatMsgs" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f5f7fa;min-height:300px"></div>
       <form id="chatForm" style="display:flex;border-top:1px solid var(--border)">
@@ -1152,7 +1161,22 @@ async function openChatThread(threadId) {
   curChatThread = threadId;
   renderThreadList();
   var t = chatThreads.find(function(x){ return x.id === threadId; });
-  document.getElementById("chatViewHead").textContent = t ? ("与 " + (t.buyer_email || t.user_id.slice(0, 8)) + " 的会话") : "会话";
+  var headEl = document.getElementById("chatViewHead");
+  headEl.innerHTML = "";
+  var backBtn = document.createElement("button");
+  backBtn.id = "chatBackBtn"; backBtn.className = "mini"; backBtn.style.padding = "4px 10px";
+  backBtn.textContent = "\u2039 返回";
+  backBtn.onclick = function(){
+    document.body.classList.remove("chat-open");
+    curChatThread = null; renderThreadList();
+    document.getElementById("chatMsgs").innerHTML = "";
+    headEl.textContent = "选择一个会话";
+  };
+  headEl.appendChild(backBtn);
+  var headSpan = document.createElement("span");
+  headSpan.textContent = t ? ("与 " + (t.buyer_email || t.user_id.slice(0, 8)) + " 的会话") : "会话";
+  headEl.appendChild(headSpan);
+  document.body.classList.add("chat-open");
   var box = document.getElementById("chatMsgs");
   box.innerHTML = '<div style="text-align:center;color:#888;font-size:13px">加载中…</div>';
   try {
