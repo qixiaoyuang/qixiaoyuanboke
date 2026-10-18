@@ -86,6 +86,10 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
   body.chat-open #chatThreadPane{display:none}
   body.chat-open #chatBackBtn{display:inline-block}
 }
+@keyframes rainbowFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.tabs button.active,button.publish,button.mini,button.del,button.load,#chatForm button[type=submit]{
+background:linear-gradient(270deg,#ff5f6d,#ff9f43,#2ed573,#1e90ff,#a55eea,#ff5f6d)!important;
+background-size:300% 300%!important;animation:rainbowFlow 8s ease infinite}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.css">
