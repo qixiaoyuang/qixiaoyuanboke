@@ -691,13 +691,21 @@ function loadCats(){
   }).catch(function(){ CATS = CATS_DEFAULT.slice(); });
 }
 function catLabel(k){ for(var i=0;i<CATS.length;i++){ if(CATS[i].k===k) return CATS[i].t; } return "全部商品"; }
+function iconHtml(icon){
+  icon = icon || "\u26a1";
+  if(String(icon).indexOf("si:") === 0){
+    var slug = String(icon).slice(3).replace(/[^a-z0-9]/gi, "").toLowerCase();
+    return '<img src="https://cdn.simpleicons.org/' + slug + '" alt="" loading="lazy" style="width:1.4rem;height:1.4rem;display:block">';
+  }
+  return String(icon).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
 function renderCats(){
   var box = document.getElementById("catCards"); if(!box) return; box.innerHTML = "";
   CATS.forEach(function(c){
     var n = PRODUCTS.filter(function(p){ return ptypeOf(p)===c.k; }).length;
     var b = document.createElement("button");
     b.className = "djn-cat " + c.cls + (catFilter===c.k ? " active" : "");
-    b.innerHTML = '<span class="ic">'+c.icon+'</span><span><span class="t">'+c.t+'</span><br><span class="n">'+n+' 件商品</span></span>';
+    b.innerHTML = '<span class="ic">'+iconHtml(c.icon)+'</span><span><span class="t">'+c.t+'</span><br><span class="n">'+n+' 件商品</span></span>';
     b.onclick = function(){ catFilter = (catFilter===c.k) ? "" : c.k; renderCats(); render(); };
     box.appendChild(b);
   });
