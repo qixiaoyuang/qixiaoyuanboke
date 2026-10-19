@@ -116,6 +116,7 @@ background-size:300% 300%!important;animation:rainbowFlow 8s ease infinite}
 <div class="tabs">
   <button id="tabShop" class="active" onclick="showTab('shop')">商品管理</button>
   <button id="tabOrders" onclick="showTab('orders')">订单管理</button>
+  <button id="tabCats" onclick="showTab('cats');loadCatsAdmin()">分类管理</button>
   <button id="tabContact" onclick="showTab('contact');loadContact()">联系方式</button>
   <!-- 在线客服标签页 -->
 <button id="tabChat" onclick="showTab('chat');loadChatThreads()">在线客服 <span id="chatTabBadge" style="background:linear-gradient(135deg,#f87171,#ef4444);color:#fff;font-size:11px;border-radius:10px;padding:1px 7px;display:none;font-weight:700"></span></button>
@@ -207,6 +208,16 @@ background-size:300% 300%!important;animation:rainbowFlow 8s ease infinite}
 </div>
 </div>
 
+<div id="paneCats" class="hidden">
+  <label>分类管理</label>
+  <p class="hint">商城首页的分类卡片从这里读取。每个分类都要指定一种发货类型：虚拟发货（卡密/手动发货）、实物发货（下单填收货地址）、免费领取。改名、增删、排序后点"保存分类"，商城立即生效。先在"订单管理"页用管理员账号登录后再保存。</p>
+  <div id="catList"></div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button type="button" class="mini" id="catAddBtn" style="flex:1">＋ 添加分类</button>
+    <button type="button" class="publish" id="catSaveBtn" style="flex:2;margin-top:0">保存分类</button>
+  </div>
+</div>
+
 <div id="paneContact" class="hidden">
   <label>QQ 号</label>
   <input type="text" id="ctQQ" placeholder="例如：12345678" inputmode="numeric">
@@ -266,14 +277,87 @@ $("postDate").value = new Date().toISOString().slice(0, 10);
 function showTab(which) {
   $("paneShop").classList.toggle("hidden", which !== "shop");
   $("paneOrders").classList.toggle("hidden", which !== "orders");
+  $("paneCats").classList.toggle("hidden", which !== "cats");
   $("paneContact").classList.toggle("hidden", which !== "contact");
   $("paneChat").classList.toggle("hidden", which !== "chat");
   $("tabShop").classList.toggle("active", which === "shop");
   $("tabOrders").classList.toggle("active", which === "orders");
+  $("tabCats").classList.toggle("active", which === "cats");
   $("tabContact").classList.toggle("active", which === "contact");
   $("tabChat").classList.toggle("active", which === "chat");
 }
 
+var adminCats = [];
+var catDeletedIds = [];
+function escQ(v){ return String(v==null?"":v).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
+async function loadCatsAdmin(){
+  try{
+    setStatus("正在加载分类…","info");
+    var r = await sbs.from("categories").select("id,name,icon,ptype,sort_order").order("sort_order",{ascending:true});
+    if(r.error) throw r.error;
+    adminCats = r.data || [];
+    catDeletedIds = [];
+    renderCatsAdmin();
+    setStatus("共 "+adminCats.length+" 个分类。","ok");
+  }catch(e){ setStatus("加载分类失败："+e.message+"（请先在 Supabase 运行建表 SQL，并用管理员账号登录）","err"); }
+}
+function renderCatsAdmin(){
+  var box = $("catList"); box.innerHTML = "";
+  var PT = [["virtual","虚拟发货"],["physical","实物发货"],["freebie","免费领取"]];
+  if(!adminCats.length){ box.innerHTML = '<div class="empty">暂无分类，点"添加分类"新建。</div>'; }
+  adminCats.forEach(function(c, idx){
+    var div = document.createElement("div");
+    div.className = "post";
+    div.style.flexWrap = "wrap";
+    var h = '<input type="text" data-f="icon" value="'+escQ(c.icon||"⚡")+'" title="图标" style="width:56px;flex:none;text-align:center;padding:10px 6px">';
+    h += '<input type="text" data-f="name" value="'+escQ(c.name||"")+'" placeholder="分类名称" style="flex:1;min-width:110px">';
+    h += '<select data-f="ptype" class="psel" title="发货类型">';
+    PT.forEach(function(p){ h += '<option value="'+p[0]+'"'+(c.ptype===p[0]?" selected":"")+'>'+p[1]+'</option>'; });
+    h += '</select>';
+    h += '<input type="number" data-f="sort_order" value="'+(c.sort_order==null?0:c.sort_order)+'" title="排序（小的在前）" style="width:70px;flex:none">';
+    h += '<button type="button" class="del" data-act="del">删除</button>';
+    div.innerHTML = h;
+    div.querySelector('[data-f="icon"]').oninput = function(e){ adminCats[idx].icon = e.target.value; };
+    div.querySelector('[data-f="name"]').oninput = function(e){ adminCats[idx].name = e.target.value; };
+    div.querySelector('[data-f="ptype"]').onchange = function(e){ adminCats[idx].ptype = e.target.value; };
+    div.querySelector('[data-f="sort_order"]').oninput = function(e){ adminCats[idx].sort_order = parseInt(e.target.value,10)||0; };
+    div.querySelector('[data-act="del"]').onclick = function(){
+      if(!confirm("删除分类「"+(adminCats[idx].name||"")+"」？该分类下的商品不受影响。")) return;
+      if(adminCats[idx].id) catDeletedIds.push(adminCats[idx].id);
+      adminCats.splice(idx,1);
+      renderCatsAdmin();
+    };
+    box.appendChild(div);
+  });
+}
+$("catAddBtn").onclick = function(){
+  adminCats.push({ id: null, name: "", icon: "⚡", ptype: "virtual", sort_order: adminCats.length });
+  renderCatsAdmin();
+};
+$("catSaveBtn").onclick = async function(){
+  var btn = $("catSaveBtn"); btn.disabled = true;
+  try{
+    setStatus("正在保存…","info");
+    for(var i=0;i<adminCats.length;i++){
+      if(!adminCats[i].name || !adminCats[i].name.trim()) throw new Error("第 "+(i+1)+" 个分类名称不能为空");
+    }
+    for(var d=0;d<catDeletedIds.length;d++){
+      var dr = await sbs.from("categories").delete().eq("id", catDeletedIds[d]);
+      if(dr.error) throw dr.error;
+    }
+    catDeletedIds = [];
+    for(var j=0;j<adminCats.length;j++){
+      var c = adminCats[j];
+      var row = { name: c.name.trim(), icon: c.icon || "⚡", ptype: c.ptype, sort_order: Number(c.sort_order)||0, is_active: true };
+      var r = c.id ? await sbs.from("categories").update(row).eq("id", c.id)
+                   : await sbs.from("categories").insert(row);
+      if(r.error) throw r.error;
+    }
+    setStatus("保存成功，商城分类已更新。","ok");
+    loadCatsAdmin();
+  }catch(e){ setStatus("保存失败："+e.message,"err"); }
+  finally{ btn.disabled = false; }
+};
 function setStatus(msg, kind) {
   const el = $("status");
   el.textContent = msg;
