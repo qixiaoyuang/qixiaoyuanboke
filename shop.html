@@ -652,7 +652,7 @@ function loadSold(){
 }
 loadRate();
 loadContactInfo();
-fetch("payment.json").then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }).then(function(cfg){ applyPaymentConfig(cfg); return sb.from("products").select("id,name,price,ptype,image,images,desc,stock").order("created_at", {ascending:false}); }).then(function(r){ PRODUCTS=r.data||[]; return loadSold(); }).then(function(){ renderCats(); render(); fillClaimProds(); fillClaimNets(); }).catch(function(){ document.getElementById("emptyShop").classList.remove("hidden"); });
+fetch("payment.json").then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }).then(function(cfg){ applyPaymentConfig(cfg); return sb.from("products").select("id,name,price,ptype,image,images,desc,stock").order("created_at", {ascending:false}); }).then(function(r){ PRODUCTS=r.data||[]; return loadSold(); }).then(function(){ return loadCats(); }).then(function(){ renderCats(); render(); fillClaimProds(); fillClaimNets(); }).catch(function(){ document.getElementById("emptyShop").classList.remove("hidden"); });
 function stockLeft(p){
   if(p.stock === null || p.stock === undefined || p.stock === "") return null;
   var s = Number(p.stock);
@@ -673,11 +673,23 @@ function imgHtml(p){
 function ptypeOf(p){ return (p && p.ptype === "physical") ? "physical" : ((p && p.ptype === "freebie") ? "freebie" : "virtual"); }
 function ptypeLabel(p){ var t = ptypeOf(p); return t === "physical" ? "实物" : (t === "freebie" ? "免费福利" : "虚拟"); }
 var catFilter = "";
-var CATS = [
+var CATS = [];
+var CATS_DEFAULT = [
   { k:"virtual", t:"虚拟商品", icon:"\u26a1", cls:"c-virtual" },
   { k:"physical", t:"实物商品", icon:"📦", cls:"c-physical" },
   { k:"freebie", t:"免费福利", icon:"🎁", cls:"c-freebie" }
 ];
+function catClsFor(pt){ return pt==="physical" ? "c-physical" : (pt==="freebie" ? "c-freebie" : "c-virtual"); }
+function loadCats(){
+  return sb.from("categories").select("name,icon,ptype").eq("is_active", true).order("sort_order", {ascending:true}).then(function(r){
+    if(r.data && r.data.length){
+      CATS = r.data.map(function(c){
+        var pt = (c.ptype==="physical" || c.ptype==="freebie") ? c.ptype : "virtual";
+        return { k: pt, t: c.name, icon: c.icon || "\u26a1", cls: catClsFor(pt) };
+      });
+    } else { CATS = CATS_DEFAULT.slice(); }
+  }).catch(function(){ CATS = CATS_DEFAULT.slice(); });
+}
 function catLabel(k){ for(var i=0;i<CATS.length;i++){ if(CATS[i].k===k) return CATS[i].t; } return "全部商品"; }
 function renderCats(){
   var box = document.getElementById("catCards"); if(!box) return; box.innerHTML = "";
