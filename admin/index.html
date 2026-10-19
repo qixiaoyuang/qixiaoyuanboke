@@ -272,7 +272,7 @@ background-size:300% 300%!important;animation:rainbowFlow 8s ease infinite}
 <script>
 const OWNER = "qixiaoyuang", REPO = "qixiaoyuanboke", BRANCH = "main";
 const $ = id => document.getElementById(id);
-$("postDate").value = new Date().toISOString().slice(0, 10);
+var _pd = $("postDate"); if(_pd) _pd.value = new Date().toISOString().slice(0, 10);
 
 function showTab(which) {
   $("paneShop").classList.toggle("hidden", which !== "shop");
@@ -1317,5 +1317,7 @@ document.getElementById("chatForm").onsubmit = async function(e) {
   }
 };
 </script>
-</body>
+
+
+</body></body>
 </html>
