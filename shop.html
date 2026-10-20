@@ -804,7 +804,7 @@ function stopOrder(){ if(orderTimer){ clearInterval(orderTimer); orderTimer=null
 function coinIcon(letter, bg, fg){
   return '<svg width="30" height="30" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="'+bg+'"/><text x="16" y="22" text-anchor="middle" fill="'+fg+'" font-size="17" font-weight="bold" font-family="Arial,sans-serif">'+letter+'</text></svg>';
 }
-var ICON_USDT = coinIcon("T", "#6B7280", "#ffffff");
+var ICON_USDT = coinIcon("T", "#26A17B", "#ffffff");
 var NET_ICON = { bsc:ICON_BSC, arb:ICON_ARB, eth:ICON_ETH, plasma:ICON_PLASMA, aptos:ICON_APTOS, sol:ICON_SOL, tron:ICON_TRON };
 var payMethodProduct = null;
 function pmBtn(iconHtml, label){
