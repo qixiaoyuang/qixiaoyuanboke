@@ -18,6 +18,24 @@ import { readFileSync, existsSync } from "fs";
 import { sendMail } from "./mailer.mjs";
 
 const headers = { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json" };
+
+// 商品标价现为人民币（CNY）：链上匹配金额需按实时汇率换算成 USDT（向上取 2 位小数，与商城页一致）
+let USD_CNY = 0;
+for (const u of ["https://api.frankfurter.app/latest?from=USD&to=CNY", "https://open.er-api.com/v6/latest/USD"]) {
+  try {
+    const rr = await fetch(u);
+    const jj = await rr.json();
+    if (jj && jj.rates && jj.rates.CNY) { USD_CNY = Number(jj.rates.CNY); break; }
+  } catch (e) { /* 换下一个源 */ }
+}
+console.log("USD/CNY 汇率:", USD_CNY || "获取失败（本轮跳过金额匹配）");
+function usdtNeedOf(priceCny) {
+  if (!(USD_CNY > 0)) return NaN;
+  const u = parseFloat(priceCny) / USD_CNY;
+  if (!isFinite(u) || u <= 0) return NaN;
+  return Math.ceil(u * 100) / 100;
+}
+
 const normTx = (chain, tx) => chain === "solana" ? String(tx) : String(tx).toLowerCase();
 // orders.json 的时间是北京时间 "YYYY-MM-DD HH:MM"，转毫秒
 function bjTimeMs(s) {
@@ -95,8 +113,9 @@ for (const o of sbOrders) {
     continue;
   }
 
-  // 待支付订单：按 金额+时间 匹配链上付款
-  const need = parseFloat(o.price);
+  // 待支付订单：按 金额+时间 匹配链上付款（标价是人民币，先换成 USDT）
+  const need = usdtNeedOf(o.price);
+  if (!(need > 0)) continue; // 汇率没拿到时不乱配，下一轮再试
   const createdMs = new Date(o.created_at).getTime() || 0;
   const match = payments.find(p =>
     !claimed.has(p.tx) &&
@@ -155,7 +174,7 @@ async function stockAlertIfNeeded() {
   const rows = stuck.map(({ o, waitMin }) =>
     "<tr><td style=\"padding:6px 10px;border:1px solid #ddd\">" + esc(shortId(o.id)) + "</td>" +
     "<td style=\"padding:6px 10px;border:1px solid #ddd\">" + esc(o.product_name || "") + "</td>" +
-    "<td style=\"padding:6px 10px;border:1px solid #ddd\">" + esc(o.price) + " USD</td>" +
+    "<td style=\"padding:6px 10px;border:1px solid #ddd\">¥" + esc(o.price) + "</td>" +
     "<td style=\"padding:6px 10px;border:1px solid #ddd\">等待约 " + waitMin + " 分钟</td></tr>"
   ).join("");
   const html =
