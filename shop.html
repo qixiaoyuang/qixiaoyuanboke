@@ -645,9 +645,10 @@ async function refreshAuth(){
   if(myUser) await ensureUserProfile();
   renderAuthArea();
 }
-function showProfile(){
+async function showProfile(){
   if(!myUser){ openAuth("请先登录。"); return; }
   stopOrder(); stopStatus();
+  if(!myNumericId) await ensureUserProfile();
   document.getElementById("profileId").textContent = myNumericId || "—";
   document.getElementById("profileEmail").textContent = myUser.email || "—";
   show("view-profile");
