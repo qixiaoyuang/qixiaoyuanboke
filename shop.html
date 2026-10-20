@@ -688,7 +688,7 @@ function loadSold(){
 }
 loadRate();
 loadContactInfo();
-fetch("payment.json").then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }).then(function(cfg){ applyPaymentConfig(cfg); return sb.from("products").select("id,name,price,ptype,image,images,desc,stock").order("created_at", {ascending:false}); }).then(function(r){ PRODUCTS=r.data||[]; return loadSold(); }).then(function(){ return loadCats(); }).then(function(){ renderCats(); render(); fillClaimProds(); fillClaimNets(); }).catch(function(){ document.getElementById("emptyShop").classList.remove("hidden"); });
+fetch("payment.json").then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }).then(function(cfg){ applyPaymentConfig(cfg); return sb.from("products").select("id,name,price,ptype,image,images,desc,stock,xianyu_url").order("created_at", {ascending:false}); }).then(function(r){ PRODUCTS=r.data||[]; return loadSold(); }).then(function(){ return loadCats(); }).then(function(){ renderCats(); render(); fillClaimProds(); fillClaimNets(); }).catch(function(){ document.getElementById("emptyShop").classList.remove("hidden"); });
 function stockLeft(p){
   if(p.stock === null || p.stock === undefined || p.stock === "") return null;
   var s = Number(p.stock);
@@ -903,6 +903,11 @@ function openPayMethods(p){
     showComingSoon();
   };
   box.appendChild(b1); box.appendChild(b2);
+  if(p.xianyu_url){
+    var b3 = pmBtn('<span class="pm-emoji">🐟</span>', "去闲鱼购买");
+    b3.onclick = function(){ window.open(p.xianyu_url, "_blank"); };
+    box.appendChild(b3);
+  }
   box.appendChild(pmBack("取消", closePayMethods));
   document.getElementById("payMethodModal").classList.remove("hidden");
 }
