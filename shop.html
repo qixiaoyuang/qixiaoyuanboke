@@ -63,7 +63,7 @@
 @keyframes spin { to { transform:rotate(360deg); } }
 .success { text-align:center; padding:40px 0; }
 .success .tick { font-size:3rem; }
-.back { color:var(--link); text-decoration:none; font-size:.9rem; }
+.back { color:#1a1a1a; text-decoration:none; font-size:.9rem; font-weight:700; }
 .empty { color:var(--muted); text-align:center; padding:40px 0; }
 .hidden { display:none !important; }
 .pay-note2 { color:var(--muted); font-size:.83rem; }
@@ -253,7 +253,7 @@ html[data-theme="dark"]{
 <div class="djn-desc" id="detailDesc"></div>
 </section>
 <section id="view-order" class="hidden">
-<p><a class="back" href="#" id="backToList">← 返回商品列表</a></p>
+<p><a class="back" href="#" id="backToList">← 返回</a></p>
 <div class="section-head"><h2>确认订单</h2></div>
 <div id="orderSummary"></div>
 <div id="payPanel" class="pay-panel hidden">
@@ -278,11 +278,11 @@ html[data-theme="dark"]{
 <p id="orderStatusLine" class="ostatus"></p>
 <div class="order-box" id="orderBox"></div>
 <p class="orefresh">订单状态由店主在后台更新，本页面每分钟自动刷新，无需重复付款。</p>
-<p><a class="back" href="#" id="backToList2">← 返回商品列表</a></p>
+<p><a class="back" href="#" id="backToList2">← 返回</a></p>
 </div>
 </section>
 <section id="view-profile" class="hidden">
-<p><a class="back" href="#" id="backToList4" style="color:#1a1a1a;">← 返回</a></p>
+<p><a class="back" href="#" id="backToList4">← 返回</a></p>
 <div class="section-head"><h2>个人中心</h2></div>
 <div class="ord">
 <div class="t">用户 ID</div>
@@ -297,7 +297,7 @@ html[data-theme="dark"]{
 </div>
 </section>
 <section id="view-myorders" class="hidden">
-<p><a class="back" href="#" id="backToList3">← 返回商品列表</a></p>
+<p><a class="back" href="#" id="backToList3">← 返回</a></p>
 <div class="section-head"><h2>我的订单</h2><button class="copy-btn" id="refreshMyOrders" style="font-size:.8rem;padding:6px 16px;">刷新</button></div>
 <div id="myOrderList"></div>
 <div class="order-box">
