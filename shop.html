@@ -146,7 +146,10 @@ html[data-theme="dark"]{
 .djn-pillbtn{ border:1px solid var(--djn-border); background:var(--djn-card); color:var(--djn-text); text-decoration:none; font-size:.85rem; font-weight:600; padding:8px 18px; border-radius:999px; cursor:pointer; }
 .djn-pillbtn:hover{ border-color:var(--djn-primary); color:var(--djn-primary); }
 .djn-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:44px; }
-@media(max-width:900px){ .djn-grid{ grid-template-columns:repeat(2,1fr); gap:12px; } .djn-cats{ grid-template-columns:1fr; } .djn-nav{ display:none; } }
+@media(max-width:900px){ .djn-grid{ grid-template-columns:repeat(2,1fr); gap:12px; } .djn-cats{ grid-template-columns:repeat(3,1fr); gap:8px; } .djn-nav{ display:none; }
+.djn-cat{ flex-direction:column; align-items:center; text-align:center; padding:10px 6px; gap:6px; }
+.djn-cat .t{ font-size:.82rem; }
+.djn-cat .n{ font-size:.7rem; } }
 .djn-card{ background:var(--djn-card); border:1px solid var(--djn-border); border-radius:12px; overflow:hidden; box-shadow:var(--djn-shadow); display:flex; flex-direction:column; }
 .djn-imgwrap{ aspect-ratio:1/1; background:var(--djn-grbg); overflow:hidden; cursor:pointer; position:relative; }
 .djn-imgwrap > img{ width:100%; height:100%; object-fit:cover; display:block; }
@@ -691,6 +694,10 @@ function loadCats(){
 function catLabel(k){ for(var i=0;i<CATS.length;i++){ if(CATS[i].k===k) return CATS[i].t; } return "全部商品"; }
 function iconHtml(icon){
   icon = icon || "\u26a1";
+  if(String(icon).indexOf("if:") === 0){
+    var iid = String(icon).slice(3);
+    return '<img src="https://api.iconify.design/' + iid.replace(":","/") + '.svg" alt="" loading="lazy" style="width:1.4rem;height:1.4rem;display:block">';
+  }
   if(String(icon).indexOf("si:") === 0){
     var slug = String(icon).slice(3).replace(/[^a-z0-9]/gi, "").toLowerCase();
     return '<img src="https://cdn.simpleicons.org/' + slug + '" alt="" loading="lazy" style="width:1.4rem;height:1.4rem;display:block">';
