@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>博客管理 · 祁萧远的博客</title>
 <style>
-:root { --bg:#faf9f7; --text:#1a1a1a; --muted:#6b6b6b; --accent:#e2482e;--accent-grad:linear-gradient(135deg,#ff7a45,#e2482e); --card:#fff; --border:#e5e2dc; }
+:root { --bg:#faf9f7; --text:#1a1a1a; --muted:#6b6b6b; --accent:#1a1a1a;--accent-grad:#1a1a1a; --card:#fff; --border:#e5e2dc; }
 * { box-sizing: border-box; }
 body { margin:0; background:var(--bg); color:var(--text);
 font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; line-height:1.7; }
@@ -36,7 +36,7 @@ color:#fff; background:var(--accent-grad); border:none; border-radius:10px; curs
 button.publish:disabled { opacity:.55; cursor:wait; }
 button.load {
 width:100%; padding:12px; font-size:1rem; font-weight:600; color:#fff;
-background:linear-gradient(135deg,#3b82f6,#1d5fa8); border:none; border-radius:10px; cursor:pointer; margin-top:4px; }
+background:#1a1a1a; border:none; border-radius:10px; cursor:pointer; margin-top:4px; }
 button.load:disabled { opacity:.55; cursor:wait; }
 #status { margin-top:16px; padding:12px 16px; border-radius:8px; font-size:.92rem; display:none; }
 #status.ok { display:block; background:#e8f5e9; color:#2e7d32; }
@@ -51,7 +51,7 @@ border-radius:10px; padding:12px 14px; margin-top:10px; }
 .post .meta { flex:1; min-width:0; }
 .post .t { font-weight:700; font-size:1rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .post .d { color:var(--muted); font-size:.83rem; }
-button.del { padding:8px 16px; font-size:.9rem; font-weight:600; color:#fff; background:linear-gradient(135deg,#ef5350,#b3261e);
+button.del { padding:8px 16px; font-size:.9rem; font-weight:600; color:#fff; background:#1a1a1a;
 border:none; border-radius:8px; cursor:pointer; flex-shrink:0; }
 button.del:disabled { opacity:.55; cursor:wait; }
 .empty { color:var(--muted); text-align:center; padding:30px 0; font-size:.95rem; }
@@ -66,10 +66,10 @@ button.del:disabled { opacity:.55; cursor:wait; }
 .ord .t, .cand .t { font-weight:700; font-size:1rem; }
 .ord .d, .cand .d { color:var(--muted); font-size:.83rem; word-break:break-all; }
 .ord .ops, .cand .ops { margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-button.mini { padding:8px 16px; font-size:.88rem; font-weight:600; color:#fff; background:linear-gradient(135deg,#3b82f6,#1d5fa8); border:none; border-radius:8px; cursor:pointer; }
+button.mini { padding:8px 16px; font-size:.88rem; font-weight:600; color:#fff; background:#1a1a1a; border:none; border-radius:8px; cursor:pointer; }
 button.mini:disabled { opacity:.55; cursor:wait; }
-button.mini.green { background:linear-gradient(135deg,#66bb6a,#2e7d32); }
-button.mini.red { background:linear-gradient(135deg,#ef5350,#b3261e); }
+button.mini.green { background:#1a1a1a; }
+button.mini.red { background:#1a1a1a; }
 select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border); border-radius:8px; background:var(--card); color:var(--text); max-width:100%; }
 .stat-table { width:100%; border-collapse:collapse; margin-top:10px; font-size:.92rem; }
 .stat-table th, .stat-table td { border:1px solid var(--border); padding:8px 10px; text-align:center; }
@@ -86,10 +86,8 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
   body.chat-open #chatThreadPane{display:none}
   body.chat-open #chatBackBtn{display:inline-block}
 }
-@keyframes rainbowFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 .tabs button.active,button.publish,button.mini,button.del,button.load,#chatForm button[type=submit]{
-background:linear-gradient(270deg,#ff5f6d,#ff9f43,#2ed573,#1e90ff,#a55eea,#ff5f6d)!important;
-background-size:300% 300%!important;animation:rainbowFlow 8s ease infinite}
+background:#1a1a1a!important;}
 /* 2026-10-20 用户要求：后台文字统一黑色加粗，不用彩色/灰色字体 */
 :root{ --muted:#111; }
 .hint,.empty,.sub,.post .d,.ord .d,.cand .d,details ol,label,
@@ -111,18 +109,18 @@ background-size:300% 300%!important;animation:rainbowFlow 8s ease infinite}
 </div>
 <p class="sub">商品、订单都在这一页管理。操作会自动同步到你的 GitHub 仓库。</p>
 
-<div class="tokenbox">
-<label>GitHub 访问令牌</label>
-<input type="password" id="token" placeholder="粘贴你的 token（只保存在本浏览器，不会上传到别处）">
-<p class="hint">删除商品/订单需要一个有仓库写权限的 token。获取方法见下方说明。关闭页面即清除。</p>
-</div>
+<details class="tokenbox">
+<summary style="font-weight:700;cursor:pointer">GitHub 访问令牌（上传商品图片时用）</summary>
+<input type="password" id="token" placeholder="粘贴你的 token（只保存在本浏览器，不会上传到别处）" style="margin-top:8px">
+<p class="hint">只在上传/删除商品图片时需要（图片存在 GitHub 仓库）。商品、订单、分类管理走 Supabase，不需要令牌。获取方法见下方说明。关闭页面即清除。</p>
+</details>
 
 <div class="tabs">
   <button id="tabShop" class="active" onclick="showTab('shop')">商品管理</button>
   <button id="tabOrders" onclick="showTab('orders')">订单管理</button>
   <button id="tabContact" onclick="showTab('contact');loadContact()">联系方式</button>
   <!-- 在线客服标签页 -->
-<button id="tabChat" onclick="showTab('chat');loadChatThreads()">在线客服 <span id="chatTabBadge" style="background:linear-gradient(135deg,#f87171,#ef4444);color:#fff;font-size:11px;border-radius:10px;padding:1px 7px;display:none;font-weight:700"></span></button>
+<button id="tabChat" onclick="showTab('chat');loadChatThreads()">在线客服 <span id="chatTabBadge" style="background:#1a1a1a;color:#fff;font-size:11px;border-radius:10px;padding:1px 7px;display:none;font-weight:700"></span></button>
   
 </div>
 
@@ -222,7 +220,7 @@ background-size:300% 300%!important;animation:rainbowFlow 8s ease infinite}
 <textarea id="codeBatch" rows="4" style="width:100%;box-sizing:border-box" placeholder="例如：&#10;账号 abc / 卡密 123456&#10;账号 def / 卡密 789012"></textarea>
 <div style="display:flex;gap:10px;margin-top:8px">
 <button type="button" class="mini green" id="codeAddBtn" style="flex:1">添加卡密</button>
-<button type="button" class="mini" id="codeRetryBtn" style="flex:1;background:linear-gradient(135deg,#3b82f6,#1d5fa8)">为待发货订单补发</button>
+<button type="button" class="mini" id="codeRetryBtn" style="flex:1;background:#1a1a1a">为待发货订单补发</button>
 </div>
 <div class="hint" id="codeStatus" style="margin:8px 0"></div>
 <label>卡密列表</label>
@@ -681,7 +679,7 @@ function renderImgBox(mode){
     im.style.cssText = "width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--border)";
     const x = document.createElement("button");
     x.type = "button"; x.textContent = "✕";
-    x.style.cssText = "position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;border:none;background:linear-gradient(135deg,#ef5350,#b3261e);color:#fff;font-size:12px;cursor:pointer;line-height:1";
+    x.style.cssText = "position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;border:none;background:#1a1a1a;color:#fff;font-size:12px;cursor:pointer;line-height:1";
     x.onclick = () => { arr.splice(i, 1); var qp = quickImgPanel; if(!isEdit) quickImgPanel = qPanel; renderImgBox(mode); quickImgPanel = qp; };
     w.appendChild(im); w.appendChild(x);
     if (i === 0) {
@@ -1384,7 +1382,7 @@ function renderThreadList() {
     var time = t.last_message_at ? new Date(t.last_message_at).toLocaleString("zh-CN", {month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}) : "";
     d.innerHTML = '<div style="font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
         (t.buyer_email || t.user_id.slice(0, 8)) +
-        (unread > 0 ? ' <span style="background:linear-gradient(135deg,#f87171,#ef4444);color:#fff;font-size:11px;border-radius:10px;padding:1px 7px">' + unread + '</span>' : '') +
+        (unread > 0 ? ' <span style="background:#1a1a1a;color:#fff;font-size:11px;border-radius:10px;padding:1px 7px">' + unread + '</span>' : '') +
       '</div><div style="font-size:12px;color:#111;font-weight:700">' + time + '</div>';
     d.onclick = function() { openChatThread(t.id); };
     box.appendChild(d);
@@ -1442,7 +1440,7 @@ function addChatMsg(text, who) {
   var d = document.createElement("div");
   d.style.cssText = "max-width:82%;padding:8px 11px;border-radius:12px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word;" +
     (who === "seller"
-      ? "background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;align-self:flex-end;border-bottom-right-radius:4px"
+      ? "background:#1a1a1a;color:#fff;align-self:flex-end;border-bottom-right-radius:4px"
       : "background:#fff;color:#222;align-self:flex-start;border:1px solid #e5e7eb;border-bottom-left-radius:4px");
   d.textContent = text;
   box.appendChild(d);
