@@ -1935,6 +1935,11 @@ function isCancelledGone(o){
   if(!ca) return true; /* 没有撤销时间戳的老订单直接隐藏 */
   return (Date.now() - new Date(ca).getTime()) > 3600*1000;
 }
+/* 超过 45 天的订单买家不可见：仅前端隐藏，后台数据保留 */
+function isOrderOld(o){
+  if(!o.created_at) return false;
+  return (Date.now() - new Date(o.created_at).getTime()) > 45 * 86400 * 1000;
+}
 var myOrdersRaw = [];
 function loadMyOrders(){
   if(!myUser || !sb) return;
@@ -1945,7 +1950,7 @@ function loadMyOrders(){
     fillClaimProds();
   });
 }
-/* 每分钟重算一次：撤销满 1 小时的订单到点自动消失，不用刷新页面 */
+/* 每分钟重算一次：撤销满 1 小时 / 超过 45 天的订单到点自动从买家列表消失，不用刷新页面 */
 setInterval(function(){
   if(myUser && myOrdersRaw.length && !document.getElementById("view-myorders").classList.contains("hidden")) renderMyOrders();
 }, 60000);
@@ -1958,7 +1963,7 @@ function renderMyOrders(){
         }
       }
     }
-    var list = myOrdersRaw.filter(function(o){ return !isCancelledGone(o); });
+    var list = myOrdersRaw.filter(function(o){ return !isCancelledGone(o) && !isOrderOld(o); });
     var box = document.getElementById("myOrderList"); box.innerHTML = "";
     if(!list.length){ box.innerHTML = '<div class="empty">还没有订单</div>'; return; }
     list.forEach(function(o){
