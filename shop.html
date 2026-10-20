@@ -281,6 +281,21 @@ html[data-theme="dark"]{
 <p><a class="back" href="#" id="backToList2">← 返回商品列表</a></p>
 </div>
 </section>
+<section id="view-profile" class="hidden">
+<p><a class="back" href="#" id="backToList4">← 返回商品列表</a></p>
+<div class="section-head"><h2>个人中心</h2></div>
+<div class="ord">
+<div class="t">用户 ID</div>
+<div class="d" id="profileId" style="font-size:1.4rem;font-weight:800;color:#1a1a1a;">—</div>
+</div>
+<div class="ord" style="margin-top:12px">
+<div class="t">绑定邮箱</div>
+<div class="d" id="profileEmail" style="font-weight:700;color:#1a1a1a;">—</div>
+</div>
+<div style="margin-top:16px;display:flex;gap:10px;">
+<button class="copy-btn" id="profileOrders" style="flex:1;">我的订单</button>
+</div>
+</section>
 <section id="view-myorders" class="hidden">
 <p><a class="back" href="#" id="backToList3">← 返回商品列表</a></p>
 <div class="section-head"><h2>我的订单</h2><button class="copy-btn" id="refreshMyOrders" style="font-size:.8rem;padding:6px 16px;">刷新</button></div>
@@ -503,11 +518,9 @@ function renderUserMenu(){
   if(!m) return;
   m.innerHTML = "";
   if(myUser){
-    var em = document.createElement("div"); em.className = "uemail"; em.textContent = myUser.email || "已登录";
-    m.appendChild(em);
-    var od = document.createElement("button"); od.textContent = "我的订单";
-    od.onclick = function(){ toggleUserMenu(false); goMyOrders(); };
-    m.appendChild(od);
+    var pc = document.createElement("button"); pc.textContent = "个人中心";
+    pc.onclick = function(){ toggleUserMenu(false); showProfile(); };
+    m.appendChild(pc);
     var out = document.createElement("button"); out.textContent = "退出";
     out.onclick = function(){ toggleUserMenu(false); revealedShips = {}; if(sb) sb.auth.signOut(); };
     m.appendChild(out);
@@ -606,13 +619,38 @@ document.getElementById("newPwGo").onclick = function(){
     alert("新密码已保存，直接用新密码登录就行。");
   }).catch(function(e){ btn.disabled = false; errEl.textContent = "保存失败：" + e.message; errEl.style.display = "block"; });
 };
+var myNumericId = null;
+async function ensureUserProfile(){
+  if(!myUser || !sb) return;
+  try{
+    var r = await sb.from("user_profiles").select("numeric_id").eq("user_id", myUser.id).single();
+    if(r.data && r.data.numeric_id){ myNumericId = r.data.numeric_id; return; }
+  }catch(e){}
+  for(var i = 0; i < 5; i++){
+    var nid = String(Math.floor(100000 + Math.random() * 900000));
+    try{
+      var ins = await sb.from("user_profiles").insert({ user_id: myUser.id, numeric_id: nid });
+      if(!ins.error){ myNumericId = nid; return; }
+      if(!ins.error.message || ins.error.message.toLowerCase().indexOf("duplicate") < 0) break;
+    }catch(e){ break; }
+  }
+}
 async function refreshAuth(){
   if(!sb) return;
   try{
     var r = await sb.auth.getUser();
     myUser = (r.data && r.data.user) ? r.data.user : null;
   }catch(e){ myUser = null; }
+  myNumericId = null;
+  if(myUser) await ensureUserProfile();
   renderAuthArea();
+}
+function showProfile(){
+  if(!myUser){ openAuth("请先登录。"); return; }
+  stopOrder(); stopStatus();
+  document.getElementById("profileId").textContent = myNumericId || "—";
+  document.getElementById("profileEmail").textContent = myUser.email || "—";
+  show("view-profile");
 }
 function checkHashOrders(){ if(location.hash === "#myorders" && myUser){ stopOrder(); stopStatus(); loadMyOrders(); show("view-myorders"); } }
 if(sb){ sb.auth.onAuthStateChange(function(event){ if(event === "PASSWORD_RECOVERY"){ authShowBox("authNewPwBox"); document.getElementById("newPwErr").style.display = "none"; document.getElementById("authModal").classList.remove("hidden"); return; } refreshAuth().then(function(){ if(myUser && pendingNet){ var n = pendingNet; pendingNet = null; closeAuth(); chooseNet(n.key, n.p, n.addr); } if(myUser && pendingFreeClaim){ var c = pendingFreeClaim; pendingFreeClaim = null; closeAuth(); claimFreebieOrder(c.p, c.email); } checkHashOrders(); }); }); refreshAuth().then(checkHashOrders); }
@@ -640,7 +678,7 @@ setTheme(saved);
 themeBtn.onclick = function(){
   setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
 };
-function show(id){ ["view-list","view-detail","view-order","view-success","view-myorders"].forEach(function(v){ document.getElementById(v).classList.toggle("hidden", v!==id); }); window.scrollTo(0,0); }
+function show(id){ ["view-list","view-detail","view-order","view-success","view-myorders","view-profile"].forEach(function(v){ document.getElementById(v).classList.toggle("hidden", v!==id); }); window.scrollTo(0,0); }
 function loadSold(){
   SOLD = {};
   if(!sb) return Promise.resolve();
@@ -1801,6 +1839,8 @@ function backList(e){ if(e) e.preventDefault(); stopOrder(); stopStatus(); show(
 document.getElementById("backToList").onclick=backList;
 document.getElementById("backToList2").onclick=backList;
 document.getElementById("backToList3").onclick=backList;
+document.getElementById("backToList4").onclick=backList;
+document.getElementById("profileOrders").onclick=function(){ goMyOrders(); };
 document.getElementById("cancelOrder").onclick=function(){
   var dbId = order && order.dbId;
   if(dbId && sb && myUser){
