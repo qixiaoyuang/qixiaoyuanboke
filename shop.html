@@ -977,15 +977,33 @@ function startXianyuOrder(p, url){
 }
 function claimXianyuPaid(o, btn){
   if(!sb || !myUser) return;
-  if(!confirm("确认你已经在闲鱼付过款了吗？\n\n点确认后卖家会去闲鱼核对到账，确认后自动发货。请勿没付款就乱点。")) return;
+  var inp = document.getElementById("xyNo-" + o.id);
+  var no = inp ? inp.value.trim() : "";
+  if(!no){ alert("请先填闲鱼订单号（在闲鱼 App 的订单详情里，卖家要照它核对到账）。"); if(inp) inp.focus(); return; }
+  if(!/^\d{10,26}$/.test(no)){ alert("闲鱼订单号好像不对，它是一串纯数字，再检查一下。"); if(inp) inp.focus(); return; }
+  if(!confirm("确认你已经在闲鱼付过款了吗？\n\n点确认后卖家会照订单号 " + no + " 去闲鱼核对到账，确认后自动发货。请勿没付款就乱点。")) return;
   if(btn) btn.disabled = true;
   var ship = {};
   try{ ship = (typeof o.ship === "string") ? JSON.parse(o.ship || "{}") : (o.ship || {}); }catch(e){ ship = {}; }
-  ship.xy = 1; ship.xyClaimed = true; ship.xyClaimedAt = new Date().toISOString();
+  ship.xy = 1; ship.xyClaimed = true; ship.xyClaimedAt = new Date().toISOString(); ship.xyOrderNo = no;
   sb.from("orders").update({ ship: ship }).eq("id", o.id).then(function(r){
     if(r.error){ alert("提交失败：" + r.error.message); if(btn) btn.disabled = false; return; }
     loadMyOrders();
   }).catch(function(e){ alert("提交失败：" + ((e && e.message) || e)); if(btn) btn.disabled = false; });
+}
+function editXianyuNo(o){
+  if(!sb || !myUser) return;
+  var no = prompt("修改闲鱼订单号：", (o.ship && o.ship.xyOrderNo) || "");
+  if(no === null) return;
+  no = no.trim();
+  if(!/^\d{10,26}$/.test(no)){ alert("闲鱼订单号是一串纯数字，再检查一下。"); return; }
+  var ship = {};
+  try{ ship = (typeof o.ship === "string") ? JSON.parse(o.ship || "{}") : (o.ship || {}); }catch(e){ ship = {}; }
+  ship.xyOrderNo = no;
+  sb.from("orders").update({ ship: ship }).eq("id", o.id).then(function(r){
+    if(r.error){ alert("保存失败：" + r.error.message); return; }
+    loadMyOrders();
+  }).catch(function(e){ alert("保存失败：" + ((e && e.message) || e)); });
 }
 /* ===== 0 元商品：填邮箱直接领取成功 ===== */
 function showFreebieForm(p){
@@ -1787,8 +1805,24 @@ function renderMyOrders(){
         var xyClaimed = !!(o.ship && o.ship.xyClaimed);
         badge.textContent = xyClaimed ? "等商家确认" : "闲鱼待付款";
         var xnote = document.createElement("div"); xnote.className = "d"; xnote.style.marginTop = "4px";
-        xnote.textContent = xyClaimed ? "你已标记在闲鱼付款，卖家确认收款后会自动发货到这笔订单。" : "在闲鱼付完款后，回来点「我已在闲鱼付款」，卖家确认后自动发货。";
+        xnote.textContent = xyClaimed ? "你已标记在闲鱼付款，卖家确认收款后会自动发货到这笔订单。" : "在闲鱼付完款后，把闲鱼订单号填进来再点「我已在闲鱼付款」，卖家照单号核对到账后自动发货。";
         div.appendChild(xnote);
+        if(!xyClaimed){
+          var xrow = document.createElement("div"); xrow.style.cssText = "margin-top:8px;display:flex;gap:8px";
+          var xin = document.createElement("input"); xin.id = "xyNo-" + o.id; xin.type = "text"; xin.inputMode = "numeric"; xin.placeholder = "填闲鱼订单号（闲鱼 App 订单详情里有）"; xin.maxLength = 30;
+          xin.style.cssText = "flex:1;padding:8px 10px;border:1px solid #bbb;border-radius:8px;font-size:.85rem;background:#fff;color:#111;box-sizing:border-box";
+          xin.value = (o.ship && o.ship.xyOrderNo) || "";
+          xrow.appendChild(xin);
+          div.appendChild(xrow);
+        }
+        if(xyClaimed && o.ship && o.ship.xyOrderNo){
+          var xno = document.createElement("div"); xno.className = "d"; xno.style.marginTop = "4px";
+          xno.appendChild(document.createTextNode("闲鱼订单号：" + o.ship.xyOrderNo + " "));
+          var xedit = document.createElement("button"); xedit.className = "textbtn"; xedit.textContent = "填错了？修改";
+          xedit.onclick = function(){ editXianyuNo(o); };
+          xno.appendChild(xedit);
+          div.appendChild(xno);
+        }
         var ops = document.createElement("div"); ops.style.marginTop = "8px"; ops.style.display = "flex"; ops.style.gap = "8px";
         if(!xyClaimed){
           var xprod = null; (PRODUCTS || []).forEach(function(pp){ if(String(pp.id) === String(o.product_id)) xprod = pp; });
