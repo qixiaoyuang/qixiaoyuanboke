@@ -313,7 +313,7 @@ async function loadCatsAdmin(){
     setStatus("共 "+adminCats.length+" 个分类。","ok");
   }catch(e){ setStatus("加载分类失败："+e.message+"（请先在 Supabase 运行建表 SQL，并用管理员账号登录）","err"); }
 }
-var CURATED_ICONS = ["if:thesvg-color:alipay","if:thesvg-color:wechat","if:thesvg-color:taobao","if:thesvg-color:bilibili","if:thesvg-color:xiaohongshu","if:thesvg-color:sina-weibo","if:thesvg-color:qq","if:thesvg-color:zhihu","if:thesvg-color:meituan","if:arcticons:iqiyi","if:arcticons:youku","si:telegram","si:x","si:google","si:youtube","si:whatsapp","si:discord","si:spotify","si:tiktok","si:netflix","repo:mgtv","repo:tencentvideo"];
+var CURATED_ICONS = ["if:thesvg-color:alipay","if:thesvg-color:wechat","if:thesvg-color:taobao","if:thesvg-color:bilibili","if:thesvg-color:xiaohongshu","if:thesvg-color:sina-weibo","if:thesvg-color:qq","if:thesvg-color:zhihu","if:thesvg-color:meituan","if:arcticons:iqiyi","if:arcticons:youku","si:telegram","si:x","si:google","si:youtube","si:whatsapp","si:discord","si:spotify","si:tiktok","si:netflix","repo:mgtv","repo:tencentvideo","https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/c1/e1/9f/c1e19fc8-8acb-9f5d-64fd-222a57b4c8a6/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg"];
 
 var CN_ICON_KW = {"微信":"wechat","支付宝":"alipay","淘宝":"taobao","天猫":"tmall","京东":"jd","拼多多":"pinduoduo","美团":"meituan","饿了么":"eleme","滴滴":"didi","抖音":"tiktok","快手":"kuaishou","哔哩哔哩":"bilibili","b站":"bilibili","小红书":"xiaohongshu","微博":"weibo","知乎":"zhihu","豆瓣":"douban","百度":"baidu","高德":"amap","百度地图":"baidu","网易云":"neteasecloudmusic","网易":"neteasecloudmusic","qq音乐":"qqmusic","酷狗":"kugou","酷我":"kuwo","爱奇艺":"iqiyi","腾讯视频":"tencentvideo","优酷":"youku","芒果":"repo:mgtv","芒果tv":"repo:mgtv","西瓜视频":"xigua","携程":"trip","去哪儿":"qunar","飞猪":"fliggy","大众点评":"dianping","闲鱼":"goofish","唯品会":"vipshop","得物":"dewu","苏宁":"suning","什么值得买":"smzdm","云闪付":"unionpay","陌陌":"momo","探探":"tantan","soul":"soul","钉钉":"dingtalk","企业微信":"wecom","飞书":"feishu","wps":"wps","夸克":"quark","uc":"ucbrowser","王者荣耀":"honorofkings","和平精英":"gameforpeace","原神":"genshinimpact","米哈游":"mihoyo","工商银行":"icbc","建设银行":"ccb","农业银行":"abc","中国银行":"boc","招商银行":"cmb","腾讯":"tencentqq","阿里":"alibaba","华为":"huawei","小米":"xiaomi","谷歌":"google","油管":"youtube","推特":"twitter","脸书":"facebook","照片":"googlephotos","相册":"googlephotos","地图":"googlemaps","邮箱":"gmail","邮件":"gmail","网盘":"googledrive","浏览器":"googlechrome","播放":"googleplay","应用宝":"googleplay","电报":"telegram","纸飞机":"telegram","推":"x","微博国际版":"weibo","奈飞":"netflix","迪士尼":"disney","苹果":"apple","安卓":"android","微软":"microsoft","亚马逊":"amazon"};
 function cnToEn(q){
@@ -321,10 +321,15 @@ function cnToEn(q){
   for(var k in CN_ICON_KW){ if(q.indexOf(k) >= 0) return CN_ICON_KW[k]; }
   return q;
 }
+function repoFile(v){
+  var f = v.slice(5);
+  return "https://qixiaoyuan.eu.cc/images/icons/" + (f.indexOf(".") >= 0 ? f : f + ".svg");
+}
 function pickerIconUrl(v){
+  if(v.indexOf("http") === 0) return v;
   if(v.indexOf("si:") === 0) return siUrl(v.slice(3));
   if(v.indexOf("if:") === 0) return ifUrl(v.slice(3));
-  if(v.indexOf("repo:") === 0) return "https://qixiaoyuan.eu.cc/images/icons/" + v.slice(5) + ".svg";
+  if(v.indexOf("repo:") === 0) return repoFile(v);
   return "";
 }
 var QUICK_EMOJIS = ["⚡","📦","🎁","🛒","💎","🔥","⭐","🎮","📱","💻","🎧","👕","🍔","☕","💰","🎉","✨","💡","📚","🏷️"];
@@ -370,8 +375,11 @@ function iconSearch(q){
 }
 function adminIconHtml(icon){
   icon = icon || "⚡";
+  if(String(icon).indexOf("http") === 0){
+    return '<img src="' + String(icon) + '" style="width:1.35rem;height:1.35rem;vertical-align:middle;pointer-events:none;border-radius:5px" alt="">';
+  }
   if(String(icon).indexOf("repo:") === 0){
-    return '<img src="https://qixiaoyuan.eu.cc/images/icons/' + String(icon).slice(5) + '.svg" style="width:1.35rem;height:1.35rem;vertical-align:middle;pointer-events:none" alt="">';
+    return '<img src="' + repoFile(String(icon)) + '" style="width:1.35rem;height:1.35rem;vertical-align:middle;pointer-events:none" alt="">';
   }
   if(String(icon).indexOf("if:") === 0){
     return '<img src="' + ifUrl(String(icon).slice(3)) + '" style="width:1.35rem;height:1.35rem;vertical-align:middle;pointer-events:none" alt="">';
