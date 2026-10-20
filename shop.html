@@ -148,16 +148,17 @@ html[data-theme="dark"]{
 .djn-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin:14px 0 44px; }
 @media(max-width:900px){ .djn-grid{ grid-template-columns:repeat(2,1fr); gap:12px; } .djn-nav{ display:none; } }
 .djn-card{ background:var(--djn-card); border:1px solid var(--djn-border); border-radius:12px; overflow:hidden; box-shadow:var(--djn-shadow); display:flex; flex-direction:column; }
-.djn-imgwrap{ aspect-ratio:1/1; background:var(--djn-grbg); overflow:hidden; cursor:pointer; position:relative; }
+.djn-imgwrap{ aspect-ratio:4/3; background:var(--djn-grbg); overflow:hidden; cursor:pointer; position:relative; }
+.djn-imgwrap.noimg{ display:none; }
 .djn-imgwrap > img{ width:100%; height:100%; object-fit:cover; display:block; }
 .djn-imgwrap .pimgs{ height:100%; }
 .djn-imgwrap .pimgs img{ height:100%; }
 .djn-imgwrap .pimg-dots{ position:absolute; bottom:8px; left:0; right:0; }
 .djn-imgwrap .pimg-dots span.on{ background:var(--djn-primary); }
-.djn-cbody{ padding:14px 14px 16px; display:flex; flex-direction:column; gap:7px; flex:1; }
+.djn-cbody{ padding:10px 12px 12px; display:flex; flex-direction:column; gap:5px; flex:1; }
 .djn-ccat{ margin:0; color:var(--djn-faint); font-size:.78rem; }
-.djn-cname{ margin:0; font-weight:700; font-size:.98rem; color:var(--djn-text); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.7em; cursor:pointer; }
-.djn-cbadges{ display:flex; flex-wrap:wrap; gap:6px; min-height:22px; }
+.djn-cname{ margin:0; font-weight:700; font-size:.95rem; color:var(--djn-text); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; cursor:pointer; }
+.djn-cbadges{ display:flex; flex-wrap:wrap; gap:6px; }
 .djn-badge{ font-size:.7rem; font-weight:600; border-radius:999px; padding:2px 10px; }
 .djn-badge.b-green{ background:var(--djn-gbg); color:var(--djn-gtx); }
 .djn-badge.b-blue{ background:var(--djn-bbg); color:var(--djn-btx); }
@@ -778,7 +779,8 @@ function render(){
     var soldout = (left!==null && left<=0);
     var card = document.createElement("div"); card.className = "djn-card";
     var iw = document.createElement("div"); iw.className = "djn-imgwrap";
-    iw.innerHTML = imgHtml(p);
+    var _ih = imgHtml(p); iw.innerHTML = _ih;
+    if(!_ih) iw.classList.add("noimg");
     iw.onclick = function(){ openDetail(p); };
     var body = document.createElement("div"); body.className = "djn-cbody";
     var cc = document.createElement("p"); cc.className = "djn-ccat"; cc.textContent = catLabel(ptypeOf(p));
