@@ -1131,7 +1131,7 @@ async function loadSbOrders(){
       const pr = await fetch("https://qixiaoyuang.github.io/qixiaoyuanboke/products.json").then(x => x.json());
       (pr || []).forEach(x => { ptypeMap[x.id] = x.ptype === "physical" ? "physical" : "virtual"; });
     }catch(e){}
-    let chainLabelMap = {bsc:"BSC",arb:"Arbitrum",eth:"Ethereum",plasma:"Plasma",aptos:"Aptos",sol:"SOL",tron:"TRON",freebie:"免费领取"};
+    let chainLabelMap = {bsc:"BSC",arb:"Arbitrum",eth:"Ethereum",plasma:"Plasma",aptos:"Aptos",sol:"SOL",tron:"TRON",freebie:"免费领取",xianyu:"闲鱼"};
     try{
       const pc = await fetch("https://qixiaoyuang.github.io/qixiaoyuanboke/payment.json").then(x => x.json());
       const bd = {bsc:"BSC（BEP20）",arb:"Arbitrum One（USDT0）",eth:"Ethereum（ERC20）",plasma:"Plasma（USDT0）",aptos:"Aptos",sol:"Solana",tron:"TRON（TRC20）"};
@@ -1141,7 +1141,7 @@ async function loadSbOrders(){
       id: o.id, productId: o.product_id, productName: o.product_name, price: o.price,
       chain: o.chain, chainLabel: chainLabelMap[o.chain] || o.chain || "",
       tx: o.tx, time: fmtT(o.created_at), status: o.status, buyer: buyerMap[o.id] || "", userId: o.user_id || "",
-      ship: normShip(o.ship), address: o.address || null, cancelledAt: o.cancelled_at || null, updatedAt: o.updated_at || null
+      ship: normShip(o.ship), xyClaimed: !!normShip(o.ship).xyClaimed, address: o.address || null, cancelledAt: o.cancelled_at || null, updatedAt: o.updated_at || null
     }));
     list.forEach(o => { o.ptype = ptypeMap[o.productId] || "virtual"; });
     sbOrdersRaw = list;
@@ -1219,6 +1219,7 @@ function renderOneOrder(o){
     const t = document.createElement("div"); t.className = "t";
     t.textContent = (o.ptype === "physical" ? "【实物】" : "【虚拟】") + " " + (o.productName || "未知商品") + " · " + o.price + " USD ";
     const b = document.createElement("span"); b.innerHTML = badge(o.status || "pending"); t.appendChild(b);
+    if(o.chain === "xianyu" && (o.status || "") === "unpaid"){ b.innerHTML = '<span class="obadge unpaid">' + (o.xyClaimed ? "闲鱼·待确认收款" : "闲鱼·未付款") + '</span>'; }
     const d = document.createElement("div"); d.className = "d";
     d.textContent = "订单号 " + shortId8(o.id) + " · " + (o.time || "") + " · " + (o.chainLabel || o.chain || "") + " · 交易 " + String(o.tx||"").slice(0,14) + "…" + (o.buyer ? " · 买家 " + o.buyer : "");
     if(o.ptype === "physical" && o.address){
@@ -1232,6 +1233,19 @@ function renderOneOrder(o){
       div.appendChild(em);
     }
     const ops = document.createElement("div"); ops.className = "ops";
+    if((o.status || "") === "unpaid" && o.chain === "xianyu"){
+      if(o.xyClaimed){
+        const cf = document.createElement("button"); cf.className = "mini"; cf.textContent = "✅ 确认收款并发货";
+        cf.onclick = () => confirmXianyuOrder(o, cf);
+        ops.appendChild(cf);
+      } else {
+        const wt = document.createElement("span"); wt.className = "d"; wt.textContent = "⏳ 等买家在闲鱼付款并回商城标记";
+        ops.appendChild(wt);
+      }
+      const rv2 = document.createElement("button"); rv2.className = "mini red"; rv2.textContent = "撤销订单";
+      rv2.onclick = () => revokeOrder(o, rv2);
+      ops.appendChild(rv2);
+    }
     if((o.status || "pending") === "pending"){
       const s = document.createElement("button"); s.className = "mini"; s.textContent = "发货";
       s.onclick = () => openShipModal(o);
@@ -1255,6 +1269,33 @@ function renderOneOrder(o){
     }
     div.appendChild(t); div.appendChild(d); div.appendChild(ops);
     return div;
+}
+/* 闲鱼半自动单：卖家在闲鱼确认到账后点这里 → 订单转待发货 → 立刻自动发卡密（实物单只转待发货） */
+async function confirmXianyuOrder(o, btn){
+  if(!confirm("确认已在闲鱼收到这笔款吗？\n\n" + (o.ptype === "physical" ? "确认后订单转「待发货」，请在闲鱼那边发货，再回这里用「发货」填快递单号。" : "确认后系统会立刻自动分配卡密发货；卡密不足时订单转「待发货」，补码后在卡密库点「为待发货订单补发」即可。"))) return;
+  btn.disabled = true;
+  try{
+    setStatus("正在确认收款…", "info");
+    const r = await sbs.from("orders").update({ status: "pending" }).eq("id", o.id);
+    if(r.error) throw new Error(r.error.message);
+    if(o.ptype === "physical"){
+      setStatus("已确认收款 ✅ 这笔实物单已转「待发货」，请到闲鱼发货后回这里填快递单号。", "ok");
+      loadSbOrders();
+      return;
+    }
+    const dr = await sbs.rpc("distribute_ship_code", { p_order_id: o.id });
+    if(dr.error){
+      const m = String(dr.error.message || "");
+      if(m.indexOf("NO_CODES") >= 0){
+        setStatus("已确认收款 ✅ 但卡密不足，订单已转「待发货」。去卡密库补码后点「为待发货订单补发」就能发出。", "err");
+      } else {
+        setStatus("已确认收款 ✅ 自动发货没成功（" + m + "），订单在「待发货」，可以用「发货」按钮手动发。", "err");
+      }
+    } else {
+      setStatus("已确认收款并自动发货 🎉 买家在「我的订单」输密码即可看卡密，邮件随后自动补发。", "ok");
+    }
+    loadSbOrders();
+  }catch(e){ setStatus("确认失败：" + e.message, "err"); btn.disabled = false; }
 }
 async function revokeOrder(o, btn){
   if(!confirm("确定撤销这笔订单吗？\n\n撤销后：买家会看到「已撤销」，已售数量扣减、库存释放。" + (o.chain === "freebie" ? "" : "\n注意：链上已收的款不会自动退回，需要你手动给买家退款。"))) return;
