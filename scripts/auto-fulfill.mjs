@@ -73,6 +73,7 @@ async function distribute(orderId) {
 for (const o of sbOrders) {
   const ptype = ptypeOf[o.product_id];
   if (ptype !== "virtual" && ptype !== "freebie") continue; // 只处理虚拟/免费商品
+  if (o.chain === "xianyu") continue; // 闲鱼半自动单：款在闲鱼平台，需卖家后台确认收款才发货，禁止链上误匹配/误发码
   const ship = o.ship || {};
   if (ship.content) continue; // 已有发货内容，跳过
 
@@ -137,6 +138,7 @@ async function stockAlertIfNeeded() {
   for (const o of sbOrders) {
     const ptype = ptypeOf[o.product_id];
     if (ptype !== "virtual" && ptype !== "freebie") continue;
+    if (o.chain === "xianyu") continue;             // 闲鱼单不算卡住，不发缺货提醒
     const ship = o.ship || {};
     if (ship.content) continue;                  // 已发货
     if (ptype === "virtual" && !o.tx) continue;   // 未付款，无需发码
