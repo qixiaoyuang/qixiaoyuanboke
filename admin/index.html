@@ -462,10 +462,12 @@ function renderCatsAdmin(){
         prods.forEach(function(p){
           var pd = document.createElement("div");
           pd.className = "post";
-          pd.style.cssText = "background:#f8f9ff;margin-top:8px";
-          var meta = document.createElement("div"); meta.className = "meta"; meta.style.minWidth = "0";
+          pd.style.cssText = "background:#f8f9ff;margin-top:8px;flex-wrap:wrap";
+          var meta = document.createElement("div"); meta.className = "meta";
+          meta.style.cssText = "flex:1 1 100%;min-width:0";
           var t = document.createElement("div"); t.className = "t"; t.textContent = p.name;
           var dd = document.createElement("div"); dd.className = "d";
+          dd.style.cssText = "color:#333;font-weight:700;white-space:nowrap;";
           dd.textContent = p.price + " USD" + ((p.stock != null && p.stock !== "") ? " · 库存 " + p.stock + " 件" : " · 库存不限");
           meta.appendChild(t); meta.appendChild(dd); pd.appendChild(meta);
           var eb = document.createElement("button"); eb.className = "del"; eb.textContent = "编辑";
