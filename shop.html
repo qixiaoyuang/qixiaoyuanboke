@@ -228,7 +228,7 @@ html[data-theme="dark"]{
 </header>
 <main class="djn-wrap">
 <section id="view-list">
-<div class="djn-cats-head"><h2>按分类逛</h2><a href="#" id="catAll">全部分类 ›</a></div>
+<div class="djn-cats-head" id="catHead"><h2>按分类逛</h2><a href="#" id="catAll">全部分类 ›</a></div>
 <div class="djn-cats" id="catCards"></div>
 <div id="productGrid" class="djn-grid"></div>
 <div id="emptyShop" class="empty hidden">店主还未上架商品，敬请期待。</div>
@@ -723,8 +723,8 @@ function loadCats(){
         var pt = (c.ptype==="physical" || c.ptype==="freebie") ? c.ptype : "virtual";
         return { k: pt, t: c.name, icon: c.icon || "\u26a1", cls: catClsFor(pt) };
       });
-    } else { CATS = CATS_DEFAULT.slice(); }
-  }).catch(function(){ CATS = CATS_DEFAULT.slice(); });
+    } else { CATS = []; } /* 分类表为空时：商城不显示分类区（不要默认三个兜底分类） */
+  }).catch(function(){ CATS = CATS_DEFAULT.slice(); }); /* 网络异常兜底，保证老数据页可逛 */
 }
 function catLabel(k){ for(var i=0;i<CATS.length;i++){ if(CATS[i].k===k) return CATS[i].t; } return "全部商品"; }
 var BRAND_COLORS = {"arcticons:iqiyi":"#00BE06","brandico:youku":"#00AAFF","arcticons:youku":"#00AAFF","arcticons:pinduoduo":"#E02E24","arcticons:jd-com":"#E1251B","ic:baseline-tiktok":"#000000","simple-icons:tiktok":"#000000","ri:taobao-fill":"#FF4400","ri:alipay-fill":"#1677FF","ic:baseline-wechat":"#07C160","ri:wechat-fill":"#07C160","ri:qq-fill":"#12B7F5","mingcute:qq-fill":"#12B7F5","ri:weibo-fill":"#E6162D","mingcute:weibo-fill":"#E6162D","ri:bilibili-fill":"#00A1D6","mingcute:bilibili-fill":"#00A1D6","ri:zhihu-fill":"#0066FF"};
@@ -756,6 +756,14 @@ function iconHtml(icon){
 }
 function renderCats(){
   var box = document.getElementById("catCards"); if(!box) return; box.innerHTML = "";
+  var head = document.getElementById("catHead");
+  if(!CATS.length){ /* 没有自定义分类时整个分类区隐藏 */
+    if(head) head.style.display = "none"; box.style.display = "none";
+    if(catFilter){ catFilter = ""; }
+    var st0 = document.getElementById("secTitle"); if(st0) st0.textContent = "全部商品";
+    return;
+  }
+  if(head) head.style.display = ""; box.style.display = "";
   CATS.forEach(function(c){
     var n = PRODUCTS.filter(function(p){ return ptypeOf(p)===c.k; }).length;
     var b = document.createElement("button");
