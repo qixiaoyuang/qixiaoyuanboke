@@ -266,6 +266,17 @@ html[data-theme="dark"]{
 <button class="copy-btn" id="copyAddrBtn">复制地址</button>
 <button class="check-btn" id="checkBtn">我已付款，立即检测</button>
 </div>
+<div id="wcBox" style="display:none;margin-top:8px">
+<button class="check-btn" id="wcPayBtn" style="width:100%">📲 用钱包 App 一键付款（地址金额自动填）</button>
+<div id="wcWallets" style="display:none;gap:8px;flex-wrap:wrap;margin-top:8px">
+<button class="copy-btn" data-wc="trust">Trust Wallet</button>
+<button class="copy-btn" data-wc="metamask">MetaMask</button>
+<button class="copy-btn" data-wc="tp">TokenPocket</button>
+<button class="copy-btn" data-wc="imtoken">imToken</button>
+</div>
+<img id="wcQR" width="160" height="160" alt="钱包配对二维码" style="display:none;margin-top:8px">
+<p id="wcHint" style="margin:6px 0 0;font-size:.85rem;font-weight:700;color:#111"></p>
+</div>
 <p class="status" id="payStatus"></p>
 <p class="pay-note2">请务必使用上方选择的网络转账，转错网络资产可能丢失。检测到付款后会自动显示成功。</p>
 <button class="cancel-btn" id="cancelOrder">取消订单</button>
@@ -1147,6 +1158,7 @@ function startPayPanel(key,p,dbId){
   document.getElementById("payPanel").classList.remove("hidden");
   if(usdt === null){
     /* 汇率还没拿到：先拉取，拿到后自动重开面板 */
+    wcSetBox(key);
     document.getElementById("payAmount").textContent=fmtPrice(p.price)+"（正在获取汇率…）";
     document.getElementById("payNeedFull").textContent="…";
     setStatus("正在获取实时汇率…");
@@ -1159,6 +1171,7 @@ function startPayPanel(key,p,dbId){
     return;
   }
   payRateRetry = 0;
+  wcSetBox(key);
   document.getElementById("payAmount").textContent=fmtPrice(p.price)+"（约 "+usdt+" USDT）";
   document.getElementById("payNeedFull").textContent=usdt;
   setStatus("正在连接网络…");
@@ -1173,6 +1186,97 @@ function startPayPanel(key,p,dbId){
     beginPoll();
   }
 }
+/* ===== WalletConnect：一键拉起钱包 App 付 USDT（仅 eth/bsc/arb 三条 EVM 链） ===== */
+var WC_PROJECT_ID = "70a73e34a45bb5539319a864d1cff860"; /* Reown 官网注册的 projectId（wannengshou-shop 项目）；公开标识、非密钥 */
+var WC_CHAINS = { eth: 1, bsc: 56, arb: 42161 };
+var wcProvider = null, wcInitP = null;
+function wcSetBox(key){
+  var box = document.getElementById("wcBox"); if(!box) return;
+  var show = !!WC_PROJECT_ID && !!WC_CHAINS[key];
+  box.style.display = show ? "" : "none";
+  document.getElementById("wcWallets").style.display = "none";
+  document.getElementById("wcQR").style.display = "none";
+  document.getElementById("wcHint").textContent = "";
+  var b = document.getElementById("wcPayBtn"); if(b) b.disabled = false;
+}
+function wcLoadSdk(){
+  var g = window["@walletconnect/universal-provider"];
+  if(g && g.UniversalProvider) return Promise.resolve(g.UniversalProvider);
+  return new Promise(function(resolve, reject){
+    var s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/@walletconnect/universal-provider@2.26.0/dist/index.umd.js";
+    s.onload = function(){ var gg = window["@walletconnect/universal-provider"]; (gg && gg.UniversalProvider) ? resolve(gg.UniversalProvider) : reject(new Error("钱包组件加载失败")); };
+    s.onerror = function(){ reject(new Error("钱包组件加载失败，请检查网络")); };
+    document.head.appendChild(s);
+  });
+}
+function wcInit(){
+  if(wcProvider) return Promise.resolve(wcProvider);
+  if(wcInitP) return wcInitP;
+  wcInitP = wcLoadSdk().then(function(UP){
+    return UP.init({ projectId: WC_PROJECT_ID, metadata: { name: "万能手商城", description: "USDT 付款", url: "https://qixiaoyuan.eu.cc", icons: ["https://qixiaoyuan.eu.cc/favicon.ico"] } });
+  }).then(function(p){ wcProvider = p; return p; }, function(e){ wcInitP = null; throw e; });
+  return wcInitP;
+}
+function wcSessionHas(p, chainId){
+  try{
+    var accs = (p.session && p.session.namespaces && p.session.namespaces.eip155 && p.session.namespaces.eip155.accounts) || [];
+    return accs.some(function(a){ return a.indexOf("eip155:" + chainId + ":") === 0; });
+  }catch(e){ return false; }
+}
+function wcPay(){
+  if(!order || !WC_CHAINS[order.key]) return;
+  var key = order.key, net = order.net, chainId = WC_CHAINS[key];
+  var usdtShown = usdtOf(order.prod.price);
+  var btn = document.getElementById("wcPayBtn");
+  btn.disabled = true;
+  setStatus("正在连接钱包服务…");
+  wcInit().then(function(p){
+    if(wcSessionHas(p, chainId)) return p;
+    document.getElementById("wcHint").textContent = "点你的钱包打开，批准连接后会再跳过去让你确认付款；电脑付款可直接扫码。";
+    var w = document.getElementById("wcWallets"); w.style.display = "flex";
+    var q = document.getElementById("wcQR");
+    var h = document.getElementById("wcHint");
+    var links = { trust: "https://link.trustwallet.com/wc?uri=", metamask: "https://metamask.app.link/wc?uri=", tp: "tpoutside://wc?uri=", imtoken: "imtokenv2://wc?uri=" };
+    p.on("display_uri", function(uri){
+      q.src = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" + encodeURIComponent(uri);
+      q.style.display = "block";
+      var bs = w.querySelectorAll("[data-wc]");
+      for(var i = 0; i < bs.length; i++){
+        (function(b){
+          b.onclick = function(){ location.href = (links[b.getAttribute("data-wc")] || "") + encodeURIComponent(uri); };
+        })(bs[i]);
+      }
+      h.textContent = "配对请求已生成：点上方你的钱包打开（或扫下方二维码），在钱包里点批准连接。连接成功后会自动发起付款确认。";
+      setStatus("等待你在钱包 App 里批准连接…");
+    });
+    setStatus("正在生成配对请求…");
+    return p.connect({ namespaces: { eip155: { methods: ["eth_sendTransaction"], chains: ["eip155:" + chainId], events: ["accountsChanged", "chainChanged"] } } }).then(function(){ return p; });
+  }).then(function(p){
+    var accs = (p.session.namespaces.eip155.accounts || []);
+    var me = null;
+    for(var i = 0; i < accs.length; i++){
+      if(accs[i].indexOf("eip155:" + chainId + ":") === 0){ me = "0x" + accs[i].split(":")[2].replace(/^0x/, ""); break; }
+    }
+    if(!me) throw new Error("钱包没有返回这条链的地址，换个钱包或手动转账");
+    document.getElementById("wcWallets").style.display = "none";
+    document.getElementById("wcQR").style.display = "none";
+    document.getElementById("wcHint").textContent = "";
+    setStatus("钱包已连接，正在发起 " + (usdtShown || "") + " USDT 付款…请切到钱包 App 点「确认/签名」。");
+    var amountHex = BigInt(String(order.need)).toString(16);
+    var data = "0xa9059cbb" + String(net.seller).toLowerCase().replace(/^0x/, "").padStart(64, "0") + amountHex.padStart(64, "0");
+    return p.request({ method: "eth_sendTransaction", params: [{ from: me, to: net.token, value: "0x0", data: data }] }, "eip155:" + chainId);
+  }).then(function(hash){
+    btn.disabled = false;
+    document.getElementById("wcHint").textContent = "";
+    setStatus("钱包已广播交易，正在登记订单…");
+    onPaid(hash);
+  }).catch(function(e){
+    btn.disabled = false;
+    setStatus("钱包付款没完成（" + (e && e.message ? String(e.message).slice(0, 100) : "已取消") + "）。也可以复制地址手动转账，付完点上方检测。");
+  });
+}
+document.getElementById("wcPayBtn").onclick = wcPay;
 function beginPoll(){
   setStatus('<span class="spin">⏳</span> 等待付款…（每 15 秒自动检测一次）');
   poll();
