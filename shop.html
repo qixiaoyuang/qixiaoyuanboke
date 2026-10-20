@@ -1772,11 +1772,12 @@ var revealedShips = {};
 var focusOrderId = null;
 function goMyOrders(orderId){ stopOrder(); stopStatus(); focusOrderId = orderId || null; loadMyOrders(); show("view-myorders"); }
 /* ===== 2FA 验证码：识别发货内容里的 TOTP 密钥，在买家本地生成当前验证码 ===== */
-function isTotpSecret(t){ return /^[A-Z2-7]{16,64}$/.test(t) && /[A-Z]/.test(t) && /[2-7]/.test(t); }
+function isTotpSecret(t){ return /^[A-Z2-7]{16,64}$/.test(t) && /[A-Z]/.test(t); }
 function findTotpSecret(content){
   if(!content) return "";
   var s = String(content);
-  var m = s.match(/(?:2fa|totp|secret|密钥|谷歌验证|动态口令)[^\nA-Za-z2-7]{0,6}([A-Za-z2-7][A-Za-z2-7 ]{14,}[A-Za-z2-7])/i);
+  var flat = s.replace(/\n/g, " ");
+  var m = flat.match(/(?:2fa|totp|secret|密钥|秘钥|谷歌验证|动态口令)[^\nA-Za-z2-7]{0,6}([A-Za-z2-7][A-Za-z2-7 ]{14,}[A-Za-z2-7])/i);
   if(m){ var v = m[1].replace(/ /g, "").toUpperCase(); if(isTotpSecret(v)) return v; }
   var parts = s.split(/----|\n/);
   for(var i = 0; i < parts.length; i++){
