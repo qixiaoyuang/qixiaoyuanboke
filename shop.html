@@ -16,7 +16,7 @@
 .pimgs img { width:100%; height:160px; object-fit:cover; flex:0 0 100%; scroll-snap-align:start; display:block; background:#eee; }
 .pimg-dots { display:flex; gap:5px; justify-content:center; padding:7px 0 3px; }
 .pimg-dots span { width:6px; height:6px; border-radius:50%; background:#ccc; }
-.pimg-dots span.on { background:#e2482e; }
+.pimg-dots span.on { background:#1a1a1a; }
 .product .info { padding:14px 16px; }
 .product .nm { font-weight:700; margin:0 0 6px; }
 .product .ds { color:var(--muted); font-size:.85rem; margin:0 0 10px; }
@@ -24,7 +24,7 @@
 .product .sold { color:var(--muted); font-size:.82rem; margin:0 0 4px; }
 .product .stk { color:var(--text); font-size:.82rem; font-weight:700; margin:0 0 10px; }
 .product .stk.none { display:none; }
-.longpress-hint { color:#d32f2f; font-size:15px; font-weight:700; margin:6px 16px 0; }
+.longpress-hint { color:#111; font-size:15px; font-weight:700; margin:6px 16px 0; }
 .order-box { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px; margin:16px auto; max-width:520px; text-align:left; font-size:.9rem; }
 .order-box .rowline { display:flex; justify-content:space-between; gap:12px; padding:4px 0; }
 .order-box .rowline span:first-child { color:var(--muted); flex-shrink:0; }
@@ -40,28 +40,27 @@
 .pm-btn svg { flex-shrink:0; }
 .pm-emoji { font-size:1.5rem; width:30px; text-align:center; flex-shrink:0; }
 .ptype-tag { display:inline-block; font-size:.68rem; font-weight:600; border:1px solid var(--border); border-radius:20px; padding:1px 8px; margin-left:8px; color:var(--muted); vertical-align:middle; }
-.ptype-tag.free { color:#1a7f37; border-color:#1a7f37; }
+.ptype-tag.free { color:#6B7280; border-color:#6B7280; }
 .addr-form { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px; margin:12px 0; max-width:420px; }
 .addr-form h4 { margin:0 0 10px; font-size:.95rem; }
 .addr-form input, .addr-form textarea { width:100%; box-sizing:border-box; padding:9px 10px; margin:0 0 8px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); font-size:.9rem; }
 .addr-form .row2 { display:flex; gap:8px; }
 .addr-form .row2 input { margin-bottom:8px; }
-.ship-box { background:var(--card); border:1px solid var(--border); border-left:4px solid #1d9e6c; border-radius:8px; padding:10px 12px; margin-top:10px; font-size:.85rem; }
+.ship-box { background:var(--card); border:1px solid var(--border); border-left:4px solid #6B7280; border-radius:8px; padding:10px 12px; margin-top:10px; font-size:.85rem; }
 .ship-box .sh-title { font-weight:700; margin-bottom:6px; }
 .ship-box pre { white-space:pre-wrap; word-break:break-all; background:var(--bg); border:1px dashed var(--border); border-radius:6px; padding:8px; margin:6px 0 0; font-size:.85rem; font-family:inherit; }
 .track-tl { margin:8px 0 0; padding:0; list-style:none; }
 .track-tl li { position:relative; padding:0 0 10px 18px; font-size:.82rem; border-left:2px solid var(--border); margin-left:5px; }
 .track-tl li:last-child { padding-bottom:0; }
-.track-tl li::before { content:""; position:absolute; left:-5px; top:4px; width:8px; height:8px; border-radius:50%; background:#1d9e6c; }
+.track-tl li::before { content:""; position:absolute; left:-5px; top:4px; width:8px; height:8px; border-radius:50%; background:#1a1a1a; }
 .track-tl .tt { color:var(--muted); font-size:.75rem; }
 .pay-panel { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:22px; margin:16px 0; text-align:center; }
 .pay-addr { word-break:break-all; font-size:.85rem; color:var(--muted); background:var(--bg); border:1px dashed var(--border); border-radius:8px; padding:10px; margin:12px 0; }
-.copy-btn, .check-btn { border:none; background:linear-gradient(270deg,#ff5f6d,#ffb347,#f9f871,#7bf59b,#6dd5fa,#a18cd1,#ff5f6d); background-size:600% 600%; animation:djn-rainbow 2s linear infinite; color:#fff; border-radius:999px; padding:8px 22px; cursor:pointer; font-size:.9rem; margin:4px; }
+.copy-btn, .check-btn { border:none; background:var(--djn-text); color:var(--djn-bg); border-radius:999px; padding:8px 22px; cursor:pointer; font-size:.9rem; margin:4px; }
 .cancel-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-size:.85rem; margin-top:8px; }
 .status { font-size:.92rem; margin:10px 0; }
 .spin { display:inline-block; animation:spin 1s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
-@keyframes djn-rainbow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 .success { text-align:center; padding:40px 0; }
 .success .tick { font-size:3rem; }
 .back { color:var(--link); text-decoration:none; font-size:.9rem; }
@@ -81,11 +80,11 @@
 .ord .t { font-weight:700; }
 .ord .d { color:var(--muted); font-size:.82rem; margin-top:4px; word-break:break-all; }
 .obadge { display:inline-block; font-size:.75rem; border-radius:999px; padding:2px 10px; margin-left:6px; }
-.obadge.pending { background:#fff3cd; color:#856404; }
+.obadge.pending { background:#F1F2F6; color:#6B7280; }
 .obadge.unpaid { background:#e9ecef; color:#495057; }
-.obadge.shipped { background:#d1ecf1; color:#0c5460; }
-.obadge.completed { background:#d4edda; color:#155724; }
-.obadge.cancelled { background:#fdecea; color:#b3261e; }
+.obadge.shipped { background:#F1F2F6; color:#6B7280; }
+.obadge.completed { background:#F1F2F6; color:#6B7280; }
+.obadge.cancelled { background:#F1F2F6; color:#6B7280; }
 .claim-input { width:100%; padding:10px 12px; font-size:.9rem; border:1px solid var(--border); border-radius:8px; box-sizing:border-box; background:var(--bg); color:var(--text); margin:6px 0; }
 .claim-sel { width:100%; padding:10px; font-size:.9rem; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); margin:6px 0; }
 
@@ -98,33 +97,33 @@ body.djn::before, body.djn::after{ display:none; }
 :root{
   --djn-bg:#F5F6FA; --djn-card:#FFFFFF; --djn-border:#E9ECF1;
   --djn-text:#14161A; --djn-muted:#6B7280; --djn-faint:#9AA1AD;
-  --djn-primary:#6366F1; --djn-primary-d:#4F46E5;
+  --djn-primary:#1a1a1a; --djn-primary-d:#1a1a1a;
   --djn-shadow:0 2px 14px rgba(23,25,40,.07);
-  --djn-gbg:#DCFCE7; --djn-gtx:#15803D;
-  --djn-bbg:#DBEAFE; --djn-btx:#1D4ED8;
+  --djn-gbg:#F1F2F6; --djn-gtx:#6B7280;
+  --djn-bbg:#F1F2F6; --djn-btx:#6B7280;
   --djn-grbg:#F1F2F6; --djn-grtx:#6B7280;
 }
 html[data-theme="dark"]{
   --djn-bg:#101218; --djn-card:#171B24; --djn-border:#262C38;
   --djn-text:#EDEFF3; --djn-muted:#9AA1AD; --djn-faint:#6E7683;
-  --djn-primary:#818CF8; --djn-primary-d:#6366F1;
+  --djn-primary:#EDEFF3; --djn-primary-d:#EDEFF3;
   --djn-shadow:0 2px 14px rgba(0,0,0,.4);
-  --djn-gbg:rgba(34,197,94,.16); --djn-gtx:#4ADE80;
-  --djn-bbg:rgba(96,165,250,.16); --djn-btx:#93C5FD;
+  --djn-gbg:rgba(255,255,255,.08); --djn-gtx:#9AA1AD;
+  --djn-bbg:rgba(255,255,255,.08); --djn-btx:#9AA1AD;
   --djn-grbg:#232936; --djn-grtx:#9AA1AD;
 }
 .djn-wrap{ max-width:1180px; margin:0 auto; padding:0 20px; }
 .djn-header{ position:sticky; top:0; z-index:50; background:var(--djn-card); border-bottom:1px solid var(--djn-border); }
 .djn-header-in{ max-width:1180px; margin:0 auto; padding:0 20px; height:60px; display:flex; align-items:center; gap:26px; }
 .djn-brand{ display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--djn-text); font-weight:800; font-size:1.15rem; }
-.djn-logo{ width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#6366F1,#8B5CF6); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; flex-shrink:0; }
+.djn-logo{ width:34px; height:34px; border-radius:50%; background:var(--djn-text); color:var(--djn-bg); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; flex-shrink:0; }
 .djn-nav{ display:flex; gap:22px; }
 .djn-nav a{ color:var(--djn-text); text-decoration:none; font-size:.95rem; font-weight:600; }
 .djn-nav a:hover{ color:var(--djn-primary); }
 .djn-tools{ margin-left:auto; display:flex; align-items:center; gap:6px; }
 .djn-iconbtn{ width:38px; height:38px; border-radius:50%; border:none; background:var(--djn-grbg); color:var(--djn-text); font-size:1.05rem; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
 .djn-iconbtn:hover{ background:var(--djn-border); }
-.djn-loginbtn{ border:none; background:linear-gradient(270deg,#ff5f6d,#ffb347,#f9f871,#7bf59b,#6dd5fa,#a18cd1,#ff5f6d); background-size:600% 600%; animation:djn-rainbow 2s linear infinite; color:#fff; font-weight:700; font-size:.92rem; padding:9px 26px; border-radius:999px; cursor:pointer; margin-left:6px; }
+.djn-loginbtn{ border:none; background:var(--djn-text); color:var(--djn-bg); font-weight:700; font-size:.92rem; padding:9px 26px; border-radius:999px; cursor:pointer; margin-left:6px; }
 .djn-loginbtn:hover{ filter:brightness(1.1); }
 .djn-searchbar{ max-width:1180px; margin:0 auto; padding:0 20px 12px; }
 .djn-searchbar input{ width:100%; padding:11px 16px; border:1px solid var(--djn-border); border-radius:999px; background:var(--djn-bg); color:var(--djn-text); font-size:.95rem; outline:none; }
@@ -134,13 +133,13 @@ html[data-theme="dark"]{
 .djn-cats-head a{ color:var(--djn-muted); text-decoration:none; font-size:.88rem; }
 .djn-cats-head a:hover{ color:var(--djn-primary); }
 .djn-cats{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
-.djn-cat{ border:none; border-radius:12px; padding:12px 14px; color:#fff; text-align:left; cursor:pointer; display:flex; align-items:center; gap:10px; box-shadow:var(--djn-shadow); }
+.djn-cat{ border:1px solid var(--djn-border); border-radius:12px; padding:12px 14px; color:var(--djn-text); text-align:left; cursor:pointer; display:flex; align-items:center; gap:10px; box-shadow:var(--djn-shadow); }
 .djn-cat .ic{ font-size:1.4rem; line-height:1; }
 .djn-cat .t{ font-weight:800; font-size:.92rem; }
 .djn-cat .n{ font-size:.75rem; opacity:.88; }
-.djn-cat.c-virtual{ background:linear-gradient(270deg,#ff5f6d,#ffb347,#f9f871,#7bf59b,#6dd5fa,#a18cd1,#ff5f6d); background-size:600% 600%; animation:djn-rainbow 6s linear infinite; }
-.djn-cat.c-physical{ background:linear-gradient(270deg,#ff5f6d,#ffb347,#f9f871,#7bf59b,#6dd5fa,#a18cd1,#ff5f6d); background-size:600% 600%; animation:djn-rainbow 6s linear infinite; }
-.djn-cat.c-freebie{ background:linear-gradient(270deg,#ff5f6d,#ffb347,#f9f871,#7bf59b,#6dd5fa,#a18cd1,#ff5f6d); background-size:600% 600%; animation:djn-rainbow 6s linear infinite; }
+.djn-cat.c-virtual{ background:var(--djn-card); }
+.djn-cat.c-physical{ background:var(--djn-card); }
+.djn-cat.c-freebie{ background:var(--djn-card); }
 .djn-cat.active{ outline:3px solid var(--djn-text); outline-offset:2px; }
 .djn-sec-head{ display:flex; align-items:center; justify-content:space-between; margin:30px 0 14px; }
 .djn-sec-head h2{ margin:0; font-size:1.25rem; font-weight:800; color:var(--djn-text); }
@@ -164,9 +163,9 @@ html[data-theme="dark"]{
 .djn-badge.b-blue{ background:var(--djn-bbg); color:var(--djn-btx); }
 .djn-badge.b-gray{ background:var(--djn-grbg); color:var(--djn-grtx); }
 .djn-cfoot{ display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:8px; }
-.djn-cprice{ color:var(--djn-primary); font-weight:800; font-size:1.12rem; }
+.djn-cprice{ color:#e53935; font-weight:800; font-size:1.12rem; }
 .djn-cprice small{ color:var(--djn-faint); font-weight:400; font-size:.75rem; }
-.djn-buybtn{ border:none; background:linear-gradient(270deg,#ff5f6d,#ffb347,#f9f871,#7bf59b,#6dd5fa,#a18cd1,#ff5f6d); background-size:600% 600%; animation:djn-rainbow 2s linear infinite; color:#fff; font-weight:700; font-size:.88rem; padding:9px 20px; border-radius:999px; cursor:pointer; white-space:nowrap; }
+.djn-buybtn{ border:none; background:var(--djn-text); color:var(--djn-bg); font-weight:700; font-size:.88rem; padding:9px 20px; border-radius:999px; cursor:pointer; white-space:nowrap; }
 .djn-buybtn:hover{ filter:brightness(1.1); }
 .djn-buybtn:disabled{ background:var(--djn-grtx); cursor:not-allowed; opacity:.65; }
 .djn-crumb{ color:var(--djn-muted); font-size:.85rem; margin:22px 0 16px; }
@@ -181,11 +180,11 @@ html[data-theme="dark"]{
 .djn-dcat{ color:var(--djn-faint); font-size:.85rem; margin:0 0 6px; }
 .djn-dtitle{ margin:0 0 10px; font-size:1.5rem; font-weight:800; color:var(--djn-text); }
 .djn-plabel{ color:var(--djn-faint); font-size:.82rem; margin:14px 0 2px; }
-.djn-dprice{ margin:0; color:var(--djn-primary); font-weight:800; font-size:1.7rem; }
+.djn-dprice{ margin:0; color:#e53935; font-weight:800; font-size:1.7rem; }
 .djn-dprice small{ color:var(--djn-faint); font-size:.85rem; font-weight:400; }
 .djn-hr{ border:none; border-top:1px solid var(--djn-border); margin:16px 0; }
 .djn-dstock{ color:var(--djn-text); font-size:.92rem; font-weight:600; margin:0 0 14px; }
-.djn-buybig{ width:100%; border:none; background:linear-gradient(270deg,#ff5f6d,#ffb347,#f9f871,#7bf59b,#6dd5fa,#a18cd1,#ff5f6d); background-size:600% 600%; animation:djn-rainbow 2s linear infinite; color:#fff; font-size:1.05rem; font-weight:800; padding:14px; border-radius:12px; cursor:pointer; }
+.djn-buybig{ width:100%; border:none; background:var(--djn-text); color:var(--djn-bg); font-size:1.05rem; font-weight:800; padding:14px; border-radius:12px; cursor:pointer; }
 .djn-buybig:hover{ filter:brightness(1.1); }
 .djn-buybig:disabled{ background:var(--djn-grtx); cursor:not-allowed; }
 .djn-tipbar{ margin-top:14px; background:var(--djn-bbg); color:var(--djn-btx); border-radius:10px; padding:10px 14px; font-size:.85rem; }
@@ -258,7 +257,7 @@ html[data-theme="dark"]{
 <div class="section-head"><h2>确认订单</h2></div>
 <div id="orderSummary"></div>
 <div id="payPanel" class="pay-panel hidden">
-<p class="pay-note2" style="color:#d93025;font-weight:700;">⚠️ 请确保店主实际收到 <span id="payNeedFull"></span> USDT：从交易所提币时手续费是另外扣的，请把手续费算进去、足额转出；少到账系统检测不到付款。</p>
+<p class="pay-note2" style="color:#111;font-weight:700;">⚠️ 请确保店主实际收到 <span id="payNeedFull"></span> USDT：从交易所提币时手续费是另外扣的，请把手续费算进去、足额转出；少到账系统检测不到付款。</p>
 <p>请支付 <b id="payAmount" style="font-size:1.3rem;color:var(--text)"></b></p>
 <p style="font-weight:700;margin:0 0 8px;">支付网络：<span id="payNetLabel"></span></p>
 <img id="payQR" src="" alt="收款二维码" width="200" height="200">
@@ -341,20 +340,20 @@ html[data-theme="dark"]{
     <p id="authHint" class="pay-note2" style="margin:0 0 6px;color:#6b6b6b;"></p>
     <input type="email" id="authEmail" class="auth-input" placeholder="邮箱" autocomplete="email">
     <input type="password" id="authPwd" class="auth-input" placeholder="密码（至少 6 位）" autocomplete="current-password">
-    <p id="authErr" style="display:none;color:#b3261e;font-size:.85rem;margin:8px 0 0;"></p>
+    <p id="authErr" style="display:none;color:#111;font-size:.85rem;margin:8px 0 0;"></p>
     <div style="display:flex;gap:10px;margin-top:14px;">
       <button id="authCancel" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">取消</button>
       <button id="authGo" style="flex:1;padding:10px;border:none;border-radius:8px;background:#1a1a1a;color:#fff;font-weight:700;cursor:pointer;">登录</button>
     </div>
-    <p style="margin:12px 0 0;font-size:.85rem;"><a href="#" id="authSwitch" style="color:#1a73e8;">没有账号？去注册</a></p>
-    <p id="authForgotRow" style="margin:8px 0 0;font-size:.85rem;"><a href="#" id="authForgot" style="color:#1a73e8;">忘记密码？</a></p>
+    <p style="margin:12px 0 0;font-size:.85rem;"><a href="#" id="authSwitch" style="color:#111;">没有账号？去注册</a></p>
+    <p id="authForgotRow" style="margin:8px 0 0;font-size:.85rem;"><a href="#" id="authForgot" style="color:#111;">忘记密码？</a></p>
     </div>
     <div id="authResetBox" style="display:none;">
     <p style="margin:0 0 4px;font-weight:700;font-size:1.05rem;">找回密码</p>
     <p style="margin:0 0 6px;font-size:.85rem;color:#6b6b6b;">输入注册时用的邮箱，我们会发一封重置邮件，点邮件里的链接设置新密码。</p>
     <input type="email" id="resetEmail" class="auth-input" placeholder="注册时用的邮箱" autocomplete="email">
-    <p id="resetErr" style="display:none;color:#b3261e;font-size:.85rem;margin:8px 0 0;"></p>
-    <p id="resetOk" style="display:none;color:#2e7d32;font-size:.85rem;margin:8px 0 0;"></p>
+    <p id="resetErr" style="display:none;color:#111;font-size:.85rem;margin:8px 0 0;"></p>
+    <p id="resetOk" style="display:none;color:#111;font-weight:700;font-size:.85rem;margin:8px 0 0;"></p>
     <div style="display:flex;gap:10px;margin-top:14px;">
       <button id="resetBack" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">返回</button>
       <button id="resetGo" style="flex:1;padding:10px;border:none;border-radius:8px;background:#1a1a1a;color:#fff;font-weight:700;cursor:pointer;">发送重置邮件</button>
@@ -364,7 +363,7 @@ html[data-theme="dark"]{
     <p style="margin:0 0 4px;font-weight:700;font-size:1.05rem;">设置新密码</p>
     <input type="password" id="newPw1" class="auth-input" placeholder="新密码（至少 6 位）" autocomplete="new-password">
     <input type="password" id="newPw2" class="auth-input" placeholder="再输入一次新密码" autocomplete="new-password">
-    <p id="newPwErr" style="display:none;color:#b3261e;font-size:.85rem;margin:8px 0 0;"></p>
+    <p id="newPwErr" style="display:none;color:#111;font-size:.85rem;margin:8px 0 0;"></p>
     <div style="margin-top:14px;">
       <button id="newPwGo" style="width:100%;padding:10px;border:none;border-radius:8px;background:#1a1a1a;color:#fff;font-weight:700;cursor:pointer;">保存新密码</button>
     </div>
@@ -376,21 +375,21 @@ html[data-theme="dark"]{
 </div>
 <style>
 .ct-tab{flex:1;padding:9px 0;border:none;background:#f0f0f0;color:#555;font-size:14px;cursor:pointer;border-radius:8px;font-weight:600}
-.ct-tab.active{background:#2563eb;color:#fff}
+.ct-tab.active{background:#1a1a1a;color:#fff}
 .ct-panel{display:flex;flex-direction:column;flex:1;min-height:0}
 .ct-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;background:#f5f7fa;border-radius:8px;min-height:200px;max-height:320px}
 .ct-msg{max-width:85%;padding:8px 11px;border-radius:12px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
 .ct-bot{background:#fff;color:#222;align-self:flex-start;border:1px solid #e5e7eb;border-bottom-left-radius:4px}
-.ct-user{background:#2563eb;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.ct-user{background:#1a1a1a;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
 .ct-seller{background:#fff;color:#222;align-self:flex-start;border:1px solid #e5e7eb;border-bottom-left-radius:4px}
-.ct-buyer{background:#059669;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
-.ct-sys{color:#888;font-size:12px;align-self:center;text-align:center}
-.ct-typing{color:#888;font-size:13px;align-self:flex-start}
+.ct-buyer{background:#1a1a1a;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.ct-sys{color:#111;font-weight:700;font-size:12px;align-self:center;text-align:center}
+.ct-typing{color:#111;font-weight:700;font-size:13px;align-self:flex-start}
 .ct-form{display:flex;gap:8px;margin-top:10px}
 .ct-input{flex:1;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:14px;outline:none;min-width:0}
-.ct-send{border:none;background:#2563eb;color:#fff;padding:0 18px;border-radius:8px;font-size:14px;cursor:pointer;flex-shrink:0}
-.ct-to-human{margin-top:8px;width:100%;padding:9px;border:1px dashed #059669;background:#f0fdf4;color:#059669;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600}
-.ct-to-human:hover{background:#dcfce7}
+.ct-send{border:none;background:#1a1a1a;color:#fff;padding:0 18px;border-radius:8px;font-size:14px;cursor:pointer;flex-shrink:0}
+.ct-to-human{margin-top:8px;width:100%;padding:9px;border:1px dashed #6B7280;background:#F1F2F6;color:#111;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600}
+.ct-to-human:hover{background:#F1F2F6}
 </style>
 <div id="contactModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9999;">
   <div id="contactBox" style="background:var(--card,#fff);border-radius:14px;padding:24px;width:320px;max-width:88vw;color:var(--text,#1a1a1a);"></div>
@@ -801,7 +800,7 @@ function stopOrder(){ if(orderTimer){ clearInterval(orderTimer); orderTimer=null
 function coinIcon(letter, bg, fg){
   return '<svg width="30" height="30" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="'+bg+'"/><text x="16" y="22" text-anchor="middle" fill="'+fg+'" font-size="17" font-weight="bold" font-family="Arial,sans-serif">'+letter+'</text></svg>';
 }
-var ICON_USDT = coinIcon("T", "#26A17B", "#ffffff");
+var ICON_USDT = coinIcon("T", "#6B7280", "#ffffff");
 var NET_ICON = { bsc:ICON_BSC, arb:ICON_ARB, eth:ICON_ETH, plasma:ICON_PLASMA, aptos:ICON_APTOS, sol:ICON_SOL, tron:ICON_TRON };
 var payMethodProduct = null;
 function pmBtn(iconHtml, label){
@@ -875,7 +874,7 @@ function showPayNets(p, addr){
   box.appendChild(pmTitle("选择支付网络"));
   NET_ORDER.forEach(function(key){
     var net = NETS[key];
-    var iconHtml = NET_ICON[key] ? '<img src="'+NET_ICON[key]+'" width="30" height="30" style="border-radius:50%;flex-shrink:0;display:block" alt="">' : coinIcon((net.label||"?").trim().charAt(0).toUpperCase(), "#7c6ff0", "#ffffff");
+    var iconHtml = NET_ICON[key] ? '<img src="'+NET_ICON[key]+'" width="30" height="30" style="border-radius:50%;flex-shrink:0;display:block" alt="">' : coinIcon((net.label||"?").trim().charAt(0).toUpperCase(), "#6B7280", "#ffffff");
     var b = pmBtn(iconHtml, net.label);
     b.onclick = (function(k){ return function(){ closePayMethods(); showOrderView(p); chooseNet(k, p, addr); }; })(key);
     box.appendChild(b);
@@ -903,7 +902,7 @@ function showFreebieForm(p){
   inp.className = "auth-input"; inp.style.marginBottom = "4px";
   inp.value = (myUser && myUser.email) || "";
   box.appendChild(inp);
-  var err = document.createElement("p"); err.id = "freebieErr"; err.style.cssText = "display:none;color:#b3261e;font-size:.85rem;margin:8px 0 0;";
+  var err = document.createElement("p"); err.id = "freebieErr"; err.style.cssText = "display:none;color:#111;font-size:.85rem;margin:8px 0 0;";
   box.appendChild(err);
   var go = pmBtn("🎁", "确认领取"); go.id = "freebieGo";
   go.onclick = function(){ claimFreebieOrder(p); };
@@ -1606,7 +1605,7 @@ function shipBox(o){
       var inp = document.createElement("input"); inp.type = "password"; inp.placeholder = "账号登录密码"; inp.autocomplete = "current-password";
       inp.className = "auth-input"; inp.style.cssText = "margin:8px 0 4px;";
       lock.appendChild(inp);
-      var err = document.createElement("div"); err.style.cssText = "display:none;color:#b3261e;font-size:.85rem;margin:4px 0;";
+      var err = document.createElement("div"); err.style.cssText = "display:none;color:#111;font-size:.85rem;margin:4px 0;";
       lock.appendChild(err);
       var btn = document.createElement("button"); btn.className = "check-btn"; btn.style.fontSize = ".85rem"; btn.textContent = "验证并查看";
       btn.onclick = function(){
