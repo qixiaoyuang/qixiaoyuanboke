@@ -184,7 +184,7 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
 <input type="hidden" id="eId">
 <label>商品名称</label><input type="text" id="eName">
 
-<div class="row"><div><label>价格（USD）</label><input type="text" id="ePrice" inputmode="decimal"></div><div><label>库存（件，留空=不限）</label><input type="text" id="eStock" inputmode="numeric"></div></div>
+<div class="row"><div><label>价格（¥）</label><input type="text" id="ePrice" inputmode="decimal"></div><div><label>库存（件，留空=不限）</label><input type="text" id="eStock" inputmode="numeric"></div></div>
 <label>商品图片（最多5张，第一张为封面）</label><div id="eImgsBox" style="display:flex;gap:10px;flex-wrap:wrap;margin:8px 0"></div>
 <div style="display:flex;gap:8px"><input type="text" id="eImgUrl" placeholder="粘贴图片网址 https://…" style="flex:1;min-width:0"><button type="button" class="mini" id="eAddUrlBtn" style="flex-shrink:0">添加</button></div>
 <div style="display:flex;gap:10px;align-items:center;margin-top:8px"><button type="button" class="mini" id="eUploadImgBtn">📷 选择手机照片上传</button><input type="file" id="eImgFile" accept="image/*" class="hidden"><span class="hint" id="eImgUploadStatus" style="margin:0"></span></div>
@@ -490,7 +490,7 @@ function renderCatsAdmin(){
       var ptLabel = c.ptype === "physical" ? "实物发货" : (c.ptype === "freebie" ? "免费领取" : "虚拟发货");
       panel.innerHTML = '<div style="display:flex;gap:8px;flex-wrap:wrap">'
         + '<input type="text" data-q="name" placeholder="商品名称" style="flex:2;min-width:110px;margin:0">'
-        + '<input type="text" data-q="price" placeholder="价格 USD" inputmode="decimal" style="flex:1;min-width:70px;margin:0">'
+        + '<input type="text" data-q="price" placeholder="价格 ¥" inputmode="decimal" style="flex:1;min-width:70px;margin:0">'
         + '<input type="text" data-q="stock" placeholder="库存(留空不限)" inputmode="numeric" style="flex:1;min-width:70px;margin:0">'
         + '<input type="text" data-q="xianyu" placeholder="闲鱼链接(可选)" style="flex:1;min-width:100px;margin:0">'
         + '<button type="button" class="mini green" data-q="ok" style="flex:none">上架</button>'
@@ -542,7 +542,7 @@ function renderCatsAdmin(){
           var t = document.createElement("div"); t.className = "t"; t.textContent = p.name;
           var dd = document.createElement("div"); dd.className = "d";
           dd.style.cssText = "color:#111;font-weight:700;white-space:nowrap;";
-          dd.textContent = p.price + " USD" + ((p.stock != null && p.stock !== "") ? " · 库存 " + p.stock + " 件" : " · 库存不限");
+          dd.textContent = "¥" + p.price + ((p.stock != null && p.stock !== "") ? " · 库存 " + p.stock + " 件" : " · 库存不限");
           meta.appendChild(t); meta.appendChild(dd); pd.appendChild(meta);
           var eb = document.createElement("button"); eb.className = "del"; eb.textContent = "编辑";
           eb.style.cssText = "background:#1d5fa8;margin-right:8px;flex:none";
@@ -1217,7 +1217,7 @@ function renderOrders(list){
 function renderOneOrder(o){
     const div = document.createElement("div"); div.className = "ord";
     const t = document.createElement("div"); t.className = "t";
-    t.textContent = (o.ptype === "physical" ? "【实物】" : "【虚拟】") + " " + (o.productName || "未知商品") + " · " + o.price + " USD ";
+    t.textContent = (o.ptype === "physical" ? "【实物】" : "【虚拟】") + " " + (o.productName || "未知商品") + " · ¥" + o.price + " ";
     const b = document.createElement("span"); b.innerHTML = badge(o.status || "pending"); t.appendChild(b);
     if(o.chain === "xianyu" && (o.status || "") === "unpaid"){ b.innerHTML = '<span class="obadge unpaid">' + (o.xyClaimed ? "闲鱼·待确认收款" : "闲鱼·未付款") + '</span>'; }
     const d = document.createElement("div"); d.className = "d";
@@ -1503,14 +1503,14 @@ function renderStats(list){
     months[m].count += 1;
   });
   const keys = Object.keys(months).sort().reverse();
-  let html = '<table class="stat-table"><tr><th>月份</th><th>营业额（USD）</th><th>订单数量</th></tr>';
+  let html = '<table class="stat-table"><tr><th>月份</th><th>营业额（¥）</th><th>订单数量</th></tr>';
   keys.forEach(k => {
     html += '<tr><td>' + k + '</td><td>' + months[k].rev.toFixed(2) + '</td><td>' + months[k].count + '</td></tr>';
   });
   html += '</table>';
   const now = new Date(); const ym = now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,"0");
   const cur = months[ym] || { rev: 0, count: 0 };
-  html = '<p style="margin:8px 0 0;font-size:.95rem">本月（' + ym + '）：营业额 <b>' + cur.rev.toFixed(2) + ' USD</b>，订单 <b>' + cur.count + '</b> 笔</p>' + html;
+  html = '<p style="margin:8px 0 0;font-size:.95rem">本月（' + ym + '）：营业额 <b>' + cur.rev.toFixed(2) + ' ¥</b>，订单 <b>' + cur.count + '</b> 笔</p>' + html;
   box.innerHTML = html;
 }
 </script>
