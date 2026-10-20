@@ -278,7 +278,7 @@ html[data-theme="dark"]{
 <p id="wcHint" style="margin:6px 0 0;font-size:.85rem;font-weight:700;color:#111"></p>
 </div>
 <p class="status" id="payStatus"></p>
-<p class="pay-note2">请务必使用上方选择的网络转账，转错网络资产可能丢失。检测到付款后会自动显示成功。</p>
+<p class="pay-note2">请务必使用上方选择的网络转账，转错网络资产可能丢失。支持的钱包扫码付款会自动带上金额；扫不出的就复制地址手动转账。检测到付款后会自动显示成功。</p>
 <button class="cancel-btn" id="cancelOrder">取消订单</button>
 </div>
 </section>
@@ -1147,6 +1147,18 @@ function chooseNet(key,p,addr){
     }
   });
 }
+/* 支付二维码内容：EVM 按 EIP-681 带上合约+链+地址+精确金额，Solana 按 Solana Pay 带金额+代币；钱包扫码即自动填好。其他链只能放地址 */
+var EIP681_CHAINS = { eth: 1, bsc: 56, arb: 42161, plasma: 9745 };
+function payQrData(key, net, usdt, units){
+  var cid = EIP681_CHAINS[key];
+  if(net.kind === "evm" && cid && units != null){
+    return "ethereum:" + net.token + "@" + cid + "/transfer?address=" + net.seller + "&uint256=" + String(units);
+  }
+  if(net.kind === "solana"){
+    return "solana:" + net.seller + "?amount=" + usdt + "&spl-token=" + net.token + "&label=" + encodeURIComponent("万能手商城");
+  }
+  return net.seller;
+}
 var payRateRetry = 0;
 function startPayPanel(key,p,dbId){
   stopOrder();
@@ -1174,15 +1186,17 @@ function startPayPanel(key,p,dbId){
   wcSetBox(key);
   document.getElementById("payAmount").textContent=fmtPrice(p.price)+"（约 "+usdt+" USDT）";
   document.getElementById("payNeedFull").textContent=usdt;
+  var needU = toUnits(usdt, net.dec);
+  document.getElementById("payQR").src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data="+encodeURIComponent(payQrData(key, net, usdt, needU));
   setStatus("正在连接网络…");
   var kind = net.kind || "evm";
   if(kind==="evm"){
     rpc(net.rpc,"eth_blockNumber",[]).then(function(blk){
-      order={key:key,net:net,prod:p,dbId:dbId,need:toUnits(usdt,net.dec),from:blk,errs:0,deadline:Date.now()+30*60*1000};
+      order={key:key,net:net,prod:p,dbId:dbId,need:needU,from:blk,errs:0,deadline:Date.now()+30*60*1000};
       beginPoll();
     }).catch(function(){ setStatus("网络连接失败，请检查网络后点「我已付款，立即检测」重试。"); });
   } else {
-    order={key:key,net:net,prod:p,dbId:dbId,need:toUnits(usdt,net.dec),lastSig:null,lastVer:"-1",errs:0,deadline:Date.now()+30*60*1000};
+    order={key:key,net:net,prod:p,dbId:dbId,need:needU,lastSig:null,lastVer:"-1",errs:0,deadline:Date.now()+30*60*1000};
     beginPoll();
   }
 }
