@@ -111,7 +111,18 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
 <details class="tokenbox">
 <summary style="font-weight:700;cursor:pointer">GitHub 访问令牌（上传商品图片时用）</summary>
 <input type="password" id="token" placeholder="粘贴你的 token（只保存在本浏览器，不会上传到别处）" style="margin-top:8px">
-<p class="hint">只在上传/删除商品图片时需要（图片存在 GitHub 仓库）。商品、订单、分类管理走 Supabase，不需要令牌。获取方法见下方说明。关闭页面即清除。</p>
+<p class="hint">只在上传/删除商品图片时需要（图片存在 GitHub 仓库）。商品、订单、分类管理走 Supabase，不需要令牌。关闭页面即清除。</p>
+<details style="margin-top:8px">
+<summary style="font-weight:700;cursor:pointer">如何获取访问令牌（只需做一次）</summary>
+<ol>
+<li>打开 GitHub → 右上角头像 → <code>Settings</code></li>
+<li>拉到最底下点 <code>Developer settings</code></li>
+<li>点 <code>Personal access tokens</code> → <code>Tokens (classic)</code></li>
+<li>点 <code>Generate new token</code> → <code>Generate new token (classic)</code></li>
+<li>名字随便填，Expiration 选 <code>No expiration</code>，勾选 <code>repo</code> 整组</li>
+<li>拉到底点 <code>Generate token</code>，把 <code>ghp_</code> 开头的复制粘贴到上方输入框（只显示一次）</li>
+</ol>
+</details>
 </details>
 
 <div class="tabs">
@@ -269,16 +280,6 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
 
 <div id="status"></div>
 
-<details>
-<summary>如何获取访问令牌（只需做一次）</summary>
-<ol>
-<li>打开 GitHub → 右上角头像 → <code>Settings</code></li>
-<li>左下角 <code>Developer settings</code> → <code>Personal access tokens</code> → <code>Fine-grained tokens</code></li>
-<li>点击 <code>Generate new token</code>，Repository access 选 <code>Only select repositories</code>，勾选 <code>qixiaoyuanboke</code></li>
-<li>Permissions 里找到 <code>Contents</code>，设为 <code>Read and write</code>，然后生成</li>
-<li>把生成的 token 复制，粘贴到本页上方的输入框即可</li>
-</ol>
-</details>
 </div>
 
 <script>
