@@ -123,10 +123,9 @@ background-size:300% 300%!important;animation:rainbowFlow 8s ease infinite}
 </div>
 
 <div id="paneShop">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><label style="margin:0">商品列表</label><button type="button" class="mini" id="reloadProductsBtn" style="flex:none">↻ 刷新</button></div><div id="productList"></div>
-<div style="margin-top:26px;border-top:1px solid var(--border);padding-top:16px">
-  <label>分类管理</label>
-  <p class="hint">商城首页的分类卡片从这里读取。每个分类都要指定一种发货类型：虚拟发货（卡密/手动发货）、实物发货（下单填收货地址）、免费领取。改名、增删、排序后点"保存分类"，商城立即生效。先在"订单管理"页用管理员账号登录后再保存。</p>
+  <div>
+  <label>分类与商品</label>
+  <p class="hint">点「＋上架」直接往该分类添加商品；点「商品(N)」展开管理该分类的商品（编辑/卡密库/库存/下架）。改名、增删、排序后点"保存分类"，商城立即生效。先在"订单管理"页用管理员账号登录后再保存。</p>
   <div id="catList"></div>
   <div style="display:flex;gap:8px;margin-top:12px">
     <button type="button" class="mini" id="catAddBtn" style="flex:1">＋ 添加分类</button>
@@ -406,7 +405,10 @@ function renderCatsAdmin(){
     PT.forEach(function(p){ h += '<option value="'+p[0]+'"'+(c.ptype===p[0]?" selected":"")+'>'+p[1]+'</option>'; });
     h += '</select>';
     h += '<input type="number" data-f="sort_order" value="'+(c.sort_order==null?0:c.sort_order)+'" title="排序（小的在前）" style="width:70px;flex:none">';
+    var prods = catProds(ptypeNorm(c.ptype || "virtual"));
+    var ck = catKey(c, idx);
     h += '<button type="button" class="mini" data-act="quickadd" style="flex:none">＋上架</button>';
+    h += '<button type="button" class="mini" data-act="prods" style="flex:none;background:#fff;color:#1a1a1a;border:1px solid var(--border)">商品(' + prods.length + ')' + (catExpanded[ck] ? ' ▾' : ' ▸') + '</button>';
     h += '<button type="button" class="del" data-act="del">删除</button>';
     div.innerHTML = h;
     (function(){
@@ -453,6 +455,47 @@ function renderCatsAdmin(){
         handleImageFile(e);
       };
       panel.querySelector('[data-q="cancel"]').onclick = function(){ panel.style.display = "none"; };
+      /* 商品折叠面板 */
+      var pPanel = document.createElement("div");
+      pPanel.style.cssText = "display:" + (catExpanded[ck] ? "block" : "none") + ";flex-basis:100%;margin-top:4px";
+      if(prods.length){
+        prods.forEach(function(p){
+          var pd = document.createElement("div");
+          pd.className = "post";
+          pd.style.cssText = "background:#f8f9ff;margin-top:8px";
+          var meta = document.createElement("div"); meta.className = "meta"; meta.style.minWidth = "0";
+          var t = document.createElement("div"); t.className = "t"; t.textContent = p.name;
+          var dd = document.createElement("div"); dd.className = "d";
+          dd.textContent = p.price + " USD" + ((p.stock != null && p.stock !== "") ? " · 库存 " + p.stock + " 件" : " · 库存不限");
+          meta.appendChild(t); meta.appendChild(dd); pd.appendChild(meta);
+          var eb = document.createElement("button"); eb.className = "del"; eb.textContent = "编辑";
+          eb.style.cssText = "background:#1d5fa8;margin-right:8px;flex:none";
+          eb.onclick = (function(pp){ return function(){ openEditProduct(pp); }; })(p);
+          pd.appendChild(eb);
+          if(p.ptype !== "physical"){
+            var kb = document.createElement("button"); kb.className = "del";
+            kb.style.cssText = "background:#0d7a4f;margin-right:8px;flex:none";
+            kb.textContent = "卡密库"; kb.dataset.pid = p.id;
+            kb.onclick = (function(pp){ return function(){ openCodeModal(pp); }; })(p);
+            pd.appendChild(kb);
+          }
+          var sb = document.createElement("button"); sb.className = "del"; sb.textContent = "库存";
+          sb.style.cssText = "margin-right:8px;flex:none";
+          sb.onclick = (function(pp){ return function(){ editStock(pp); }; })(p);
+          pd.appendChild(sb);
+          var db = document.createElement("button"); db.className = "del"; db.textContent = "下架"; db.style.flex = "none";
+          db.onclick = function(){ deleteProduct(p, db); };
+          pd.appendChild(db);
+          pPanel.appendChild(pd);
+        });
+      }else{
+        pPanel.innerHTML = '<div class="empty">该分类下还没有商品，点「＋上架」添加。</div>';
+      }
+      div.appendChild(pPanel);
+      div.querySelector('[data-act="prods"]').onclick = function(){
+        catExpanded[ck] = !catExpanded[ck];
+        renderCatsAdmin();
+      };
       panel.querySelector('[data-q="ok"]').onclick = async function(){
         var btn = this;
         var name = panel.querySelector('[data-q="name"]').value.trim();
@@ -861,7 +904,7 @@ $("editSave").onclick = async () => {
         if (ip) await deleteRepoImage(ip, token, "删除商品旧图片");
       }
     }
-    renderProducts(list);
+    allProducts = list; renderCatsAdmin(); refreshCodeCounts();
     $("editModal").style.display = "none";
     setStatus("已保存，几分钟后商城页生效。", "ok");
   } catch (e) {
@@ -870,24 +913,20 @@ $("editSave").onclick = async () => {
     btn.disabled = false;
   }
 };
+var allProducts = [];
+var catExpanded = {};
+function ptypeNorm(pt){ return pt === "physical" ? "physical" : (pt === "freebie" ? "freebie" : "virtual"); }
+function catProds(pt){ return allProducts.filter(function(p){ return ptypeNorm(p.ptype) === pt; }); }
+function catKey(c, idx){ return c.id ? "id:" + c.id : "new:" + idx; }
 async function loadProductsList(){
   try{
-    setStatus("正在加载…", "info");
     const cur = await gh("products.json", "");
-    const list = JSON.parse(b64dec(cur.content));
-    renderProducts(list);
-    setStatus(list.length ? ("共 " + list.length + " 件商品。") : "还没有商品。", "ok");
+    allProducts = JSON.parse(b64dec(cur.content));
+    renderCatsAdmin();
+    refreshCodeCounts();
   }catch(e){ setStatus("加载失败：" + e.message, "err"); }
 }
-$("reloadProductsBtn").onclick = () => loadProductsList();
-function renderProducts(list) {;const box = $("productList"); box.innerHTML = "";;if (!list.length) { box.innerHTML = '<div class="empty">暂无商品</div>'; return; };list.forEach(p => {;const div = document.createElement("div"); div.className = "post";;const meta = document.createElement("div"); meta.className = "meta";;const t = document.createElement("div"); t.className = "t"; t.textContent = p.name;;const d = document.createElement("div"); d.className = "d"; d.textContent = (p.ptype === "physical" ? "【实物】" : (p.ptype === "freebie" ? "【免费福利】" : "【虚拟】")) + " " + p.price + " USD" + ((p.stock != null && p.stock !== "") ? " · 库存 " + p.stock + " 件" : " · 库存不限") + (p.desc ? " · " + p.desc : "");;meta.appendChild(t); meta.appendChild(d);;const stk = document.createElement("button"); stk.className = "del"; stk.textContent = "改库存"; stk.style.marginRight = "8px";;stk.onclick = () => editStock(p);;const del = document.createElement("button"); del.className = "del"; del.textContent = "下架";;del.onclick = () => deleteProduct(p, del);;const edt = document.createElement("button"); edt.className = "del"; edt.textContent = "编辑"; edt.style.background = "#1d5fa8"; edt.style.marginRight = "8px";;edt.onclick = () => openEditProduct(p);;div.appendChild(meta); div.appendChild(edt);
-if(p.ptype !== "physical"){
-  const kc = document.createElement("button"); kc.className = "del"; kc.style.background = "#0d7a4f"; kc.style.marginRight = "8px";
-  kc.textContent = "卡密库"; kc.dataset.pid = p.id;
-  kc.onclick = () => openCodeModal(p);
-  div.appendChild(kc);
-}
-div.appendChild(stk); div.appendChild(del);;box.appendChild(div);;});;refreshCodeCounts();};async function deleteProduct(p, btn) {;const token = $("token").value.trim();;/* token not needed for Supabase ops */;if (!confirm("确定下架「" + p.name + "」吗？")) return;;btn.disabled = true;;try {;setStatus("正在下架「" + p.name + "」…", "info");;const cur = await gh("products.json", token);;const list = JSON.parse(b64dec(cur.content)).filter(x => x.id !== p.id);;await gh("products.json", token, "PUT", { message: "下架商品：" + p.name, content: b64(JSON.stringify(list)), sha: cur.sha, branch: BRANCH });;const keptF = {};;list.forEach(x => allImgUrls(x).forEach(u => { keptF[u] = 1; }));;for (const u of allImgUrls(p)) {;if (!keptF[u]) {;const ipath = repoImgPath(u);;if (ipath) await deleteRepoImage(ipath, token, "删除下架商品图片");;};};;renderProducts(list);;setStatus("已下架「" + p.name + "」。", "ok");;} catch (e) { setStatus("下架失败：" + e.message, "err"); btn.disabled = false; };};async function editStock(p) {;const token = $("token").value.trim();;/* token not needed for Supabase ops */;const cur0 = (p.stock != null && p.stock !== "") ? String(p.stock) : "";;const v = prompt("修改「" + p.name + "」的库存（件），留空表示不限：", cur0);;if (v === null) return;;const s = v.trim();;if (s !== "" && !/^\d+$/.test(s)) return setStatus("库存请输入整数，留空表示不限。", "err");;try {;setStatus("正在更新库存…", "info");;const cur = await gh("products.json", token);;const list = JSON.parse(b64dec(cur.content));;const it = list.find(x => x.id === p.id);;if (!it) return setStatus("商品不存在，可能已被删除。", "err");;it.stock = s === "" ? null : parseInt(s, 10);;await gh("products.json", token, "PUT", { message: "更新库存：" + p.name, content: b64(JSON.stringify(list)), sha: cur.sha, branch: BRANCH });;renderProducts(list);;setStatus("库存已更新，几分钟后商城页生效。", "ok");;} catch (e) { setStatus("更新失败：" + e.message, "err"); };};window.addEventListener("beforeunload", () => { $("token").value = ""; });
+async function deleteProduct(p, btn) {;const token = $("token").value.trim();;/* token not needed for Supabase ops */;if (!confirm("确定下架「" + p.name + "」吗？")) return;;btn.disabled = true;;try {;setStatus("正在下架「" + p.name + "」…", "info");;const cur = await gh("products.json", token);;const list = JSON.parse(b64dec(cur.content)).filter(x => x.id !== p.id);;await gh("products.json", token, "PUT", { message: "下架商品：" + p.name, content: b64(JSON.stringify(list)), sha: cur.sha, branch: BRANCH });;const keptF = {};;list.forEach(x => allImgUrls(x).forEach(u => { keptF[u] = 1; }));;for (const u of allImgUrls(p)) {;if (!keptF[u]) {;const ipath = repoImgPath(u);;if (ipath) await deleteRepoImage(ipath, token, "删除下架商品图片");;};};;allProducts = list; renderCatsAdmin(); refreshCodeCounts();;setStatus("已下架「" + p.name + "」。", "ok");;} catch (e) { setStatus("下架失败：" + e.message, "err"); btn.disabled = false; };};async function editStock(p) {;const token = $("token").value.trim();;/* token not needed for Supabase ops */;const cur0 = (p.stock != null && p.stock !== "") ? String(p.stock) : "";;const v = prompt("修改「" + p.name + "」的库存（件），留空表示不限：", cur0);;if (v === null) return;;const s = v.trim();;if (s !== "" && !/^\d+$/.test(s)) return setStatus("库存请输入整数，留空表示不限。", "err");;try {;setStatus("正在更新库存…", "info");;const cur = await gh("products.json", token);;const list = JSON.parse(b64dec(cur.content));;const it = list.find(x => x.id === p.id);;if (!it) return setStatus("商品不存在，可能已被删除。", "err");;it.stock = s === "" ? null : parseInt(s, 10);;await gh("products.json", token, "PUT", { message: "更新库存：" + p.name, content: b64(JSON.stringify(list)), sha: cur.sha, branch: BRANCH });;allProducts = list; renderCatsAdmin();;setStatus("库存已更新，几分钟后商城页生效。", "ok");;} catch (e) { setStatus("更新失败：" + e.message, "err"); };};window.addEventListener("beforeunload", () => { $("token").value = ""; });
 </script>
 <script>
 /* ===== 联系方式（contact.json，买家端"联系商家"读取） ===== */
@@ -1148,7 +1187,7 @@ async function refreshCodeCounts(){
     if(r.error) return;
     const counts = {};
     (r.data || []).forEach(function(x){ counts[x.product_id] = (counts[x.product_id] || 0) + 1; });
-    document.querySelectorAll("#productList [data-pid]").forEach(function(b){
+    document.querySelectorAll("#catList [data-pid]").forEach(function(b){
       const n = counts[b.dataset.pid] || 0;
       b.textContent = "卡密库(余" + n + ")";
       b.style.background = n <= 0 ? "#b3261e" : (n < 5 ? "#b26a00" : "#0d7a4f");
