@@ -313,7 +313,7 @@ async function loadCatsAdmin(){
 }
 var CURATED_ICONS = ["if:thesvg-color:alipay","if:thesvg-color:wechat","if:thesvg-color:taobao","if:thesvg-color:bilibili","if:thesvg-color:xiaohongshu","if:thesvg-color:sina-weibo","if:thesvg-color:qq","if:thesvg-color:zhihu","if:thesvg-color:meituan","si:telegram","si:x","si:google","si:youtube","si:whatsapp","si:discord","si:spotify","si:tiktok","si:netflix"];
 var SI_KNOWN = ["telegram","x","google","youtube","whatsapp","discord","spotify","netflix","instagram","facebook","tiktok","twitch","reddit","pinterest","snapchat","line","kakaotalk","steam","github","apple","android","twitter"];
-var CN_ICON_KW = {"微信":"wechat","支付宝":"alipay","淘宝":"taobao","天猫":"tmall","京东":"jd","拼多多":"pinduoduo","美团":"meituan","饿了么":"eleme","滴滴":"didi","抖音":"tiktok","快手":"kuaishou","哔哩哔哩":"bilibili","b站":"bilibili","小红书":"xiaohongshu","微博":"weibo","知乎":"zhihu","豆瓣":"douban","百度":"baidu","高德":"amap","网易云":"neteasecloudmusic","网易":"neteasecloudmusic","携程":"trip","闲鱼":"goofish","腾讯":"tencentqq","阿里":"alibaba","华为":"huawei","小米":"xiaomi"};
+var CN_ICON_KW = {"微信":"wechat","支付宝":"alipay","淘宝":"taobao","天猫":"tmall","京东":"jd","拼多多":"pinduoduo","美团":"meituan","饿了么":"eleme","滴滴":"didi","抖音":"tiktok","快手":"kuaishou","哔哩哔哩":"bilibili","b站":"bilibili","小红书":"xiaohongshu","微博":"weibo","知乎":"zhihu","豆瓣":"douban","百度":"baidu","高德":"amap","网易云":"neteasecloudmusic","网易":"neteasecloudmusic","携程":"trip","闲鱼":"goofish","腾讯":"tencentqq","阿里":"alibaba","华为":"huawei","小米":"xiaomi","谷歌":"google","油管":"youtube","推特":"twitter","脸书":"facebook","照片":"googlephotos","相册":"googlephotos","地图":"googlemaps","邮箱":"gmail","邮件":"gmail","网盘":"googledrive","浏览器":"googlechrome","播放":"googleplay","应用宝":"googleplay","电报":"telegram","纸飞机":"telegram","推":"x","微博国际版":"weibo"};
 function cnToEn(q){ for(var k in CN_ICON_KW){ if(q.indexOf(k) >= 0) return CN_ICON_KW[k]; } return q; }
 function pickerIconUrl(v){
   if(v.indexOf("si:") === 0) return siUrl(v.slice(3));
@@ -377,8 +377,11 @@ function renderIconGrid(q){
       var ac = /color|logos/i.test(a) ? 0 : 1, bc = /color|logos/i.test(b) ? 0 : 1;
       return ac - bc;
     });
+    var siSlugs = {};
+    head.forEach(function(v){ siSlugs[v.slice(3)] = 1; });
     var seen = {}, all = [];
     head.concat(ids.map(function(id){ return "if:" + id; })).forEach(function(v){
+      if(v.indexOf("if:simple-icons:") === 0 && siSlugs[v.slice(17)]) return;
       if(!seen[v]){ seen[v] = 1; all.push(v); }
     });
     paintIconGrid(grid, all.slice(0, 90));
