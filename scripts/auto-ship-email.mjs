@@ -7,6 +7,7 @@
 // 可选: SMTP_PORT（默认465）, SMTP_FROM
 
 import { sendMail } from "./mailer.mjs";
+import { randomBytes } from "node:crypto";
 
 const SB_URL = process.env.SUPABASE_URL || "";
 const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
@@ -55,23 +56,50 @@ const targets = orders.filter(o => {
 });
 console.log(`待补发邮件订单：${targets.length}`);
 
-async function markEmailed(order, ok) {
+async function patchShip(order, mutate) {
   try {
     const get = await fetch(`${SB_URL}/rest/v1/orders?select=ship&id=eq.${order.id}`, { headers });
     const rows = await get.json();
     const ship = (rows[0] && rows[0].ship) || {};
-    ship.emailed = ok;
+    mutate(ship);
     await fetch(`${SB_URL}/rest/v1/orders?id=eq.${order.id}`, {
       method: "PATCH", headers, body: JSON.stringify({ ship })
     });
-  } catch (e) { console.log("回写 emailed 失败:", order.id, e.message); }
+    return ship;
+  } catch (e) { console.log("回写 ship 失败:", order.id, e.message); return null; }
+}
+
+async function markEmailed(order, ok) {
+  await patchShip(order, s => { s.emailed = ok; });
+}
+
+/* 与商城页一致的 2FA 密钥识别 */
+function isTotpSecret(t) { return /^[A-Z2-7]{16,64}$/.test(t) && /[A-Z]/.test(t); }
+function findTotpSecret(content) {
+  if (!content) return "";
+  const s = String(content), flat = s.replace(/\n/g, " ");
+  const m = flat.match(/(?:2fa|totp|secret|密钥|秘钥|谷歌验证|动态口令)[^\nA-Za-z2-7]{0,6}([A-Za-z2-7][A-Za-z2-7 ]{14,}[A-Za-z2-7])/i);
+  if (m) { const v = m[1].replace(/ /g, "").toUpperCase(); if (isTotpSecret(v)) return v; }
+  for (const part of s.split(/----|\n/)) {
+    const t = part.replace(/[\s:：|]/g, "").toUpperCase();
+    if (isTotpSecret(t)) return t;
+  }
+  return "";
 }
 
 let sent = 0;
 for (const o of targets) {
-  const ship = o.ship || {};
+  let ship = o.ship || {};
+  // 邮件开锁口令（30 天有效）：没有就生成一个写回订单；有且未过期就复用
+  let unlockTok = (ship.unlock && ship.unlock.tok && new Date(ship.unlock.exp).getTime() > Date.now()) ? ship.unlock.tok : null;
+  if (!unlockTok) {
+    unlockTok = randomBytes(16).toString("hex");
+    ship = (await patchShip(o, s => { s.unlock = { tok: unlockTok, exp: new Date(Date.now() + 30 * 86400 * 1000).toISOString() }; })) || ship;
+  }
   const to = buyerEmailOf(o);
   const sid = shortId(o.id);
+  const secret2fa = findTotpSecret(ship.content || "");
+  const unlockUrl = `https://qixiaoyuan.eu.cc/shop.html#unlock=${o.id}&tok=${unlockTok}`;
   const html = `
 <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:20px">
 <h2>🎉 你的商品已发货</h2>
@@ -79,7 +107,9 @@ for (const o of targets) {
 <p>商品：${esc(o.product_name)}（¥${esc(o.price)}）</p>
 <p>以下是你的虚拟商品交付内容，请妥善保管：</p>
 <pre style="background:#f6f6f6;border:1px dashed #ccc;border-radius:8px;padding:14px;white-space:pre-wrap;word-break:break-all">${esc(ship.content)}</pre>
-<p style="color:#888;font-size:12px">也可以随时在商城「我的订单」里查看该订单的发货信息。</p>
+${secret2fa ? `<div style="background:#fff8e1;border:1px solid #f0c36d;border-radius:8px;padding:10px 14px;margin:10px 0">🔐 <b>2FA 密钥</b>（导入验证器 App 用）：<b>${esc(secret2fa)}</b></div>` : ""}
+<p style="margin:14px 0"><a href="${esc(unlockUrl)}" style="display:inline-block;background:#111;color:#fff;font-weight:700;padding:10px 22px;border-radius:10px;text-decoration:none">🔑 查看当前 2FA 验证码</a></p>
+<p style="color:#888;font-size:12px">点了直接进订单看实时验证码（每 30 秒换一次），链接 30 天内有效，不用再输密码；也可以随时在商城「我的订单」里查看该订单的发货信息。</p>
 </div>`;
   const r = await sendMail({ to, subject: `${o.product_name} · 订单 ${sid}`, html });
   if (r.ok) {

@@ -659,7 +659,19 @@ async function showProfile(){
   document.getElementById("profileEmail").textContent = myUser.email || "—";
   show("view-profile");
 }
-function checkHashOrders(){ if(location.hash === "#myorders" && myUser){ stopOrder(); stopStatus(); loadMyOrders(); show("view-myorders"); } }
+var pendingUnlock = null; /* 邮件链接带来的开锁口令：#unlock=<订单uuid>&tok=<32位口令> */
+function checkHashOrders(){
+  var m = location.hash.match(/^#unlock=([0-9a-fA-F-]{36})&tok=([0-9a-f]{32})$/);
+  if(m){
+    pendingUnlock = { oid: m[1], tok: m[2] };
+    try{ history.replaceState(null, "", location.pathname + location.search + "#myorders"); }catch(e){}
+  }
+  if((location.hash === "#myorders" || m) && myUser){
+    stopOrder(); stopStatus();
+    focusOrderId = pendingUnlock ? pendingUnlock.oid : focusOrderId;
+    loadMyOrders(); show("view-myorders");
+  }
+}
 if(sb){ sb.auth.onAuthStateChange(function(event){ if(event === "PASSWORD_RECOVERY"){ authShowBox("authNewPwBox"); document.getElementById("newPwErr").style.display = "none"; document.getElementById("authModal").classList.remove("hidden"); return; } refreshAuth().then(function(){ if(myUser && pendingNet){ var n = pendingNet; pendingNet = null; closeAuth(); chooseNet(n.key, n.p, n.addr); } if(myUser && pendingFreeClaim){ var c = pendingFreeClaim; pendingFreeClaim = null; closeAuth(); claimFreebieOrder(c.p, c.email); } if(myUser && pendingXianyu){ var xp0 = pendingXianyu; pendingXianyu = null; closeAuth(); startXianyuOrder(xp0.p, xp0.url); } checkHashOrders(); }); }); refreshAuth().then(checkHashOrders); }
 /* ===== 搜索 & 主题 ===== */
 document.getElementById("searchToggle").onclick = function(){
@@ -1938,6 +1950,14 @@ setInterval(function(){
   if(myUser && myOrdersRaw.length && !document.getElementById("view-myorders").classList.contains("hidden")) renderMyOrders();
 }, 60000);
 function renderMyOrders(){
+    if(pendingUnlock){
+      for(var ui = 0; ui < myOrdersRaw.length; ui++){
+        var uo = myOrdersRaw[ui], un = uo.ship && uo.ship.unlock;
+        if(String(uo.id) === pendingUnlock.oid && un && un.tok === pendingUnlock.tok && new Date(un.exp).getTime() > Date.now()){
+          revealedShips[uo.id] = true;
+        }
+      }
+    }
     var list = myOrdersRaw.filter(function(o){ return !isCancelledGone(o); });
     var box = document.getElementById("myOrderList"); box.innerHTML = "";
     if(!list.length){ box.innerHTML = '<div class="empty">还没有订单</div>'; return; }
