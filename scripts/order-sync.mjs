@@ -118,7 +118,7 @@ function addOrder(key, net, txRaw, valueRaw, timeMs, fromAddr) {
   const one = {
     id: tx, tx: tx,
     productId: p ? p.id : null,
-    productName: p ? p.name : "未知商品（" + amount + " USD，待确认）",
+    productName: p ? p.name : "未知商品（" + amount + " USDT，待确认）",
     price: p ? p.price : amount,
     chain: key, chainLabel: net.label,
     from: fromAddr || "", time: fmtT(timeMs),
