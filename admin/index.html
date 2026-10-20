@@ -90,6 +90,10 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
 .tabs button.active,button.publish,button.mini,button.del,button.load,#chatForm button[type=submit]{
 background:linear-gradient(270deg,#ff5f6d,#ff9f43,#2ed573,#1e90ff,#a55eea,#ff5f6d)!important;
 background-size:300% 300%!important;animation:rainbowFlow 8s ease infinite}
+/* 2026-10-20 用户要求：后台文字统一黑色加粗，不用彩色/灰色字体 */
+:root{ --muted:#111; }
+.hint,.empty,.sub,.post .d,.ord .d,.cand .d,details ol,label,
+#status,#status.ok,#status.err,#status.info{ color:#111 !important; font-weight:700 !important; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.css">
@@ -191,9 +195,9 @@ background-size:300% 300%!important;animation:rainbowFlow 8s ease infinite}
 <button type="button" class="del" id="iconPickerClose">关闭</button>
 </div>
 <input type="text" id="iconPickerSearch" placeholder="搜索应用，如 telegram" style="margin-bottom:10px;color:#1a1a1a">
-<div style="font-size:.85rem;color:#666;margin-bottom:6px">应用图标（3000+，可搜索全球主流应用）</div>
+<div style="font-size:.85rem;color:#111;font-weight:700;margin-bottom:6px">应用图标（3000+，可搜索全球主流应用）</div>
 <div id="iconPickerGrid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px"></div>
-<div style="font-size:.85rem;color:#666;margin:12px 0 6px">常用 emoji</div>
+<div style="font-size:.85rem;color:#111;font-weight:700;margin:12px 0 6px">常用 emoji</div>
 <div id="iconPickerEmoji" style="display:flex;flex-wrap:wrap;gap:6px"></div>
 </div>
 </div>
@@ -359,14 +363,14 @@ function paintIconGrid(grid, slugs, q){
       shown++;
     })(slugs[i]);
   }
-  if(!shown) grid.innerHTML = '<div style="grid-column:1/-1;color:#999;font-size:.85rem">没找到，换个关键词试试</div>';
-  else if(shown >= 90) grid.innerHTML += '<div style="grid-column:1/-1;color:#999;font-size:.8rem">只显示前 90 个，输入关键词缩小范围</div>';
+  if(!shown) grid.innerHTML = '<div style="grid-column:1/-1;color:#111;font-weight:700;font-size:.85rem">没找到，换个关键词试试</div>';
+  else if(shown >= 90) grid.innerHTML += '<div style="grid-column:1/-1;color:#111;font-weight:700;font-size:.8rem">只显示前 90 个，输入关键词缩小范围</div>';
 }
 function renderIconGrid(q){
   q = (q || "").toLowerCase();
   var grid = $("iconPickerGrid");
   if(!q){ paintIconGrid(grid, BRAND_ICONS, ""); ensureSlugs(); return; }
-  grid.innerHTML = '<div style="grid-column:1/-1;color:#999;font-size:.85rem">正在全网图标库中搜索…</div>';
+  grid.innerHTML = '<div style="grid-column:1/-1;color:#111;font-weight:700;font-size:.85rem">正在全网图标库中搜索…</div>';
   ensureSlugs().then(function(slugs){
     if((($("iconPickerSearch").value || "").toLowerCase()) !== q) return;
     paintIconGrid(grid, slugs, q);
@@ -467,7 +471,7 @@ function renderCatsAdmin(){
           meta.style.cssText = "flex:1 1 100%;min-width:0";
           var t = document.createElement("div"); t.className = "t"; t.textContent = p.name;
           var dd = document.createElement("div"); dd.className = "d";
-          dd.style.cssText = "color:#333;font-weight:700;white-space:nowrap;";
+          dd.style.cssText = "color:#111;font-weight:700;white-space:nowrap;";
           dd.textContent = p.price + " USD" + ((p.stock != null && p.stock !== "") ? " · 库存 " + p.stock + " 件" : " · 库存不限");
           meta.appendChild(t); meta.appendChild(dd); pd.appendChild(meta);
           var eb = document.createElement("button"); eb.className = "del"; eb.textContent = "编辑";
@@ -1219,9 +1223,9 @@ async function loadCodes(){
   if(!rows.length){ const em = document.createElement("div"); em.className = "empty"; em.textContent = "还没有卡密，在上方批量添加。"; box.appendChild(em); return; }
   rows.forEach(function(x){
     const d = document.createElement("div"); d.style.cssText = "display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #eee;font-size:.85rem";
-    const c = document.createElement("div"); c.style.cssText = "flex:1;word-break:break-all" + (x.used ? ";color:#999;text-decoration:line-through" : "");
+    const c = document.createElement("div"); c.style.cssText = "flex:1;word-break:break-all;color:#111;font-weight:700" + (x.used ? ";text-decoration:line-through" : "");
     c.textContent = x.code;
-    const s = document.createElement("div"); s.style.cssText = "flex-shrink:0;color:" + (x.used ? "#999" : "#0d7a4f");
+    const s = document.createElement("div"); s.style.cssText = "flex-shrink:0;color:#111;font-weight:700";
     s.textContent = x.used ? ("已用" + (x.order_id ? "(" + String(x.order_id).slice(0, 8) + ")" : "")) : "未用";
     d.appendChild(c); d.appendChild(s);
     if(!x.used){
@@ -1376,7 +1380,7 @@ function chatTabBadgeUpdate() {
 function renderThreadList() {
   var box = document.getElementById("chatThreadList");
   if (!chatThreads.length) {
-    box.innerHTML = '<div style="padding:20px;text-align:center;color:#888">暂无会话</div>';
+    box.innerHTML = '<div style="padding:20px;text-align:center;color:#111;font-weight:700">暂无会话</div>';
     return;
   }
   box.innerHTML = "";
@@ -1389,7 +1393,7 @@ function renderThreadList() {
     d.innerHTML = '<div style="font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
         (t.buyer_email || t.user_id.slice(0, 8)) +
         (unread > 0 ? ' <span style="background:linear-gradient(135deg,#f87171,#ef4444);color:#fff;font-size:11px;border-radius:10px;padding:1px 7px">' + unread + '</span>' : '') +
-      '</div><div style="font-size:12px;color:#888">' + time + '</div>';
+      '</div><div style="font-size:12px;color:#111;font-weight:700">' + time + '</div>';
     d.onclick = function() { openChatThread(t.id); };
     box.appendChild(d);
   });
@@ -1474,14 +1478,14 @@ async function openChatThread(threadId) {
   headEl.appendChild(headSpan);
   document.body.classList.add("chat-open");
   var box = document.getElementById("chatMsgs");
-  box.innerHTML = '<div style="text-align:center;color:#888;font-size:13px">加载中…</div>';
+  box.innerHTML = '<div style="text-align:center;color:#111;font-weight:700;font-size:13px">加载中…</div>';
   try {
     var r = await sbs.from("chat_messages").select("sender,content")
       .eq("thread_id", threadId).order("created_at", {ascending: true}).limit(200);
     box.innerHTML = "";
     if (r.data) r.data.forEach(function(m){ addChatMsg(m.content, m.sender); });
   } catch(e) {
-    box.innerHTML = '<div style="text-align:center;color:#888;font-size:13px">加载失败</div>';
+    box.innerHTML = '<div style="text-align:center;color:#111;font-weight:700;font-size:13px">加载失败</div>';
   }
   markThreadRead(threadId);
   subscribeChatThread(threadId);
