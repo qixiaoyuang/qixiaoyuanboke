@@ -427,7 +427,7 @@ var sb = (window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null)
     window.addEventListener("pagehide", ping);
   }catch(e){}
 })();
-var myUser = null, pendingNet = null, pendingFreeClaim = null, authMode = "login";
+var myUser = null, pendingNet = null, pendingFreeClaim = null, pendingXianyu = null, authMode = "login";
 var TRANSFER = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 var NETS = {
   bsc:    { label:"BSC（BEP20）", kind:"evm", rpc:"https://bsc.publicnode.com", token:"0x55d398326f99059fF775485246999027B3197955", dec:18, scan:"https://bscscan.com/tx/", seller:"0x5a93d426357cfc7b83d27cec9d4776b05fc73149" },
@@ -572,7 +572,7 @@ document.getElementById("authGo").onclick = function(){
   job.then(function(r){
     document.getElementById("authGo").disabled = false;
     if(r.error) return authError(r.error.message === "Invalid login credentials" ? "邮箱或密码不对。" : r.error.message);
-    if(!pendingNet && !pendingFreeClaim) closeAuth();
+    if(!pendingNet && !pendingFreeClaim && !pendingXianyu) closeAuth();
   }).catch(function(e){ document.getElementById("authGo").disabled = false; authError("出错了：" + e.message); });
 };
 document.getElementById("authPwd").addEventListener("keydown", function(e){ if(e.key === "Enter") document.getElementById("authGo").click(); });
@@ -653,7 +653,7 @@ async function showProfile(){
   show("view-profile");
 }
 function checkHashOrders(){ if(location.hash === "#myorders" && myUser){ stopOrder(); stopStatus(); loadMyOrders(); show("view-myorders"); } }
-if(sb){ sb.auth.onAuthStateChange(function(event){ if(event === "PASSWORD_RECOVERY"){ authShowBox("authNewPwBox"); document.getElementById("newPwErr").style.display = "none"; document.getElementById("authModal").classList.remove("hidden"); return; } refreshAuth().then(function(){ if(myUser && pendingNet){ var n = pendingNet; pendingNet = null; closeAuth(); chooseNet(n.key, n.p, n.addr); } if(myUser && pendingFreeClaim){ var c = pendingFreeClaim; pendingFreeClaim = null; closeAuth(); claimFreebieOrder(c.p, c.email); } checkHashOrders(); }); }); refreshAuth().then(checkHashOrders); }
+if(sb){ sb.auth.onAuthStateChange(function(event){ if(event === "PASSWORD_RECOVERY"){ authShowBox("authNewPwBox"); document.getElementById("newPwErr").style.display = "none"; document.getElementById("authModal").classList.remove("hidden"); return; } refreshAuth().then(function(){ if(myUser && pendingNet){ var n = pendingNet; pendingNet = null; closeAuth(); chooseNet(n.key, n.p, n.addr); } if(myUser && pendingFreeClaim){ var c = pendingFreeClaim; pendingFreeClaim = null; closeAuth(); claimFreebieOrder(c.p, c.email); } if(myUser && pendingXianyu){ var xp0 = pendingXianyu; pendingXianyu = null; closeAuth(); startXianyuOrder(xp0.p, xp0.url); } checkHashOrders(); }); }); refreshAuth().then(checkHashOrders); }
 /* ===== 搜索 & 主题 ===== */
 document.getElementById("searchToggle").onclick = function(){
   var bar = document.getElementById("searchBar");
@@ -914,7 +914,7 @@ function openPayMethods(p){
   var _xu = firstUrl(p.xianyu_url);
   if(_xu){
     var b3 = pmBtn('<img src="https://img.alicdn.com/tfs/TB19WObTNv1gK0jSZFFXXb0sXXa-144-144.png" width="30" height="30" style="border-radius:8px;flex-shrink:0;display:block" alt="">', "去闲鱼购买");
-    b3.onclick = function(){ window.open(_xu, "_blank"); };
+    b3.onclick = function(){ startXianyuOrder(p, _xu); };
     box.appendChild(b3);
   }
   box.appendChild(pmBack("取消", closePayMethods));
@@ -954,6 +954,39 @@ function showComingSoon(){
   box.appendChild(pmBack("← 返回", function(){ openPayMethods(payMethodProduct); }));
 }
 function closePayMethods(){ document.getElementById("payMethodModal").classList.add("hidden"); }
+/* ===== 闲鱼购买（半自动）：商城先生成一笔闲鱼订单，再跳闲鱼付款；
+   买家回商城点「我已在闲鱼付款」，卖家在后台确认收款后系统自动发货 ===== */
+function startXianyuOrder(p, url){
+  if(Number(p.price) === 0){ window.open(url, "_blank"); return; } /* 免费福利走领取流程 */
+  if(!myUser){ pendingXianyu = { p: p, url: url }; closePayMethods(); openAuth("用闲鱼购买需要先登录 / 注册（发货和订单都挂在商城账号里）。"); return; }
+  sb.from("orders").select("id").eq("user_id", myUser.id).eq("product_id", p.id).eq("chain", "xianyu").eq("status", "unpaid").limit(1).then(function(r){
+    if(r.data && r.data.length) return r.data[0].id;
+    return sb.from("orders").insert({ user_id: myUser.id, product_id: p.id, product_name: p.name, price: p.price, chain: "xianyu", status: "unpaid", ship: { xy: 1 } }).select("id").then(function(r2){
+      if(r2.error) throw r2.error;
+      return (r2.data && r2.data[0]) ? r2.data[0].id : null;
+    });
+  }).then(function(){
+    closePayMethods();
+    window.open(url, "_blank");
+    loadMyOrders(); show("view-myorders");
+    alert("已为你生成商城订单 ✅\n\n请在打开的闲鱼页面完成付款，付完后回到「我的订单」，在这笔订单上点「我已在闲鱼付款」。\n卖家确认收款后，卡密会自动发货到这笔订单里。");
+  }).catch(function(e){
+    alert("生成订单失败：" + ((e && e.message) || e) + "\n可以直接在闲鱼下单，再联系卖家发货。");
+    window.open(url, "_blank");
+  });
+}
+function claimXianyuPaid(o, btn){
+  if(!sb || !myUser) return;
+  if(!confirm("确认你已经在闲鱼付过款了吗？\n\n点确认后卖家会去闲鱼核对到账，确认后自动发货。请勿没付款就乱点。")) return;
+  if(btn) btn.disabled = true;
+  var ship = {};
+  try{ ship = (typeof o.ship === "string") ? JSON.parse(o.ship || "{}") : (o.ship || {}); }catch(e){ ship = {}; }
+  ship.xy = 1; ship.xyClaimed = true; ship.xyClaimedAt = new Date().toISOString();
+  sb.from("orders").update({ ship: ship }).eq("id", o.id).then(function(r){
+    if(r.error){ alert("提交失败：" + r.error.message); if(btn) btn.disabled = false; return; }
+    loadMyOrders();
+  }).catch(function(e){ alert("提交失败：" + ((e && e.message) || e)); if(btn) btn.disabled = false; });
+}
 /* ===== 0 元商品：填邮箱直接领取成功 ===== */
 function showFreebieForm(p){
   var box = document.getElementById("payMethodBox");
@@ -1741,7 +1774,7 @@ function renderMyOrders(){
       var badge = document.createElement("span"); badge.className = "obadge " + (o.status||"pending"); badge.textContent = OSTATUS_BADGE[o.status] || o.status;
       t.appendChild(badge);
       var d = document.createElement("div"); d.className = "d";
-      var net = NETS[o.chain] || (o.chain === "freebie" ? { label: "免费领取" } : {});
+      var net = NETS[o.chain] || (o.chain === "freebie" ? { label: "免费领取" } : (o.chain === "xianyu" ? { label: "闲鱼" } : {}));
       d.innerHTML = "";
       d.appendChild(document.createTextNode("订单号 " + shortId(o.id) + " · " + fmtTime(o.created_at) + " · " + (net.label || o.chain || "") + " · "));
       if(o.tx && net.scan){ var a=document.createElement("a"); a.href=net.scan+o.tx; a.target="_blank"; a.rel="noopener"; a.style.color="var(--link)"; a.textContent="交易 "+String(o.tx).slice(0,10)+"…"; d.appendChild(a); }
@@ -1750,7 +1783,31 @@ function renderMyOrders(){
         var sbx = shipBox(o);
         if(sbx) div.appendChild(sbx);
       }
-      if((o.status || "") === "unpaid"){
+      if((o.status || "") === "unpaid" && o.chain === "xianyu"){
+        var xyClaimed = !!(o.ship && o.ship.xyClaimed);
+        badge.textContent = xyClaimed ? "等商家确认" : "闲鱼待付款";
+        var xnote = document.createElement("div"); xnote.className = "d"; xnote.style.marginTop = "4px";
+        xnote.textContent = xyClaimed ? "你已标记在闲鱼付款，卖家确认收款后会自动发货到这笔订单。" : "在闲鱼付完款后，回来点「我已在闲鱼付款」，卖家确认后自动发货。";
+        div.appendChild(xnote);
+        var ops = document.createElement("div"); ops.style.marginTop = "8px"; ops.style.display = "flex"; ops.style.gap = "8px";
+        if(!xyClaimed){
+          var xprod = null; (PRODUCTS || []).forEach(function(pp){ if(String(pp.id) === String(o.product_id)) xprod = pp; });
+          var xu2 = xprod ? firstUrl(xprod.xianyu_url) : "";
+          if(xu2){
+            var gx = document.createElement("button"); gx.className = "check-btn"; gx.style.fontSize = ".82rem"; gx.style.padding = "6px 18px"; gx.textContent = "去闲鱼付款";
+            gx.onclick = function(){ window.open(xu2, "_blank"); };
+            ops.appendChild(gx);
+          }
+          var xp1 = document.createElement("button"); xp1.className = "check-btn"; xp1.style.fontSize = ".82rem"; xp1.style.padding = "6px 18px"; xp1.textContent = "我已在闲鱼付款";
+          xp1.onclick = function(){ claimXianyuPaid(o, xp1); };
+          ops.appendChild(xp1);
+        }
+        var cancel = document.createElement("button"); cancel.className = "textbtn"; cancel.textContent = "取消订单";
+        cancel.onclick = function(){ cancelOrder(o.id); };
+        ops.appendChild(cancel);
+        div.appendChild(ops);
+      }
+      else if((o.status || "") === "unpaid"){
         var ops = document.createElement("div"); ops.style.marginTop = "8px"; ops.style.display = "flex"; ops.style.gap = "8px";
         var go = document.createElement("button"); go.className = "check-btn"; go.style.fontSize = ".82rem"; go.style.padding = "6px 18px"; go.textContent = "去支付";
         go.onclick = function(){ resumePay(o); };
