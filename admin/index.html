@@ -189,6 +189,7 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
 <div style="display:flex;gap:8px"><input type="text" id="eImgUrl" placeholder="粘贴图片网址 https://…" style="flex:1;min-width:0"><button type="button" class="mini" id="eAddUrlBtn" style="flex-shrink:0">添加</button></div>
 <div style="display:flex;gap:10px;align-items:center;margin-top:8px"><button type="button" class="mini" id="eUploadImgBtn">📷 选择手机照片上传</button><input type="file" id="eImgFile" accept="image/*" class="hidden"><span class="hint" id="eImgUploadStatus" style="margin:0"></span></div>
 <label>商品描述（可选）</label><input type="text" id="eDesc">
+<label>闲鱼购买链接（可选，填了会在支付页显示"去闲鱼购买"）</label><input type="text" id="eXianyu" placeholder="https://…">
 <div style="display:flex;gap:10px;margin-top:18px">
 <button type="button" class="mini" id="editCancel" style="flex:1;background:#6b6b6b">取消</button>
 <button type="button" class="mini green" id="editSave" style="flex:1">保存修改</button>
@@ -483,6 +484,7 @@ function renderCatsAdmin(){
         + '<input type="text" data-q="name" placeholder="商品名称" style="flex:2;min-width:110px;margin:0">'
         + '<input type="text" data-q="price" placeholder="价格 USD" inputmode="decimal" style="flex:1;min-width:70px;margin:0">'
         + '<input type="text" data-q="stock" placeholder="库存(留空不限)" inputmode="numeric" style="flex:1;min-width:70px;margin:0">'
+        + '<input type="text" data-q="xianyu" placeholder="闲鱼链接(可选)" style="flex:1;min-width:100px;margin:0">'
         + '<button type="button" class="mini green" data-q="ok" style="flex:none">上架</button>'
         + '<button type="button" class="mini" data-q="cancel" style="flex:none;background:#6b6b6b">取消</button></div>'
         + '<div data-q="imgsbox" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>'
@@ -567,6 +569,8 @@ function renderCatsAdmin(){
         var name = panel.querySelector('[data-q="name"]').value.trim();
         var price = panel.querySelector('[data-q="price"]').value.trim();
         var stock = panel.querySelector('[data-q="stock"]').value.trim();
+        var xianyu = (panel.querySelector('[data-q="xianyu"]') || {}).value || "";
+        xianyu = xianyu.trim();
         if(!name || !price) return setStatus("商品名称和价格不能为空。", "err");
         if(!/^\d+(\.\d{1,6})?$/.test(price)) return setStatus("价格格式不对，请输入数字（最多 6 位小数）。", "err");
         if(stock !== "" && !/^\d+$/.test(stock)) return setStatus("库存请输入整数，留空表示不限。", "err");
@@ -577,7 +581,7 @@ function renderCatsAdmin(){
           setStatus("正在上架…", "info");
           var cur = await gh("products.json", "");
           var list = JSON.parse(b64dec(cur.content));
-          list.unshift({ id: Date.now().toString(36), name: name, price: price, ptype: cc.ptype || "virtual", image: panel._imgs[0] || "", images: panel._imgs.slice(), desc: "", stock: stock === "" ? null : parseInt(stock, 10) });
+          list.unshift({ id: Date.now().toString(36), name: name, price: price, ptype: cc.ptype || "virtual", image: panel._imgs[0] || "", images: panel._imgs.slice(), desc: "", stock: stock === "" ? null : parseInt(stock, 10), xianyu_url: xianyu });
           await gh("products.json", "", "PUT", { message: "从分类上架：" + name, content: b64(JSON.stringify(list)), branch: BRANCH });
           setStatus("「" + name + "」已上架到「" + (cc.name || "") + "」。", "ok");
           panel.querySelector('[data-q="name"]').value = "";
@@ -668,7 +672,7 @@ async function gh(path, token, method, body) {
     if (path === "products.json") {
       if (!sbs) throw new Error("Supabase 未初始化");
       if (!method || method === "GET") {
-        var r = await sbs.from("products").select("id,name,price,ptype,image,images,desc,stock").order("created_at", {ascending: false});
+        var r = await sbs.from("products").select("id,name,price,ptype,image,images,desc,stock,xianyu_url").order("created_at", {ascending: false});
         if (r.error) throw new Error(r.error.message);
         return { content: b64(JSON.stringify(r.data || [])), sha: "sb-" + Date.now() };
       }
@@ -687,7 +691,8 @@ async function gh(path, token, method, body) {
               image: p.image || "",
               images: p.images || [],
               desc: p.desc || "",
-              stock: (p.stock === null || p.stock === undefined || p.stock === "") ? null : parseInt(p.stock, 10)
+              stock: (p.stock === null || p.stock === undefined || p.stock === "") ? null : parseInt(p.stock, 10),
+              xianyu_url: p.xianyu_url || ""
             };
           });
           var ins = await sbs.from("products").insert(rows);
@@ -925,6 +930,7 @@ function openEditProduct(p) {
   $("ePrice").value = p.price || "";
   $("eStock").value = (p.stock != null && p.stock !== "") ? String(p.stock) : "";
   $("eDesc").value = p.desc || "";
+  $("eXianyu").value = p.xianyu_url || "";
   
   $("eImgUrl").value = "";
   $("eImgUploadStatus").textContent = "";
@@ -939,6 +945,7 @@ $("editSave").onclick = async () => {
   const id = $("eId").value;
   const name = $("eName").value.trim(), price = $("ePrice").value.trim();
   const desc = $("eDesc").value.trim(), stock = $("eStock").value.trim();
+  const xianyu = $("eXianyu").value.trim();
   if (!name || !price) return setStatus("商品名称和价格不能为空。", "err");
   if (!/^\d+(\.\d{1,6})?$/.test(price)) return setStatus("价格格式不对，请输入数字（最多 6 位小数）。", "err");
   if (stock !== "" && !/^\d+$/.test(stock)) return setStatus("库存请输入整数，留空表示不限。", "err");
@@ -951,7 +958,7 @@ $("editSave").onclick = async () => {
     const it = list.find(x => x.id === id);
     if (!it) return setStatus("商品不存在，可能已被删除。", "err");
     const oldUrls = allImgUrls(it);
-    it.name = name; it.desc = desc;
+    it.name = name; it.desc = desc; it.xianyu_url = xianyu;
     it.price = price;
     it.images = editImgs.slice();
     it.image = editImgs[0] || "";
