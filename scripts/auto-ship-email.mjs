@@ -76,7 +76,7 @@ for (const o of targets) {
 <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:20px">
 <h2>🎉 你的商品已发货</h2>
 <p>订单号：<b>${esc(sid)}</b></p>
-<p>商品：${esc(o.product_name)}（${esc(o.price)} USD）</p>
+<p>商品：${esc(o.product_name)}（¥${esc(o.price)}）</p>
 <p>以下是你的虚拟商品交付内容，请妥善保管：</p>
 <pre style="background:#f6f6f6;border:1px dashed #ccc;border-radius:8px;padding:14px;white-space:pre-wrap;word-break:break-all">${esc(ship.content)}</pre>
 <p style="color:#888;font-size:12px">也可以随时在商城「我的订单」里查看该订单的发货信息。</p>
