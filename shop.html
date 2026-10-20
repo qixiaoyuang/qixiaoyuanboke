@@ -165,7 +165,7 @@ html[data-theme="dark"]{
 .djn-cfoot{ display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:8px; }
 .djn-cprice{ color:#e53935; font-weight:800; font-size:1.12rem; }
 .djn-cprice small{ color:var(--djn-faint); font-weight:400; font-size:.75rem; }
-.djn-buybtn{ border:none; background:var(--djn-text); color:var(--djn-bg); font-weight:700; font-size:.88rem; padding:9px 20px; border-radius:999px; cursor:pointer; white-space:nowrap; }
+.djn-buybtn{ border:1px solid #1a1a1a; background:#fff; color:#1a1a1a; font-weight:700; font-size:.88rem; padding:9px 20px; border-radius:999px; cursor:pointer; white-space:nowrap; }
 .djn-buybtn:hover{ filter:brightness(1.1); }
 .djn-buybtn:disabled{ background:var(--djn-grtx); cursor:not-allowed; opacity:.65; }
 .djn-crumb{ color:var(--djn-muted); font-size:.85rem; margin:22px 0 16px; }
@@ -184,7 +184,7 @@ html[data-theme="dark"]{
 .djn-dprice small{ color:var(--djn-faint); font-size:.85rem; font-weight:400; }
 .djn-hr{ border:none; border-top:1px solid var(--djn-border); margin:16px 0; }
 .djn-dstock{ color:var(--djn-text); font-size:.92rem; font-weight:600; margin:0 0 14px; }
-.djn-buybig{ width:100%; border:none; background:var(--djn-text); color:var(--djn-bg); font-size:1.05rem; font-weight:800; padding:14px; border-radius:12px; cursor:pointer; }
+.djn-buybig{ width:100%; border:1px solid #1a1a1a; background:#fff; color:#1a1a1a; font-size:1.05rem; font-weight:800; padding:14px; border-radius:12px; cursor:pointer; }
 .djn-buybig:hover{ filter:brightness(1.1); }
 .djn-buybig:disabled{ background:var(--djn-grtx); cursor:not-allowed; }
 .djn-tipbar{ margin-top:14px; background:var(--djn-bbg); color:var(--djn-btx); border-radius:10px; padding:10px 14px; font-size:.85rem; }
@@ -245,7 +245,7 @@ html[data-theme="dark"]{
 <p class="djn-dprice" id="detailPrice"></p>
 <hr class="djn-hr">
 <p class="djn-dstock" id="detailStock"></p>
-<button class="djn-buybig" id="detailBuy">⚡ 立即购买</button>
+<button class="djn-buybig" id="detailBuy">立即购买</button>
 <div class="djn-tipbar">⚡ 付款成功后，卡密即时送达订单页；虚拟商品发货内容仅你本人可见。</div>
 </div>
 </div>
@@ -707,7 +707,7 @@ function renderCats(){
     var n = PRODUCTS.filter(function(p){ return ptypeOf(p)===c.k; }).length;
     var b = document.createElement("button");
     b.className = "djn-cat " + c.cls + (catFilter===c.k ? " active" : "");
-    b.innerHTML = '<span class="ic">'+iconHtml(c.icon)+'</span><span><span class="t">'+c.t+'</span><br><span class="n">'+n+' 件商品</span></span>';
+    b.innerHTML = '<span class="ic">'+iconHtml(c.icon)+'</span><span class="t">'+c.t+'</span>';
     b.onclick = function(){ catFilter = (catFilter===c.k) ? "" : c.k; renderCats(); render(); };
     box.appendChild(b);
   });
@@ -752,7 +752,7 @@ function openDetail(p){
   document.getElementById("detailStock").textContent = left===null ? ("\u5df2\u552e\u51fa "+(SOLD[p.id]||0)+" \u4ef6 \u00b7 \u5e93\u5b58\u5145\u8db3") : ("\u5df2\u552e\u51fa "+(SOLD[p.id]||0)+" \u4ef6 \u00b7 \u5269\u4f59 "+left+" \u4ef6");
   var buy = document.getElementById("detailBuy");
   if(soldout){ buy.textContent = "\u5df2\u552e\u7f44"; buy.disabled = true; buy.onclick = null; }
-  else { buy.textContent = "\u26a1 \u7acb\u5373\u8d2d\u4e70"; buy.disabled = false; buy.onclick = function(){ startOrder(detailP); }; }
+  else { buy.textContent = "\u7acb\u5373\u8d2d\u4e70"; buy.disabled = false; buy.onclick = function(){ startOrder(detailP); }; }
   var di = document.getElementById("detailImg");
   di.innerHTML = imgHtml(p);
   bindDots(di);
@@ -783,7 +783,7 @@ function render(){
     var pr = document.createElement("span"); pr.className = "djn-cprice"; pr.innerHTML = djnPriceHtml(p);
     var btn = document.createElement("button"); btn.className = "djn-buybtn";
     if(soldout){ btn.textContent = "\u552e\u7f44"; btn.disabled = true; }
-    else { btn.textContent = "\u26a1\u8d2d\u4e70"; btn.onclick = function(){ startOrder(p); }; }
+    else { btn.textContent = "\u8d2d\u4e70"; btn.onclick = function(){ startOrder(p); }; }
     foot.appendChild(pr); foot.appendChild(btn);
     body.appendChild(cc); body.appendChild(nm); body.appendChild(bd); body.appendChild(foot);
     card.appendChild(iw); card.appendChild(body);
