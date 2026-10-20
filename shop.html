@@ -689,11 +689,18 @@ function loadCats(){
   }).catch(function(){ CATS = CATS_DEFAULT.slice(); });
 }
 function catLabel(k){ for(var i=0;i<CATS.length;i++){ if(CATS[i].k===k) return CATS[i].t; } return "全部商品"; }
+var BRAND_COLORS = {"arcticons:iqiyi":"#00BE06","brandico:youku":"#00AAFF","arcticons:youku":"#00AAFF","arcticons:pinduoduo":"#E02E24","arcticons:jd-com":"#E1251B","ic:baseline-tiktok":"#000000","simple-icons:tiktok":"#000000","ri:taobao-fill":"#FF4400","ri:alipay-fill":"#1677FF","ic:baseline-wechat":"#07C160","ri:wechat-fill":"#07C160","ri:qq-fill":"#12B7F5","mingcute:qq-fill":"#12B7F5","ri:weibo-fill":"#E6162D","mingcute:weibo-fill":"#E6162D","ri:bilibili-fill":"#00A1D6","mingcute:bilibili-fill":"#00A1D6","ri:zhihu-fill":"#0066FF"};
 function iconHtml(icon){
   icon = icon || "\u26a1";
+  if(String(icon).indexOf("repo:") === 0){
+    return '<img src="https://qixiaoyuan.eu.cc/images/icons/' + String(icon).slice(5) + '.svg" alt="" loading="lazy" style="width:1.4rem;height:1.4rem;display:block">';
+  }
   if(String(icon).indexOf("if:") === 0){
     var iid = String(icon).slice(3);
-    return '<img src="https://api.iconify.design/' + iid.replace(":","/") + '.svg" alt="" loading="lazy" style="width:1.4rem;height:1.4rem;display:block">';
+    var url = "https://api.iconify.design/" + iid.replace(":","/") + ".svg";
+    var bc = BRAND_COLORS[iid];
+    if(bc && iid.indexOf("thesvg-color:") !== 0) url += "?color=" + encodeURIComponent(bc);
+    return '<img src="' + url + '" alt="" loading="lazy" style="width:1.4rem;height:1.4rem;display:block">';
   }
   if(String(icon).indexOf("si:") === 0){
     var slug = String(icon).slice(3).replace(/[^a-z0-9]/gi, "").toLowerCase();
