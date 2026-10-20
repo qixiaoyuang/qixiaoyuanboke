@@ -312,7 +312,15 @@ async function loadCatsAdmin(){
     setStatus("共 "+adminCats.length+" 个分类。","ok");
   }catch(e){ setStatus("加载分类失败："+e.message+"（请先在 Supabase 运行建表 SQL，并用管理员账号登录）","err"); }
 }
-var CURATED_ICONS = ["ri:alipay-fill","ic:baseline-wechat","ri:taobao-fill","ri:bilibili-fill","simple-icons:xiaohongshu","ri:weibo-fill","ri:qq-fill","ri:zhihu-fill","ic:baseline-tiktok","arcticons:pinduoduo","simple-icons:telegram","simple-icons:x","simple-icons:google","simple-icons:youtube","simple-icons:whatsapp","simple-icons:discord","simple-icons:netflix","simple-icons:spotify"];
+var CURATED_ICONS = ["if:thesvg-color:alipay","if:thesvg-color:wechat","if:thesvg-color:taobao","if:thesvg-color:bilibili","if:thesvg-color:xiaohongshu","if:thesvg-color:sina-weibo","if:thesvg-color:qq","if:thesvg-color:zhihu","if:thesvg-color:meituan","si:telegram","si:x","si:google","si:youtube","si:whatsapp","si:discord","si:spotify","si:tiktok","si:netflix"];
+var SI_KNOWN = ["telegram","x","google","youtube","whatsapp","discord","spotify","netflix","instagram","facebook","tiktok","twitch","reddit","pinterest","snapchat","line","kakaotalk","steam","github","apple","android","twitter"];
+var CN_ICON_KW = {"微信":"wechat","支付宝":"alipay","淘宝":"taobao","天猫":"tmall","京东":"jd","拼多多":"pinduoduo","美团":"meituan","饿了么":"eleme","滴滴":"didi","抖音":"tiktok","快手":"kuaishou","哔哩哔哩":"bilibili","b站":"bilibili","小红书":"xiaohongshu","微博":"weibo","知乎":"zhihu","豆瓣":"douban","百度":"baidu","高德":"amap","网易云":"neteasecloudmusic","网易":"neteasecloudmusic","携程":"trip","闲鱼":"goofish","腾讯":"tencentqq","阿里":"alibaba","华为":"huawei","小米":"xiaomi"};
+function cnToEn(q){ for(var k in CN_ICON_KW){ if(q.indexOf(k) >= 0) return CN_ICON_KW[k]; } return q; }
+function pickerIconUrl(v){
+  if(v.indexOf("si:") === 0) return siUrl(v.slice(3));
+  if(v.indexOf("if:") === 0) return ifUrl(v.slice(3));
+  return "";
+}
 var QUICK_EMOJIS = ["⚡","📦","🎁","🛒","💎","🔥","⭐","🎮","📱","💻","🎧","👕","🍔","☕","💰","🎉","✨","💡","📚","🏷️"];
 var iconPickerIdx = -1;
 function ifUrl(id){ return "https://api.iconify.design/" + String(id).replace(":", "/") + ".svg"; }
@@ -340,30 +348,44 @@ function openIconPicker(idx){
   renderIconEmojis();
   $("iconPickerModal").style.display = "flex";
 }
-function paintIconGrid(grid, ids){
+function paintIconGrid(grid, vals){
   grid.innerHTML = "";
   var shown = 0;
-  ids.forEach(function(id){
+  vals.forEach(function(v){
     var b = document.createElement("button");
-    b.type = "button"; b.title = id;
-    b.style.cssText = "background:#f5f5f5;border:1px solid var(--border);border-radius:8px;padding:8px;cursor:pointer";
-    b.innerHTML = '<img src="' + ifUrl(id) + '" style="width:26px;height:26px;pointer-events:none;display:block;margin:0 auto" alt="" onerror="this.parentNode.style.display=\'none\'">';
-    b.onclick = (function(x){ return function(){ pickIcon("if:" + x); }; })(id);
+    b.type = "button"; b.title = v;
+    b.style.cssText = "background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px;cursor:pointer";
+    b.innerHTML = '<img src="' + pickerIconUrl(v) + '" style="width:26px;height:26px;pointer-events:none;display:block;margin:0 auto" alt="" onerror="this.parentNode.style.display=\'none\'">';
+    b.onclick = (function(x){ return function(){ pickIcon(x); }; })(v);
     grid.appendChild(b);
     shown++;
   });
-  if(!shown) grid.innerHTML = '<div style="grid-column:1/-1;color:#111;font-weight:700;font-size:.85rem">没找到，换个关键词试试（建议用英文名，如 wechat / alipay）</div>';
+  if(!shown) grid.innerHTML = '<div style="grid-column:1/-1;color:#111;font-weight:700;font-size:.85rem">没找到，换个关键词试试</div>';
 }
 function renderIconGrid(q){
   q = (q || "").trim();
   var grid = $("iconPickerGrid");
   if(!q){ paintIconGrid(grid, CURATED_ICONS); return; }
   grid.innerHTML = '<div style="grid-column:1/-1;color:#111;font-weight:700;font-size:.85rem">正在搜索 20 万+ 图标…</div>';
-  iconSearch(q).then(function(ids){
+  var en = cnToEn(q.toLowerCase());
+  var head = [];
+  SI_KNOWN.forEach(function(slug){
+    if(slug.indexOf(en) >= 0 || en.indexOf(slug) >= 0) head.push("si:" + slug);
+  });
+  iconSearch(en).then(function(ids){
     if((($("iconPickerSearch").value || "").trim()) !== q) return;
-    paintIconGrid(grid, ids);
+    ids.sort(function(a,b){
+      var ac = /color|logos/i.test(a) ? 0 : 1, bc = /color|logos/i.test(b) ? 0 : 1;
+      return ac - bc;
+    });
+    var seen = {}, all = [];
+    head.concat(ids.map(function(id){ return "if:" + id; })).forEach(function(v){
+      if(!seen[v]){ seen[v] = 1; all.push(v); }
+    });
+    paintIconGrid(grid, all.slice(0, 90));
   }).catch(function(){
-    grid.innerHTML = '<div style="grid-column:1/-1;color:#111;font-weight:700;font-size:.85rem">搜索失败，检查网络后重试</div>';
+    if(head.length) paintIconGrid(grid, head);
+    else grid.innerHTML = '<div style="grid-column:1/-1;color:#111;font-weight:700;font-size:.85rem">搜索失败，检查网络后重试</div>';
   });
 }
 function renderIconEmojis(){
