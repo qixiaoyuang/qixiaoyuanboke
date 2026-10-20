@@ -1141,7 +1141,7 @@ async function loadSbOrders(){
       id: o.id, productId: o.product_id, productName: o.product_name, price: o.price,
       chain: o.chain, chainLabel: chainLabelMap[o.chain] || o.chain || "",
       tx: o.tx, time: fmtT(o.created_at), status: o.status, buyer: buyerMap[o.id] || "", userId: o.user_id || "",
-      ship: normShip(o.ship), xyClaimed: !!normShip(o.ship).xyClaimed, address: o.address || null, cancelledAt: o.cancelled_at || null, updatedAt: o.updated_at || null
+      ship: normShip(o.ship), xyClaimed: !!normShip(o.ship).xyClaimed, xyNo: normShip(o.ship).xyOrderNo || "", address: o.address || null, cancelledAt: o.cancelled_at || null, updatedAt: o.updated_at || null
     }));
     list.forEach(o => { o.ptype = ptypeMap[o.productId] || "virtual"; });
     sbOrdersRaw = list;
@@ -1267,8 +1267,29 @@ function renderOneOrder(o){
       s.onclick = () => changeStatus(o, "completed", s);
       ops.appendChild(s);
     }
-    div.appendChild(t); div.appendChild(d); div.appendChild(ops);
+    div.appendChild(t); div.appendChild(d);
+    if(o.chain === "xianyu" && o.xyNo){
+      const xn = document.createElement("div"); xn.className = "d"; xn.style.cssText = "display:flex;align-items:center;gap:8px;margin-top:2px";
+      xn.appendChild(document.createTextNode("闲鱼订单号：" + o.xyNo));
+      const cp = document.createElement("button"); cp.className = "mini"; cp.textContent = "复制";
+      cp.onclick = () => copyTextAdmin(o.xyNo, cp);
+      xn.appendChild(cp);
+      div.appendChild(xn);
+    }
+    div.appendChild(ops);
     return div;
+}
+/* 复制到剪贴板（带降级），成功后按钮短暂显示「已复制」 */
+function copyTextAdmin(txt, btn){
+  function done(){ if(btn){ const old = btn.textContent; btn.textContent = "已复制"; setTimeout(function(){ btn.textContent = old; }, 1500); } }
+  function fallback(){
+    const ta = document.createElement("textarea"); ta.value = txt; ta.style.cssText = "position:fixed;opacity:0";
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); done(); }catch(e){ setStatus("复制失败，请手动复制这个号码：" + txt, "err"); }
+    document.body.removeChild(ta);
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done).catch(fallback); }
+  else fallback();
 }
 /* 闲鱼半自动单：卖家在闲鱼确认到账后点这里 → 订单转待发货 → 立刻自动发卡密（实物单只转待发货） */
 async function confirmXianyuOrder(o, btn){
