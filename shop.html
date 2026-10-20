@@ -214,7 +214,6 @@ html[data-theme="dark"]{
 <div class="djn-tools">
 <button class="djn-iconbtn" id="searchToggle" aria-label="搜索">🔍</button>
 <button class="djn-iconbtn" id="themeToggle" aria-label="切换主题">🌙</button>
-<button class="djn-iconbtn" id="contactBtn" aria-label="联系商家">💬</button>
 <span class="umenu-wrap" id="userWrap">
 <button class="djn-iconbtn" id="userBtn" aria-label="用户菜单">⚙️</button>
 <div class="umenu hidden" id="userMenu"></div>
@@ -1583,7 +1582,7 @@ function closeContact(){
   document.getElementById("contactModal").classList.add("hidden");
   if (ctHumanChannel && sb) { try { sb.removeChannel(ctHumanChannel); } catch(e){} ctHumanChannel = null; }
 }
-document.getElementById("contactBtn").onclick = openContact;
+
 document.getElementById("contactModal").addEventListener("click", function(e){ if(e.target && e.target.id === "contactModal") closeContact(); });
 
 /* ===== 发货信息展示 ===== */
