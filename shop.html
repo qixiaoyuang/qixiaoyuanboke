@@ -728,6 +728,10 @@ function loadCats(){
 }
 function catLabel(k){ for(var i=0;i<CATS.length;i++){ if(CATS[i].k===k) return CATS[i].t; } return "全部商品"; }
 var BRAND_COLORS = {"arcticons:iqiyi":"#00BE06","brandico:youku":"#00AAFF","arcticons:youku":"#00AAFF","arcticons:pinduoduo":"#E02E24","arcticons:jd-com":"#E1251B","ic:baseline-tiktok":"#000000","simple-icons:tiktok":"#000000","ri:taobao-fill":"#FF4400","ri:alipay-fill":"#1677FF","ic:baseline-wechat":"#07C160","ri:wechat-fill":"#07C160","ri:qq-fill":"#12B7F5","mingcute:qq-fill":"#12B7F5","ri:weibo-fill":"#E6162D","mingcute:weibo-fill":"#E6162D","ri:bilibili-fill":"#00A1D6","mingcute:bilibili-fill":"#00A1D6","ri:zhihu-fill":"#0066FF"};
+function firstUrl(t){
+  var m = String(t || "").match(/https?:\/\/[^\s　"'<>]+/);
+  return m ? m[0] : "";
+}
 function iconHtml(icon){
   icon = icon || "\u26a1";
   if(String(icon).indexOf("repo:") === 0){
@@ -903,9 +907,10 @@ function openPayMethods(p){
     showComingSoon();
   };
   box.appendChild(b1); box.appendChild(b2);
-  if(p.xianyu_url){
-    var b3 = pmBtn('<span class="pm-emoji">🐟</span>', "去闲鱼购买");
-    b3.onclick = function(){ window.open(p.xianyu_url, "_blank"); };
+  var _xu = firstUrl(p.xianyu_url);
+  if(_xu){
+    var b3 = pmBtn('<img src="https://qixiaoyuan.eu.cc/images/icons/xianyu.svg" width="30" height="30" style="border-radius:8px;flex-shrink:0;display:block" alt="">', "去闲鱼购买");
+    b3.onclick = function(){ window.open(_xu, "_blank"); };
     box.appendChild(b3);
   }
   box.appendChild(pmBack("取消", closePayMethods));
