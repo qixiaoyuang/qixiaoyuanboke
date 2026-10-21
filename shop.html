@@ -215,6 +215,7 @@ html[data-theme="dark"]{
 <div class="djn-tools">
 <button class="djn-iconbtn" id="searchToggle" aria-label="搜索">🔍</button>
 <button class="djn-iconbtn" id="themeToggle" aria-label="切换主题">🌙</button>
+<button class="djn-iconbtn" id="langToggle" aria-label="Language" style="width:auto;border-radius:19px;padding:0 12px;font-size:.82rem;font-weight:800;">🌐 EN</button>
 <span class="umenu-wrap" id="userWrap">
 <button class="djn-iconbtn" id="userBtn" aria-label="用户菜单">⚙️</button>
 <div class="umenu hidden" id="userMenu"></div>
@@ -413,6 +414,29 @@ html[data-theme="dark"]{
 </div>
 <script src="js/pay-icons.js?v=1"></script>
 <script>
+/* ---------- 中英双语 i18n ---------- */
+var I18N_EN = {"← 返回": "← Back", "登录": "Log in", "我的订单": "My Orders", "全部商品": "All Products", "联系商家": "Contact Seller", "万能手": "Wannengshou", "补登订单": "Register a Payment", "购买须知": "Purchase Info", "没有账号？去注册": "No account? Sign up", "取消订单": "Cancel Order", "个人中心": "My Account", "取消": "Cancel", "交易所提币码": "Exchange Withdrawal QR", "钱包扫码码": "Wallet Payment QR", "支付成功！": "Payment successful!", "邮箱": "Email", "复制地址": "Copy Address", "购物 · 万能手": "Shopping · Wannengshou", "万": "W", "按分类逛": "Browse by Category", "全部分类 ›": "All categories ›", "店主还未上架商品，敬请期待。": "No products yet — stay tuned.", "首页": "Home", "商品中心": "Products", "价格": "Price", "立即购买": "Buy Now", "⚡ 付款成功后，卡密即时送达订单页；虚拟商品发货内容仅你本人可见。": "⚡ After payment, the code is delivered instantly to your order page; only you can view virtual-product deliveries.", "详细信息": "Details", "确认订单": "Confirm Order", "⚠️ 请确保店主实际收到": "⚠️ Make sure the seller actually receives", "USDT：从交易所提币时手续费是另外扣的，请把手续费算进去、足额转出；少到账系统检测不到付款。": "USDT: exchange withdrawal fees are charged on top — include the fee and send the full amount; if less arrives, the system cannot detect your payment.", "请支付": "Please pay", "支付网络：": "Payment network:", "我已付款，立即检测": "I've Paid — Check Now", "请务必使用上方选择的网络转账，转错网络资产可能丢失。检测到付款后会自动显示成功。": "Always transfer on the network selected above — sending on the wrong network may lose your funds. Success is shown automatically once payment is detected.", "订单状态由店主在后台更新，本页面每分钟自动刷新，无需重复付款。": "Order status is updated by the seller; this page refreshes every minute. Do not pay again.", "用户 ID": "User ID", "绑定邮箱": "Linked Email", "刷新": "Refresh", "如果付款后页面没检测到（比如中途关掉了页面），在这里粘贴交易哈希手动补登，系统会到链上核验这笔转账确实到了店主地址。": "If the page didn't detect your payment (e.g. you closed it midway), paste the transaction hash here to register it manually — the system verifies on-chain that the transfer reached the seller's address.", "核验并补登": "Verify & Register", "专业的在线商店，为您提供优质的商品和服务。": "A professional online shop with quality products and service.", "商城": "Shop", "支持": "Support", "须知": "Info", "1. 下单与发货：注册登录后下单，须在 30 分钟内付款。链上确认后，虚拟商品通常 1 分钟内自动发货；支持闲鱼购买的商品，请按页面指引完成付款并登记订单号。": "1. Ordering & delivery: Register and log in to order, and pay within 30 minutes. After on-chain confirmation, virtual products are usually delivered automatically within about 1 minute. For products that support Xianyu purchase, follow the page instructions to pay and register your order number.", "2. 订单与售后：商品内容可在「我的订单」及邮箱（含垃圾箱）查看。账号类商品请及时修改密码、换绑邮箱并重置 2FA。已付款未发货，可通过「补登订单」登记交易哈希，或联系商家处理。所有商品请正常使用，不要频繁更换 IP 或短时间大量发信息。有问题联系客服。": "2. Orders & support: Your items can be viewed in \"My Orders\" and in your email (check the spam folder too). For account products, change the password, switch the bound email and reset 2FA promptly. If you paid but nothing arrived, register the transaction hash via \"Register a Payment\", or contact the seller. Please use all products normally — don't switch IPs frequently or send large volumes of messages in a short time. Contact customer service if anything's wrong.", "3. 关于退款：如果刚购买的账号或卡密出现使用不了的，请联系客服退款和更换。（注意：超过一小时不支持退款）": "3. Refunds: If an account or code you just bought doesn't work, contact customer service for a refund or replacement. (Note: no refunds after one hour.)", "知道了": "Got it", "忘记密码？": "Forgot password?", "找回密码": "Reset Password", "输入注册时用的邮箱，我们会发一封重置邮件，点邮件里的链接设置新密码。": "Enter the email you registered with — we'll send a reset email; click the link in it to set a new password.", "返回": "Back", "发送重置邮件": "Send Reset Email", "设置新密码": "Set New Password", "保存新密码": "Save New Password", "搜索商品名称…": "Search products…", "收款二维码": "Payment QR code", "交易哈希（SOL 链请粘贴交易签名）": "Transaction hash (for Solana, paste the transaction signature)", "密码（至少 6 位）": "Password (at least 6 characters)", "注册时用的邮箱": "The email you registered with", "新密码（至少 6 位）": "New password (at least 6 characters)", "再输入一次新密码": "Enter the new password again", "保存失败：": "Save failed: ", "商品": "Product", "注册": "Sign Up", "密码至少 6 位。": "Password must be at least 6 characters.", "出错了：": "Error: ", "发送失败：": "Send failed: ", "请先登录。": "Please log in first.", "免费福利": "Freebie", "免费": "Free", "请填写收货人姓名。": "Please enter the recipient's name.", "请填写正确的 11 位手机号码。": "Please enter a valid 11-digit mobile number.", "请填写完整的收货地址。": "Please enter the full delivery address.", "提交失败：": "Submission failed: ", "收货邮箱": "Delivery Email", "订单号": "Order No.", "金额": "Amount", "卡密": "Code", "去我的订单查看卡密 →": "View the code in My Orders →", "确定取消这笔待支付订单吗？": "Cancel this unpaid order?", "取消失败：": "Cancellation failed: ", "发货状态": "Delivery Status", "复制验证码": "Copy Code", "验证并查看": "Verify & View", "⏳ 等待发货": "⏳ Awaiting delivery", "📦 卖家已发货": "📦 Shipped", "🎉 订单已完成": "🎉 Order completed", "❌ 订单已撤销": "❌ Order cancelled", "待支付": "Unpaid", "待发货": "Awaiting shipment", "已发货": "Shipped", "订单已完成": "Completed", "已撤销": "Cancelled", "退出": "Log Out", "已有账号？去登录": "Have an account? Log in", "请填写邮箱和密码。": "Please enter your email and password.", "邮箱或密码不对。": "Incorrect email or password.", "请填写邮箱。": "Please enter your email.", "重置邮件已发送，请去邮箱点链接设置新密码（没收到的话看看垃圾箱）。": "Reset email sent — click the link in it to set a new password (check the spam folder if you don't see it).", "两次输入的新密码不一致。": "The two new passwords don't match.", "新密码不能和旧密码相同，请换一个。": "The new password must differ from the old one.", "新密码已保存，直接用新密码登录就行。": "New password saved — just log in with it.", "实物": "Physical", "虚拟": "Virtual", "虚拟商品": "Virtual product", "实物商品": "Physical product", "选择支付方式": "Choose a payment method", "USDT支付": "USDT Payment", "其他支付": "Other Payment", "去闲鱼购买": "Buy on Xianyu", "选择支付网络": "Choose a payment network", "其他支付即将上线，敬请期待": "More payment options coming soon", "用闲鱼购买需要先登录 / 注册（发货和订单都挂在商城账号里）。": "Buying via Xianyu requires logging in / signing up (delivery and orders are tied to your shop account).", "已为你生成商城订单 ✅\n\n请在打开的闲鱼页面完成付款，付完后回到「我的订单」，在这笔订单上点「我已在闲鱼付款」。\n卖家确认收款后，卡密会自动发货到这笔订单里。": "A shop order has been created for you ✅\n\nComplete the payment on the Xianyu page that just opened, then come back to \"My Orders\" and tap \"I've paid on Xianyu\" on this order.\nOnce the seller confirms receipt, the code will be delivered to this order automatically.", "生成订单失败：": "Failed to create order: ", "\n可以直接在闲鱼下单，再联系卖家发货。": "\nYou can also order directly on Xianyu and contact the seller for delivery.", "请先填闲鱼订单号（在闲鱼 App 的订单详情里，卖家要照它核对到账）。": "Please enter the Xianyu order number first (it's in the order details in the Xianyu app — the seller uses it to verify your payment).", "闲鱼订单号好像不对，它是一串纯数字，再检查一下。": "That Xianyu order number doesn't look right — it should be all digits. Please check it.", "确认你已经在闲鱼付过款了吗？\n\n点确认后卖家会照订单号 ": "Have you really paid on Xianyu?\n\nAfter you confirm, the seller will verify the payment against order number ", " 去闲鱼核对到账，确认后自动发货。请勿没付款就乱点。": " on Xianyu, and delivery follows automatically once confirmed. Don't tap this if you haven't paid.", "修改闲鱼订单号：": "Edit Xianyu order number: ", "闲鱼订单号是一串纯数字，再检查一下。": "The Xianyu order number should be all digits. Please check it.", "免费领取 · ": "Free claim · ", "输入收货邮箱，领取成功后发货内容会发送到该邮箱。": "Enter your delivery email — after a successful claim, the item will be sent to it.", "确认领取": "Confirm Claim", "请输入正确的邮箱地址。": "Please enter a valid email address.", "这个福利已经领完了。": "This freebie is fully claimed.", "领取免费福利需要先登录 / 注册。": "Claiming a freebie requires logging in / signing up.", "领取失败：": "Claim failed: ", "领取成功！🎉": "Claimed! 🎉", "领取时间": "Claimed at", "已自动发出 🎉": "Delivered automatically 🎉", "暂时不足，卖家补充后自动发货": "Out of stock for now — delivered automatically once restocked", "已保存 ✓": "Saved ✓", "这个商品已经售罄了。": "This product is sold out.", "进入付款需要先登录 / 注册，浏览商品不用登录。": "Checkout requires logging in / signing up; browsing is fine without an account.", "未知错误": "Unknown error", "登录已过期，请重新登录后再试。": "Your session has expired — please log in again.", "创建待支付订单失败：": "Failed to create the unpaid order: ", "用 MetaMask / Trust 等钱包 App 直接扫这个码：链和金额自动填好、确认即可。交易所提币请用另一个码。": "Scan this code with a wallet app like MetaMask / Trust: the network and amount are filled in automatically — just confirm. For exchange withdrawals, use the other QR code.", "从交易所提币：点「复制地址」粘到交易所的地址栏，网络选「": "Withdrawing from an exchange: tap \"Copy Address\", paste it into the exchange's address field, select the network \"", "」，金额填 ": "\", and enter the amount ", "（正在获取汇率…）": "(fetching the exchange rate…)", "正在获取实时汇率…": "Fetching the live exchange rate…", "汇率获取失败，请刷新页面后重试。": "Failed to fetch the exchange rate — please refresh and try again.", "（约 ": "(about ", "正在连接网络…": "Connecting to the network…", "网络连接失败，请检查网络后点「我已付款，立即检测」重试。": "Network connection failed — check your connection and tap \"I've Paid — Check Now\" to retry.", "订单已超时（30 分钟）。如已付款请联系店主确认，或重新下单。": "This order has timed out (30 minutes). If you already paid, contact the seller; otherwise place a new order.", "检测遇到网络波动，正在重试…（": "Network hiccup while checking, retrying… (", "登录已失效，请重新登录后再点「我已付款，立即检测」。": "Your session has expired — log in again, then tap \"I've Paid — Check Now\".", "这笔交易已被其他订单登记，请确认是你本人的付款后再试。": "This transaction is already registered to another order. Make sure it's your own payment and try again.", "订单登记失败：": "Order registration failed: ", "。请点「我已付款，立即检测」重试。": ". Please tap \"I've Paid — Check Now\" to retry.", "付款时间": "Paid at", "交易哈希": "Transaction hash", "✅ 已自动发货": "✅ Delivered automatically", "待发货（卡密暂时不足，卖家补充后自动发出）": "Awaiting shipment (out of codes — sent automatically once restocked)", "正在输入…": "Typing…", "抱歉，服务开小差了，请稍后再试。": "Sorry, something went wrong — please try again later.", "网络开小差了，请稍后再试。": "Network hiccup — please try again later.", "使用人工客服需要先登录。": "Please log in to use live support.", "使用人工客服需要先登录 / 注册。": "Live support requires logging in / signing up.", "正在为你转接人工客服…": "Connecting you to a human agent…", "转接失败，请稍后再试。": "Transfer failed — please try again later.", "已接通人工客服，请直接发送消息。": "You're connected to a human agent — just type your message.", "发送失败，请重试。": "Send failed — please retry.", "关闭": "Close", "你好，我是万能手客服，可以问我：怎么下单、USDT 怎么付、卡密多久到、没收到货怎么办。如需人工帮助，请发送“人工客服”。": "Hi, I'm the Wannengshou support assistant. Ask me: how to order, how to pay with USDT, how long delivery takes, or what to do if you didn't receive your item. For a human agent, send \"human\".", "点击图标直接跳转": "Tap an icon to open it", "推荐": "Recommended", "商家暂未设置联系方式。": "The seller hasn't added contact info yet.", " 秒后刷新）": " seconds, then refreshes)", "🔐 2FA 验证码 ": "🔐 2FA code ", "已复制": "Copied", "登录账号要两步验证时就填这个码，每 30 秒换一次。": "Enter this code when the account asks for two-step verification — it changes every 30 seconds.", "📧 虚拟商品发货信息（已发送至你的邮箱）": "📧 Virtual product delivery (also sent to your email)", "🔒 发货内容已隐藏，输入账号登录密码后查看": "🔒 Delivery hidden — enter your account password to view", "账号登录密码": "Account password", "请输入密码。": "Please enter your password.", "验证中…": "Verifying…", "密码错误，请重试。": "Wrong password — please try again.", "快递": "Carrier", " · 单号 ": " · Tracking No. ", "物流信息更新中，稍后再来刷新查看。": "Tracking info is updating — check back shortly.", "免费领取": "Claim Free", "闲鱼": "Xianyu", "订单号 ": "Order No. ", "交易 ": "Tx ", "等商家确认": "Awaiting seller confirmation", "闲鱼待付款": "Xianyu — awaiting payment", "你已标记在闲鱼付款，卖家确认收款后会自动发货到这笔订单。": "You've marked this as paid on Xianyu — once the seller confirms receipt, delivery goes to this order automatically.", "在闲鱼付完款后，把闲鱼订单号填进来再点「我已在闲鱼付款」，卖家照单号核对到账后自动发货。": "After paying on Xianyu, enter the Xianyu order number here and tap \"I've paid on Xianyu\" — the seller verifies it and delivery follows automatically.", "填闲鱼订单号（闲鱼 App 订单详情里有）": "Enter the Xianyu order number (in the Xianyu app's order details)", "闲鱼订单号：": "Xianyu order No.: ", "填错了？修改": "Wrong number? Edit", "去闲鱼付款": "Pay on Xianyu", "我已在闲鱼付款": "I've paid on Xianyu", "去支付": "Pay Now", "暂无待支付订单": "No unpaid orders", " · 订单 ": " · Order ", "Solana 交易签名格式不对，请粘贴完整的交易签名。": "That Solana signature format isn't right — paste the full transaction signature.", "TRON 交易哈希格式不对，应为 64 位十六进制（可带 0x）。": "That TRON hash format isn't right — it should be 64 hex characters (0x prefix optional).", "交易哈希格式不对，应为 0x 开头的 64 位十六进制。": "That hash format isn't right — it should be 64 hex characters starting with 0x.", "请先选择一笔待支付订单（没有待支付订单时无需补登）。": "Select an unpaid order first (no need to register if you have no unpaid order).", "汇率还没加载好，请等几秒再点补登。": "The exchange rate hasn't loaded yet — wait a few seconds and try again.", "正在链上核验这笔转账…（应付约 ": "Verifying this transfer on-chain… (amount due: about ", "这笔交易已经登记过了，无需重复补登。": "This transaction is already registered — no need to register it again.", "核验失败：这笔交易里没有给店主地址转约 ": "Verification failed: this transaction has no transfer of about ", " USDT 的记录，请检查哈希和网络是否选对。": " USDT to the seller's address. Check the hash and that you picked the right network.", "这笔交易已经被登记过了（一笔交易只能绑定一个账号），无需重复补登。": "This transaction is already registered (one transaction can only be bound to one account) — no need to register it again.", "登记失败：": "Registration failed: ", "补登成功！卡密已自动发出 🎉 去「我的订单」输入登录密码查看。": "Registered! The code has been delivered 🎉 View it in \"My Orders\" by entering your password.", "补登成功！订单为「待发货」。卡密暂时不足，卖家补充后会自动发货。": "Registered! The order is \"Awaiting shipment\" — codes are short, and it will be delivered automatically once restocked.", "补登成功！订单状态为「待发货」。": "Registered! The order status is \"Awaiting shipment\".", "请先选择支付网络。": "Please select a payment network first.", "已复制 ✓": "Copied ✓", "查看订单需要先登录 / 注册。": "Viewing orders requires logging in / signing up.", "搜索": "Search", "切换主题": "Toggle theme", "用户菜单": "User menu", "<span class=\"spin\">⏳</span> 等待付款…（每 15 秒自动检测一次）": "<span class=\"spin\">⏳</span> Waiting for payment… (auto-checks every 15 seconds)", "<h4>📦 实物商品，请填写收货地址</h4>": "<h4>📦 Physical item — please enter the delivery address</h4>", "<div class=\"row2\"><input id=\"pmAddrName\" placeholder=\"收货人姓名\" maxlength=\"20\" style=\"flex:1\"><input id=\"pmAddrPhone\" placeholder=\"手机号码\" maxlength=\"15\" inputmode=\"tel\" style=\"flex:1\"></div>": "<div class=\"row2\"><input id=\"pmAddrName\" placeholder=\"Recipient name\" maxlength=\"20\" style=\"flex:1\"><input id=\"pmAddrPhone\" placeholder=\"Mobile number\" maxlength=\"15\" inputmode=\"tel\" style=\"flex:1\"></div>", "<textarea id=\"pmAddrDetail\" placeholder=\"详细地址：省市区 + 街道门牌号\" rows=\"2\" maxlength=\"200\"></textarea>": "<textarea id=\"pmAddrDetail\" placeholder=\"Full address: province, city, district + street & number\" rows=\"2\" maxlength=\"200\"></textarea>", "<h4>📦 请补充收货地址（发货需要）</h4>": "<h4>📦 Please add the delivery address (needed for shipping)</h4>", "<div class=\"row2\"><input id=\"rsAddrName\" placeholder=\"收货人姓名\" maxlength=\"20\" style=\"flex:1\"><input id=\"rsAddrPhone\" placeholder=\"手机号码\" maxlength=\"15\" inputmode=\"tel\" style=\"flex:1\"></div>": "<div class=\"row2\"><input id=\"rsAddrName\" placeholder=\"Recipient name\" maxlength=\"20\" style=\"flex:1\"><input id=\"rsAddrPhone\" placeholder=\"Mobile number\" maxlength=\"15\" inputmode=\"tel\" style=\"flex:1\"></div>", "<textarea id=\"rsAddrDetail\" placeholder=\"详细地址：省市区 + 街道门牌号\" rows=\"2\" maxlength=\"200\"></textarea>": "<textarea id=\"rsAddrDetail\" placeholder=\"Full address: province, city, district + street & number\" rows=\"2\" maxlength=\"200\"></textarea>", "<button class=\"check-btn\" id=\"rsAddrSave\" style=\"font-size:.85rem;padding:8px 20px;\">保存收货地址</button>": "<button class=\"check-btn\" id=\"rsAddrSave\" style=\"font-size:.85rem;padding:8px 20px;\">Save delivery address</button>", "<span class=\"spin\">⏳</span> 已检测到付款，正在登记订单…": "<span class=\"spin\">⏳</span> Payment detected — registering your order…", "<button class=\"ct-tab active\" data-ct=\"ai\">客服</button>": "<button class=\"ct-tab active\" data-ct=\"ai\">Support</button>", "<button class=\"ct-tab\" data-ct=\"other\">其他方式</button>": "<button class=\"ct-tab\" data-ct=\"other\">Other ways</button>", "<form class=\"ct-form\" id=\"ct-ai-form\"><input class=\"ct-input\" id=\"ct-ai-input\" placeholder=\"输入问题…\" autocomplete=\"off\" maxlength=\"500\"/>": "<form class=\"ct-form\" id=\"ct-ai-form\"><input class=\"ct-input\" id=\"ct-ai-input\" placeholder=\"Type your question…\" autocomplete=\"off\" maxlength=\"500\"/>", "<button class=\"ct-send\" type=\"submit\">发送</button></form>": "<button class=\"ct-send\" type=\"submit\">Send</button></form>", "<p class=\"empty\">加载中…</p>": "<p class=\"empty\">Loading…</p>", "<div class=\"empty\">还没有订单</div>": "<div class=\"empty\">No orders yet</div>"};
+var _LANG = (function(){ try { var s = localStorage.getItem("shop_lang"); if (s === "en" || s === "zh") return s; } catch (e) {} return (navigator.language || "zh").toLowerCase().indexOf("en") === 0 ? "en" : "zh"; })();
+function _i18n(s){ return (_LANG === "en" && I18N_EN[s]) ? I18N_EN[s] : s; }
+function setShopLang(l){ try { localStorage.setItem("shop_lang", l); } catch (e) {} location.reload(); }
+function toggleShopLang(){ setShopLang(_LANG === "en" ? "zh" : "en"); }
+function applyI18nStatic(){
+  try {
+    document.documentElement.lang = (_LANG === "en" ? "en" : "zh-CN");
+    var lb = document.getElementById("langToggle");
+    if (lb) { lb.textContent = (_LANG === "en" ? "🌐 中文" : "🌐 EN"); lb.onclick = toggleShopLang; }
+    if (_LANG !== "en") return;
+    if (I18N_EN["购物 · 万能手"]) document.title = I18N_EN["购物 · 万能手"];
+    var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, { acceptNode: function(n){ var p = n.parentNode; if (!p || p.nodeName === "SCRIPT" || p.nodeName === "STYLE") return NodeFilter.FILTER_REJECT; return NodeFilter.FILTER_ACCEPT; } });
+    var nodes = []; while (w.nextNode()) nodes.push(w.currentNode);
+    nodes.forEach(function(n){ var v = n.nodeValue, k = v.trim(); if (k && I18N_EN[k]) n.nodeValue = v.replace(k, I18N_EN[k]); });
+    document.querySelectorAll("[placeholder]").forEach(function(el){ var k = el.getAttribute("placeholder"); if (k && I18N_EN[k]) el.setAttribute("placeholder", I18N_EN[k]); });
+    document.querySelectorAll("[aria-label]").forEach(function(el){ var k = el.getAttribute("aria-label"); if (k && I18N_EN[k]) el.setAttribute("aria-label", I18N_EN[k]); });
+  } catch (e) {}
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applyI18nStatic); else applyI18nStatic();
+/* ---------- i18n end ---------- */
+
 document.getElementById("year").textContent = new Date().getFullYear();
 /* ===== Supabase ===== */
 var SB_URL = "https://vvwyheyojnmeyzbisxnq.supabase.co";
@@ -510,8 +534,8 @@ function usdtOf(cny){
 }
 var orderTimer = null, order = null;
 var statusTimer = null, paidOrder = null, paidOrderId = null;
-var OSTATUSTXT = { pending:"⏳ 等待发货", shipped:"📦 卖家已发货", completed:"🎉 订单已完成", cancelled:"❌ 订单已撤销" };
-var OSTATUS_BADGE = { unpaid:"待支付", pending:"待发货", shipped:"已发货", completed:"订单已完成", cancelled:"已撤销" };
+var OSTATUSTXT = { pending:_i18n("⏳ 等待发货"), shipped:_i18n("📦 卖家已发货"), completed:_i18n("🎉 订单已完成"), cancelled:_i18n("❌ 订单已撤销") };
+var OSTATUS_BADGE = { unpaid:_i18n("待支付"), pending:_i18n("待发货"), shipped:_i18n("已发货"), completed:_i18n("订单已完成"), cancelled:_i18n("已撤销") };
 var searchKw = "";
 /* ===== 登录 / 注册 ===== */
 function renderAuthArea(){
@@ -522,14 +546,14 @@ function renderUserMenu(){
   if(!m) return;
   m.innerHTML = "";
   if(myUser){
-    var pc = document.createElement("button"); pc.textContent = "个人中心";
+    var pc = document.createElement("button"); pc.textContent = _i18n("个人中心");
     pc.onclick = function(){ toggleUserMenu(false); showProfile(); };
     m.appendChild(pc);
-    var out = document.createElement("button"); out.textContent = "退出";
+    var out = document.createElement("button"); out.textContent = _i18n("退出");
     out.onclick = function(){ toggleUserMenu(false); revealedShips = {}; if(sb) sb.auth.signOut(); };
     m.appendChild(out);
   } else {
-    var li = document.createElement("button"); li.textContent = "登录";
+    var li = document.createElement("button"); li.textContent = _i18n("登录");
     li.onclick = function(){ toggleUserMenu(false); openAuth(""); };
     m.appendChild(li);
   }
@@ -547,9 +571,9 @@ function openAuth(hint){
   authMode = "login";
   authShowBox("authMainBox");
   document.getElementById("authForgotRow").style.display = "";
-  document.getElementById("authTitle").textContent = "登录";
-  document.getElementById("authGo").textContent = "登录";
-  document.getElementById("authSwitch").textContent = "没有账号？去注册";
+  document.getElementById("authTitle").textContent = _i18n("登录");
+  document.getElementById("authGo").textContent = _i18n("登录");
+  document.getElementById("authSwitch").textContent = _i18n("没有账号？去注册");
   document.getElementById("authHint").textContent = hint || "";
   document.getElementById("authErr").style.display = "none";
   document.getElementById("authModal").classList.remove("hidden");
@@ -561,24 +585,24 @@ document.getElementById("authCancel").onclick = closeAuth;
 document.getElementById("authSwitch").onclick = function(e){
   e.preventDefault();
   authMode = (authMode === "login") ? "signup" : "login";
-  document.getElementById("authTitle").textContent = (authMode === "login") ? "登录" : "注册";
-  document.getElementById("authGo").textContent = (authMode === "login") ? "登录" : "注册";
-  document.getElementById("authSwitch").textContent = (authMode === "login") ? "没有账号？去注册" : "已有账号？去登录";
+  document.getElementById("authTitle").textContent = (authMode === "login") ? _i18n("登录") : _i18n("注册");
+  document.getElementById("authGo").textContent = (authMode === "login") ? _i18n("登录") : _i18n("注册");
+  document.getElementById("authSwitch").textContent = (authMode === "login") ? _i18n("没有账号？去注册") : _i18n("已有账号？去登录");
   document.getElementById("authForgotRow").style.display = (authMode === "login") ? "" : "none";
   document.getElementById("authErr").style.display = "none";
 };
 document.getElementById("authGo").onclick = function(){
   var email = document.getElementById("authEmail").value.trim();
   var pwd = document.getElementById("authPwd").value;
-  if(!email || !pwd) return authError("请填写邮箱和密码。");
-  if(pwd.length < 6) return authError("密码至少 6 位。");
+  if(!email || !pwd) return authError(_i18n("请填写邮箱和密码。"));
+  if(pwd.length < 6) return authError(_i18n("密码至少 6 位。"));
   document.getElementById("authGo").disabled = true;
   var job = (authMode === "login") ? sb.auth.signInWithPassword({ email: email, password: pwd }) : sb.auth.signUp({ email: email, password: pwd });
   job.then(function(r){
     document.getElementById("authGo").disabled = false;
-    if(r.error) return authError(r.error.message === "Invalid login credentials" ? "邮箱或密码不对。" : r.error.message);
+    if(r.error) return authError(r.error.message === "Invalid login credentials" ? _i18n("邮箱或密码不对。") : r.error.message);
     if(!pendingNet && !pendingFreeClaim && !pendingXianyu) closeAuth();
-  }).catch(function(e){ document.getElementById("authGo").disabled = false; authError("出错了：" + e.message); });
+  }).catch(function(e){ document.getElementById("authGo").disabled = false; authError(_i18n("出错了：") + e.message); });
 };
 document.getElementById("authPwd").addEventListener("keydown", function(e){ if(e.key === "Enter") document.getElementById("authGo").click(); });
 /* 忘记密码：发重置邮件 → 点邮件链接回来 → 设置新密码 */
@@ -600,28 +624,28 @@ document.getElementById("resetGo").onclick = function(){
   var email = document.getElementById("resetEmail").value.trim();
   var errEl = document.getElementById("resetErr"), okEl = document.getElementById("resetOk");
   errEl.style.display = "none"; okEl.style.display = "none";
-  if(!email){ errEl.textContent = "请填写邮箱。"; errEl.style.display = "block"; return; }
+  if(!email){ errEl.textContent = _i18n("请填写邮箱。"); errEl.style.display = "block"; return; }
   var btn = document.getElementById("resetGo"); btn.disabled = true;
   sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname }).then(function(r){
     btn.disabled = false;
-    if(r.error){ errEl.textContent = "发送失败：" + r.error.message; errEl.style.display = "block"; return; }
-    okEl.textContent = "重置邮件已发送，请去邮箱点链接设置新密码（没收到的话看看垃圾箱）。";
+    if(r.error){ errEl.textContent = _i18n("发送失败：") + r.error.message; errEl.style.display = "block"; return; }
+    okEl.textContent = _i18n("重置邮件已发送，请去邮箱点链接设置新密码（没收到的话看看垃圾箱）。");
     okEl.style.display = "block";
-  }).catch(function(e){ btn.disabled = false; errEl.textContent = "发送失败：" + e.message; errEl.style.display = "block"; });
+  }).catch(function(e){ btn.disabled = false; errEl.textContent = _i18n("发送失败：") + e.message; errEl.style.display = "block"; });
 };
 document.getElementById("newPwGo").onclick = function(){
   var p1 = document.getElementById("newPw1").value, p2 = document.getElementById("newPw2").value;
   var errEl = document.getElementById("newPwErr"); errEl.style.display = "none";
-  if(p1.length < 6){ errEl.textContent = "密码至少 6 位。"; errEl.style.display = "block"; return; }
-  if(p1 !== p2){ errEl.textContent = "两次输入的新密码不一致。"; errEl.style.display = "block"; return; }
+  if(p1.length < 6){ errEl.textContent = _i18n("密码至少 6 位。"); errEl.style.display = "block"; return; }
+  if(p1 !== p2){ errEl.textContent = _i18n("两次输入的新密码不一致。"); errEl.style.display = "block"; return; }
   var btn = document.getElementById("newPwGo"); btn.disabled = true;
   sb.auth.updateUser({ password: p1 }).then(function(r){
     btn.disabled = false;
-    if(r.error){ var m = r.error.message || ""; if(m.indexOf("different from the old password") !== -1) m = "新密码不能和旧密码相同，请换一个。"; errEl.textContent = "保存失败：" + m; errEl.style.display = "block"; return; }
+    if(r.error){ var m = r.error.message || ""; if(m.indexOf("different from the old password") !== -1) m = _i18n("新密码不能和旧密码相同，请换一个。"); errEl.textContent = _i18n("保存失败：") + m; errEl.style.display = "block"; return; }
     document.getElementById("newPw1").value = ""; document.getElementById("newPw2").value = "";
     closeAuth(); authShowBox("authMainBox");
-    alert("新密码已保存，直接用新密码登录就行。");
-  }).catch(function(e){ btn.disabled = false; errEl.textContent = "保存失败：" + e.message; errEl.style.display = "block"; });
+    alert(_i18n("新密码已保存，直接用新密码登录就行。"));
+  }).catch(function(e){ btn.disabled = false; errEl.textContent = _i18n("保存失败：") + e.message; errEl.style.display = "block"; });
 };
 var myNumericId = null;
 async function ensureUserProfile(){
@@ -650,7 +674,7 @@ async function refreshAuth(){
   renderAuthArea();
 }
 async function showProfile(){
-  if(!myUser){ openAuth("请先登录。"); return; }
+  if(!myUser){ openAuth(_i18n("请先登录。")); return; }
   stopOrder(); stopStatus();
   if(!myNumericId) await ensureUserProfile();
   document.getElementById("profileId").textContent = myNumericId || "—";
@@ -724,13 +748,13 @@ function imgHtml(p){
   return s + '</div>';
 }
 function ptypeOf(p){ return (p && p.ptype === "physical") ? "physical" : ((p && p.ptype === "freebie") ? "freebie" : "virtual"); }
-function ptypeLabel(p){ var t = ptypeOf(p); return t === "physical" ? "实物" : (t === "freebie" ? "免费福利" : "虚拟"); }
+function ptypeLabel(p){ var t = ptypeOf(p); return t === "physical" ? _i18n("实物") : (t === "freebie" ? _i18n("免费福利") : _i18n("虚拟")); }
 var catFilter = "";
 var CATS = [];
 var CATS_DEFAULT = [
-  { k:"virtual", t:"虚拟商品", icon:"\u26a1", cls:"c-virtual" },
-  { k:"physical", t:"实物商品", icon:"📦", cls:"c-physical" },
-  { k:"freebie", t:"免费福利", icon:"🎁", cls:"c-freebie" }
+  { k:"virtual", t:_i18n("虚拟商品"), icon:"\u26a1", cls:"c-virtual" },
+  { k:"physical", t:_i18n("实物商品"), icon:"📦", cls:"c-physical" },
+  { k:"freebie", t:_i18n("免费福利"), icon:"🎁", cls:"c-freebie" }
 ];
 function catClsFor(pt){ return pt==="physical" ? "c-physical" : (pt==="freebie" ? "c-freebie" : "c-virtual"); }
 function loadCats(){
@@ -743,7 +767,7 @@ function loadCats(){
     } else { CATS = []; } /* 分类表为空时：商城不显示分类区（不要默认三个兜底分类） */
   }).catch(function(){ CATS = CATS_DEFAULT.slice(); }); /* 网络异常兜底，保证老数据页可逛 */
 }
-function catLabel(k){ for(var i=0;i<CATS.length;i++){ if(CATS[i].k===k) return CATS[i].t; } return "全部商品"; }
+function catLabel(k){ for(var i=0;i<CATS.length;i++){ if(CATS[i].k===k) return CATS[i].t; } return _i18n("全部商品"); }
 var BRAND_COLORS = {"arcticons:iqiyi":"#00BE06","brandico:youku":"#00AAFF","arcticons:youku":"#00AAFF","arcticons:pinduoduo":"#E02E24","arcticons:jd-com":"#E1251B","ic:baseline-tiktok":"#000000","simple-icons:tiktok":"#000000","ri:taobao-fill":"#FF4400","ri:alipay-fill":"#1677FF","ic:baseline-wechat":"#07C160","ri:wechat-fill":"#07C160","ri:qq-fill":"#12B7F5","mingcute:qq-fill":"#12B7F5","ri:weibo-fill":"#E6162D","mingcute:weibo-fill":"#E6162D","ri:bilibili-fill":"#00A1D6","mingcute:bilibili-fill":"#00A1D6","ri:zhihu-fill":"#0066FF"};
 function firstUrl(t){
   var m = String(t || "").match(/https?:\/\/[^\s　"'<>]+/);
@@ -777,7 +801,7 @@ function renderCats(){
   if(!CATS.length){ /* 没有自定义分类时整个分类区隐藏 */
     if(head) head.style.display = "none"; box.style.display = "none";
     if(catFilter){ catFilter = ""; }
-    var st0 = document.getElementById("secTitle"); if(st0) st0.textContent = "全部商品";
+    var st0 = document.getElementById("secTitle"); if(st0) st0.textContent = _i18n("全部商品");
     return;
   }
   if(head) head.style.display = ""; box.style.display = "";
@@ -909,23 +933,23 @@ function openPayMethods(p){
   box.innerHTML = "";
   var isFree = Number(p.price) === 0;
   var t = document.createElement("p"); t.style.cssText = "margin:0 0 4px;font-weight:700;font-size:1.05rem;"; t.textContent = p.name;
-  var pr = document.createElement("p"); pr.style.cssText = "margin:0 0 14px;font-weight:800;font-size:1.15rem;color:var(--text);"; pr.textContent = isFree ? "免费" : fmtPrice(p.price);
+  var pr = document.createElement("p"); pr.style.cssText = "margin:0 0 14px;font-weight:800;font-size:1.15rem;color:var(--text);"; pr.textContent = isFree ? _i18n("免费") : fmtPrice(p.price);
   box.appendChild(t); box.appendChild(pr);
   if(ptypeOf(p) === "physical" && !isFree){
     var af = document.createElement("div"); af.className = "addr-form";
-    af.innerHTML = '<h4>📦 实物商品，请填写收货地址</h4>' +
-      '<div class="row2"><input id="pmAddrName" placeholder="收货人姓名" maxlength="20" style="flex:1"><input id="pmAddrPhone" placeholder="手机号码" maxlength="15" inputmode="tel" style="flex:1"></div>' +
-      '<textarea id="pmAddrDetail" placeholder="详细地址：省市区 + 街道门牌号" rows="2" maxlength="200"></textarea>';
+    af.innerHTML = _i18n('<h4>📦 实物商品，请填写收货地址</h4>') +
+      _i18n('<div class="row2"><input id="pmAddrName" placeholder="收货人姓名" maxlength="20" style="flex:1"><input id="pmAddrPhone" placeholder="手机号码" maxlength="15" inputmode="tel" style="flex:1"></div>') +
+      _i18n('<textarea id="pmAddrDetail" placeholder="详细地址：省市区 + 街道门牌号" rows="2" maxlength="200"></textarea>');
     box.appendChild(af);
   }
-  box.appendChild(pmTitle("选择支付方式"));
-  var b1 = pmBtn(ICON_USDT, "USDT支付");
+  box.appendChild(pmTitle(_i18n("选择支付方式")));
+  var b1 = pmBtn(ICON_USDT, _i18n("USDT支付"));
   b1.onclick = function(){
     if(isFree){ showFreebieForm(p); return; }
     var addr = readPmAddr(p); if(addr === false) return;
     showPayNets(p, addr);
   };
-  var b2 = pmBtn('<span class="pm-emoji">💳</span>', "其他支付");
+  var b2 = pmBtn('<span class="pm-emoji">💳</span>', _i18n("其他支付"));
   b2.onclick = function(){
     if(isFree){ showFreebieForm(p); return; }
     showComingSoon();
@@ -933,11 +957,11 @@ function openPayMethods(p){
   box.appendChild(b1); box.appendChild(b2);
   var _xu = firstUrl(p.xianyu_url);
   if(_xu){
-    var b3 = pmBtn('<img src="https://img.alicdn.com/tfs/TB19WObTNv1gK0jSZFFXXb0sXXa-144-144.png" width="30" height="30" style="border-radius:8px;flex-shrink:0;display:block" alt="">', "去闲鱼购买");
+    var b3 = pmBtn('<img src="https://img.alicdn.com/tfs/TB19WObTNv1gK0jSZFFXXb0sXXa-144-144.png" width="30" height="30" style="border-radius:8px;flex-shrink:0;display:block" alt="">', _i18n("去闲鱼购买"));
     b3.onclick = function(){ startXianyuOrder(p, _xu); };
     box.appendChild(b3);
   }
-  box.appendChild(pmBack("取消", closePayMethods));
+  box.appendChild(pmBack(_i18n("取消"), closePayMethods));
   document.getElementById("payMethodModal").classList.remove("hidden");
 }
 /* 实物商品：从付款方式弹窗读取并校验收货地址；虚拟商品返回 null；校验失败返回 false */
@@ -947,15 +971,15 @@ function readPmAddr(p){
   var phone = (document.getElementById("pmAddrPhone") || {}).value || "";
   var detail = (document.getElementById("pmAddrDetail") || {}).value || "";
   name = name.trim(); phone = phone.trim(); detail = detail.trim();
-  if(!name){ alert("请填写收货人姓名。"); return false; }
-  if(!/^1\d{10}$/.test(phone)){ alert("请填写正确的 11 位手机号码。"); return false; }
-  if(detail.length < 5){ alert("请填写完整的收货地址。"); return false; }
+  if(!name){ alert(_i18n("请填写收货人姓名。")); return false; }
+  if(!/^1\d{10}$/.test(phone)){ alert(_i18n("请填写正确的 11 位手机号码。")); return false; }
+  if(detail.length < 5){ alert(_i18n("请填写完整的收货地址。")); return false; }
   return { name: name, phone: phone, detail: detail };
 }
 function showPayNets(p, addr){
   var box = document.getElementById("payMethodBox");
   box.innerHTML = "";
-  box.appendChild(pmTitle("选择支付网络"));
+  box.appendChild(pmTitle(_i18n("选择支付网络")));
   NET_ORDER.forEach(function(key){
     var net = NETS[key];
     var iconHtml = NET_ICON[key] ? '<img src="'+NET_ICON[key]+'" width="30" height="30" style="border-radius:50%;flex-shrink:0;display:block" alt="">' : coinIcon((net.label||"?").trim().charAt(0).toUpperCase(), "#6B7280", "#ffffff");
@@ -963,22 +987,22 @@ function showPayNets(p, addr){
     b.onclick = (function(k){ return function(){ closePayMethods(); showOrderView(p); chooseNet(k, p, addr); }; })(key);
     box.appendChild(b);
   });
-  box.appendChild(pmBack("← 返回", function(){ openPayMethods(p); }));
+  box.appendChild(pmBack(_i18n("← 返回"), function(){ openPayMethods(p); }));
 }
 function showComingSoon(){
   var box = document.getElementById("payMethodBox");
   box.innerHTML = "";
   var e = document.createElement("p"); e.style.cssText = "font-size:2.4rem;margin:6px 0;"; e.textContent = "🚧";
-  var t = document.createElement("p"); t.style.cssText = "margin:0 0 14px;font-weight:700;"; t.textContent = "其他支付即将上线，敬请期待";
+  var t = document.createElement("p"); t.style.cssText = "margin:0 0 14px;font-weight:700;"; t.textContent = _i18n("其他支付即将上线，敬请期待");
   box.appendChild(e); box.appendChild(t);
-  box.appendChild(pmBack("← 返回", function(){ openPayMethods(payMethodProduct); }));
+  box.appendChild(pmBack(_i18n("← 返回"), function(){ openPayMethods(payMethodProduct); }));
 }
 function closePayMethods(){ document.getElementById("payMethodModal").classList.add("hidden"); }
 /* ===== 闲鱼购买（半自动）：商城先生成一笔闲鱼订单，再跳闲鱼付款；
    买家回商城点「我已在闲鱼付款」，卖家在后台确认收款后系统自动发货 ===== */
 function startXianyuOrder(p, url){
   if(Number(p.price) === 0){ window.open(url, "_blank"); return; } /* 免费福利走领取流程 */
-  if(!myUser){ pendingXianyu = { p: p, url: url }; closePayMethods(); openAuth("用闲鱼购买需要先登录 / 注册（发货和订单都挂在商城账号里）。"); return; }
+  if(!myUser){ pendingXianyu = { p: p, url: url }; closePayMethods(); openAuth(_i18n("用闲鱼购买需要先登录 / 注册（发货和订单都挂在商城账号里）。")); return; }
   sb.from("orders").select("id").eq("user_id", myUser.id).eq("product_id", p.id).eq("chain", "xianyu").eq("status", "unpaid").limit(1).then(function(r){
     if(r.data && r.data.length) return r.data[0].id;
     return sb.from("orders").insert({ user_id: myUser.id, product_id: p.id, product_name: p.name, price: p.price, chain: "xianyu", status: "unpaid", ship: { xy: 1 } }).select("id").then(function(r2){
@@ -989,9 +1013,9 @@ function startXianyuOrder(p, url){
     closePayMethods();
     window.open(url, "_blank");
     loadMyOrders(); show("view-myorders");
-    alert("已为你生成商城订单 ✅\n\n请在打开的闲鱼页面完成付款，付完后回到「我的订单」，在这笔订单上点「我已在闲鱼付款」。\n卖家确认收款后，卡密会自动发货到这笔订单里。");
+    alert(_i18n("已为你生成商城订单 ✅\n\n请在打开的闲鱼页面完成付款，付完后回到「我的订单」，在这笔订单上点「我已在闲鱼付款」。\n卖家确认收款后，卡密会自动发货到这笔订单里。"));
   }).catch(function(e){
-    alert("生成订单失败：" + ((e && e.message) || e) + "\n可以直接在闲鱼下单，再联系卖家发货。");
+    alert(_i18n("生成订单失败：") + ((e && e.message) || e) + _i18n("\n可以直接在闲鱼下单，再联系卖家发货。"));
     window.open(url, "_blank");
   });
 }
@@ -999,60 +1023,60 @@ function claimXianyuPaid(o, btn){
   if(!sb || !myUser) return;
   var inp = document.getElementById("xyNo-" + o.id);
   var no = inp ? inp.value.trim() : "";
-  if(!no){ alert("请先填闲鱼订单号（在闲鱼 App 的订单详情里，卖家要照它核对到账）。"); if(inp) inp.focus(); return; }
-  if(!/^\d{10,26}$/.test(no)){ alert("闲鱼订单号好像不对，它是一串纯数字，再检查一下。"); if(inp) inp.focus(); return; }
-  if(!confirm("确认你已经在闲鱼付过款了吗？\n\n点确认后卖家会照订单号 " + no + " 去闲鱼核对到账，确认后自动发货。请勿没付款就乱点。")) return;
+  if(!no){ alert(_i18n("请先填闲鱼订单号（在闲鱼 App 的订单详情里，卖家要照它核对到账）。")); if(inp) inp.focus(); return; }
+  if(!/^\d{10,26}$/.test(no)){ alert(_i18n("闲鱼订单号好像不对，它是一串纯数字，再检查一下。")); if(inp) inp.focus(); return; }
+  if(!confirm(_i18n("确认你已经在闲鱼付过款了吗？\n\n点确认后卖家会照订单号 ") + no + _i18n(" 去闲鱼核对到账，确认后自动发货。请勿没付款就乱点。"))) return;
   if(btn) btn.disabled = true;
   var ship = {};
   try{ ship = (typeof o.ship === "string") ? JSON.parse(o.ship || "{}") : (o.ship || {}); }catch(e){ ship = {}; }
   ship.xy = 1; ship.xyClaimed = true; ship.xyClaimedAt = new Date().toISOString(); ship.xyOrderNo = no;
   sb.from("orders").update({ ship: ship }).eq("id", o.id).then(function(r){
-    if(r.error){ alert("提交失败：" + r.error.message); if(btn) btn.disabled = false; return; }
+    if(r.error){ alert(_i18n("提交失败：") + r.error.message); if(btn) btn.disabled = false; return; }
     loadMyOrders();
-  }).catch(function(e){ alert("提交失败：" + ((e && e.message) || e)); if(btn) btn.disabled = false; });
+  }).catch(function(e){ alert(_i18n("提交失败：") + ((e && e.message) || e)); if(btn) btn.disabled = false; });
 }
 function editXianyuNo(o){
   if(!sb || !myUser) return;
-  var no = prompt("修改闲鱼订单号：", (o.ship && o.ship.xyOrderNo) || "");
+  var no = prompt(_i18n("修改闲鱼订单号："), (o.ship && o.ship.xyOrderNo) || "");
   if(no === null) return;
   no = no.trim();
-  if(!/^\d{10,26}$/.test(no)){ alert("闲鱼订单号是一串纯数字，再检查一下。"); return; }
+  if(!/^\d{10,26}$/.test(no)){ alert(_i18n("闲鱼订单号是一串纯数字，再检查一下。")); return; }
   var ship = {};
   try{ ship = (typeof o.ship === "string") ? JSON.parse(o.ship || "{}") : (o.ship || {}); }catch(e){ ship = {}; }
   ship.xyOrderNo = no;
   sb.from("orders").update({ ship: ship }).eq("id", o.id).then(function(r){
-    if(r.error){ alert("保存失败：" + r.error.message); return; }
+    if(r.error){ alert(_i18n("保存失败：") + r.error.message); return; }
     loadMyOrders();
-  }).catch(function(e){ alert("保存失败：" + ((e && e.message) || e)); });
+  }).catch(function(e){ alert(_i18n("保存失败：") + ((e && e.message) || e)); });
 }
 /* ===== 0 元商品：填邮箱直接领取成功 ===== */
 function showFreebieForm(p){
   var box = document.getElementById("payMethodBox");
   box.innerHTML = "";
-  box.appendChild(pmTitle("免费领取 · " + (p.name || "")));
+  box.appendChild(pmTitle(_i18n("免费领取 · ") + (p.name || "")));
   var hint = document.createElement("p"); hint.style.cssText = "margin:0 0 10px;color:#6b6b6b;font-size:.9rem;";
-  hint.textContent = "输入收货邮箱，领取成功后发货内容会发送到该邮箱。";
+  hint.textContent = _i18n("输入收货邮箱，领取成功后发货内容会发送到该邮箱。");
   box.appendChild(hint);
-  var inp = document.createElement("input"); inp.id = "freebieEmail"; inp.type = "email"; inp.placeholder = "收货邮箱"; inp.autocomplete = "email";
+  var inp = document.createElement("input"); inp.id = "freebieEmail"; inp.type = "email"; inp.placeholder = _i18n("收货邮箱"); inp.autocomplete = "email";
   inp.className = "auth-input"; inp.style.marginBottom = "4px";
   inp.value = (myUser && myUser.email) || "";
   box.appendChild(inp);
   var err = document.createElement("p"); err.id = "freebieErr"; err.style.cssText = "display:none;color:#111;font-size:.85rem;margin:8px 0 0;";
   box.appendChild(err);
-  var go = pmBtn("🎁", "确认领取"); go.id = "freebieGo";
+  var go = pmBtn("🎁", _i18n("确认领取")); go.id = "freebieGo";
   go.onclick = function(){ claimFreebieOrder(p); };
   box.appendChild(go);
-  box.appendChild(pmBack("← 返回", function(){ openPayMethods(p); }));
+  box.appendChild(pmBack(_i18n("← 返回"), function(){ openPayMethods(p); }));
   setTimeout(function(){ inp.focus(); }, 50);
 }
 function claimFreebieOrder(p, email){
   email = (email !== undefined) ? email : (((document.getElementById("freebieEmail") || {}).value) || "").trim();
   var errEl = document.getElementById("freebieErr");
   function fail(msg){ if(errEl){ errEl.textContent = msg; errEl.style.display = "block"; } else { alert(msg); } }
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail("请输入正确的邮箱地址。");
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail(_i18n("请输入正确的邮箱地址。"));
   var left0 = stockLeft(p);
-  if(left0 !== null && left0 <= 0) return fail("这个福利已经领完了。");
-  if(!myUser){ pendingFreeClaim = { p: p, email: email }; closePayMethods(); openAuth("领取免费福利需要先登录 / 注册。"); return; }
+  if(left0 !== null && left0 <= 0) return fail(_i18n("这个福利已经领完了。"));
+  if(!myUser){ pendingFreeClaim = { p: p, email: email }; closePayMethods(); openAuth(_i18n("领取免费福利需要先登录 / 注册。")); return; }
   var goBtn = document.getElementById("freebieGo"); if(goBtn) goBtn.disabled = true;
   var txid = "freebie-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   sb.from("orders").insert({
@@ -1068,28 +1092,28 @@ function claimFreebieOrder(p, email){
     showFreebieSuccess(p, x.id, email, x.auto);
   }).catch(function(e){
     if(goBtn) goBtn.disabled = false;
-    fail("领取失败：" + ((e && e.message) || e));
+    fail(_i18n("领取失败：") + ((e && e.message) || e));
   });
 }
 function showFreebieSuccess(p, orderId, email, auto){
   stopOrder(); show("view-success");
-  document.getElementById("successTitle").textContent = "领取成功！🎉";
+  document.getElementById("successTitle").textContent = _i18n("领取成功！🎉");
   var box = document.getElementById("orderBox");
   function row(k,v){ var d=document.createElement("div"); d.className="rowline"; var a=document.createElement("span"); a.textContent=k; var b=document.createElement("span"); b.textContent=v; d.appendChild(a); d.appendChild(b); return d; }
   box.innerHTML = "";
-  box.appendChild(row("订单号", shortId(orderId)));
-  box.appendChild(row("商品", p.name));
-  box.appendChild(row("金额", "免费"));
-  box.appendChild(row("收货邮箱", email));
-  box.appendChild(row("领取时间", new Date().toLocaleString("zh-CN",{hour12:false})));
+  box.appendChild(row(_i18n("订单号"), shortId(orderId)));
+  box.appendChild(row(_i18n("商品"), p.name));
+  box.appendChild(row(_i18n("金额"), _i18n("免费")));
+  box.appendChild(row(_i18n("收货邮箱"), email));
+  box.appendChild(row(_i18n("领取时间"), new Date().toLocaleString("zh-CN",{hour12:false})));
   if(auto && auto.ok){
-    box.appendChild(row("卡密", "已自动发出 🎉"));
+    box.appendChild(row(_i18n("卡密"), _i18n("已自动发出 🎉")));
     var goBtn = document.createElement("button"); goBtn.className = "check-btn"; goBtn.style.cssText = "margin:6px 0 10px;font-size:.9rem;padding:10px 24px;";
-    goBtn.textContent = "去我的订单查看卡密 →";
+    goBtn.textContent = _i18n("去我的订单查看卡密 →");
     goBtn.onclick = function(){ goMyOrders(orderId); };
     box.appendChild(goBtn);
   } else if(auto && auto.noCodes){
-    box.appendChild(row("卡密", "暂时不足，卖家补充后自动发货"));
+    box.appendChild(row(_i18n("卡密"), _i18n("暂时不足，卖家补充后自动发货")));
   }
   paidOrderId = orderId;
   setOrderStatus((auto && auto.ok) ? "shipped" : "pending");
@@ -1103,21 +1127,21 @@ function showOrderView(p, needAddr, orderId){
   s.querySelector(".pr").textContent = fmtPrice(p.price);
   if(needAddr){
     var af = document.createElement("div"); af.className = "addr-form";
-    af.innerHTML = '<h4>📦 请补充收货地址（发货需要）</h4>' +
-      '<div class="row2"><input id="rsAddrName" placeholder="收货人姓名" maxlength="20" style="flex:1"><input id="rsAddrPhone" placeholder="手机号码" maxlength="15" inputmode="tel" style="flex:1"></div>' +
-      '<textarea id="rsAddrDetail" placeholder="详细地址：省市区 + 街道门牌号" rows="2" maxlength="200"></textarea>' +
-      '<button class="check-btn" id="rsAddrSave" style="font-size:.85rem;padding:8px 20px;">保存收货地址</button>';
+    af.innerHTML = _i18n('<h4>📦 请补充收货地址（发货需要）</h4>') +
+      _i18n('<div class="row2"><input id="rsAddrName" placeholder="收货人姓名" maxlength="20" style="flex:1"><input id="rsAddrPhone" placeholder="手机号码" maxlength="15" inputmode="tel" style="flex:1"></div>') +
+      _i18n('<textarea id="rsAddrDetail" placeholder="详细地址：省市区 + 街道门牌号" rows="2" maxlength="200"></textarea>') +
+      _i18n('<button class="check-btn" id="rsAddrSave" style="font-size:.85rem;padding:8px 20px;">保存收货地址</button>');
     s.appendChild(af);
     document.getElementById("rsAddrSave").onclick = function(){
       var a = { name: document.getElementById("rsAddrName").value.trim(), phone: document.getElementById("rsAddrPhone").value.trim(), detail: document.getElementById("rsAddrDetail").value.trim() };
-      if(!a.name){ alert("请填写收货人姓名。"); return; }
-      if(!/^1\d{10}$/.test(a.phone)){ alert("请填写正确的 11 位手机号码。"); return; }
-      if(a.detail.length < 5){ alert("请填写完整的收货地址。"); return; }
+      if(!a.name){ alert(_i18n("请填写收货人姓名。")); return; }
+      if(!/^1\d{10}$/.test(a.phone)){ alert(_i18n("请填写正确的 11 位手机号码。")); return; }
+      if(a.detail.length < 5){ alert(_i18n("请填写完整的收货地址。")); return; }
       var btn = this; btn.disabled = true;
       sb.from("orders").update({ address: a }).eq("id", orderId).then(function(r){
         if(r.error) throw r.error;
-        btn.textContent = "已保存 ✓"; btn.disabled = true;
-      }).catch(function(e){ alert("保存失败：" + (e.message || e)); btn.disabled = false; });
+        btn.textContent = _i18n("已保存 ✓"); btn.disabled = true;
+      }).catch(function(e){ alert(_i18n("保存失败：") + (e.message || e)); btn.disabled = false; });
     };
   }
   document.getElementById("payPanel").classList.add("hidden");
@@ -1125,12 +1149,12 @@ function showOrderView(p, needAddr, orderId){
 }
 function startOrder(p){
   var left0 = stockLeft(p);
-  if(left0 !== null && left0 <= 0){ alert("这个商品已经售罄了。"); return; }
+  if(left0 !== null && left0 <= 0){ alert(_i18n("这个商品已经售罄了。")); return; }
   openPayMethods(p);
 }
 function setStatus(html){ document.getElementById("payStatus").innerHTML=html; }
 function chooseNet(key,p,addr){
-  if(!myUser){ pendingNet = { key:key, p:p, addr:addr }; openAuth("进入付款需要先登录 / 注册，浏览商品不用登录。"); return; }
+  if(!myUser){ pendingNet = { key:key, p:p, addr:addr }; openAuth(_i18n("进入付款需要先登录 / 注册，浏览商品不用登录。")); return; }
   sb.from("orders").insert({ user_id: myUser.id, product_id: p.id, product_name: p.name, price: p.price, chain: key, status: "unpaid" }).select("id").then(function(r){
     if(r.error) throw r.error;
     var newId = (r.data && r.data[0]) ? r.data[0].id : null;
@@ -1140,13 +1164,13 @@ function chooseNet(key,p,addr){
     }
     startPayPanel(key, p, newId);
   }).catch(function(e){
-    var msg = String((e && e.message) || e || "未知错误");
+    var msg = String((e && e.message) || e || _i18n("未知错误"));
     if(/jwt|expired|unauthorized|401|invalid token|auth/i.test(msg)){
       myUser = null; renderAuthArea();
       pendingNet = { key:key, p:p };
-      openAuth("登录已过期，请重新登录后再试。");
+      openAuth(_i18n("登录已过期，请重新登录后再试。"));
     } else {
-      alert("创建待支付订单失败：" + msg);
+      alert(_i18n("创建待支付订单失败：") + msg);
       startPayPanel(key, p, null);
     }
   });
@@ -1163,7 +1187,7 @@ function payQrData(key, net, usdt, units){
   }
   return net.seller;
 }
-/* 二维码双模式：默认"交易所提币码"（纯地址，哪里都认）；可切"钱包扫码码"（支付码，扫码自动带金额） */
+/* 二维码双模式：默认_i18n("交易所提币码")（纯地址，哪里都认）；可切_i18n("钱包扫码码")（支付码，扫码自动带金额） */
 var payCtx = null, payQrMode = "addr";
 function canPayQr(k, net){ return (net.kind === "evm" && !!EIP681_CHAINS[k]) || net.kind === "solana"; }
 function markQrMode(){
@@ -1179,10 +1203,10 @@ function renderPayQR(){
   var data, hint;
   if(payQrMode === "pay" && canPayQr(k, net)){
     data = payQrData(k, net, payCtx.usdt, payCtx.needU);
-    hint = "用 MetaMask / Trust 等钱包 App 直接扫这个码：链和金额自动填好、确认即可。交易所提币请用另一个码。";
+    hint = _i18n("用 MetaMask / Trust 等钱包 App 直接扫这个码：链和金额自动填好、确认即可。交易所提币请用另一个码。");
   } else {
     data = net.seller;
-    hint = "从交易所提币：点「复制地址」粘到交易所的地址栏，网络选「" + net.label + "」，金额填 " + payCtx.usdt + " USDT。";
+    hint = _i18n("从交易所提币：点「复制地址」粘到交易所的地址栏，网络选「") + net.label + _i18n("」，金额填 ") + payCtx.usdt + " USDT。";
   }
   q.src = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(data);
   h.textContent = hint;
@@ -1203,38 +1227,38 @@ function startPayPanel(key,p,dbId){
     document.getElementById("payQR").src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data="+encodeURIComponent(net.seller);
     document.getElementById("qrModeBox").style.display="none";
     document.getElementById("qrHint").textContent="";
-    document.getElementById("payAmount").textContent=fmtPrice(p.price)+"（正在获取汇率…）";
+    document.getElementById("payAmount").textContent=fmtPrice(p.price)+_i18n("（正在获取汇率…）");
     document.getElementById("payNeedFull").textContent="…";
-    setStatus("正在获取实时汇率…");
+    setStatus(_i18n("正在获取实时汇率…"));
     if(payRateRetry < 3){
       payRateRetry++;
       loadRate().then(function(){ startPayPanel(key, p, dbId); });
     } else {
-      setStatus("汇率获取失败，请刷新页面后重试。");
+      setStatus(_i18n("汇率获取失败，请刷新页面后重试。"));
     }
     return;
   }
   payRateRetry = 0;
-  document.getElementById("payAmount").textContent=fmtPrice(p.price)+"（约 "+usdt+" USDT）";
+  document.getElementById("payAmount").textContent=fmtPrice(p.price)+_i18n("（约 ")+usdt+" USDT）";
   document.getElementById("payNeedFull").textContent=usdt;
   var needU = toUnits(usdt, net.dec);
   payCtx = { key: key, net: net, usdt: usdt, needU: needU };
   payQrMode = "addr";
   renderPayQR();
-  setStatus("正在连接网络…");
+  setStatus(_i18n("正在连接网络…"));
   var kind = net.kind || "evm";
   if(kind==="evm"){
     rpc(net.rpc,"eth_blockNumber",[]).then(function(blk){
       order={key:key,net:net,prod:p,dbId:dbId,need:needU,from:blk,errs:0,deadline:Date.now()+30*60*1000};
       beginPoll();
-    }).catch(function(){ setStatus("网络连接失败，请检查网络后点「我已付款，立即检测」重试。"); });
+    }).catch(function(){ setStatus(_i18n("网络连接失败，请检查网络后点「我已付款，立即检测」重试。")); });
   } else {
     order={key:key,net:net,prod:p,dbId:dbId,need:needU,lastSig:null,lastVer:"-1",errs:0,deadline:Date.now()+30*60*1000};
     beginPoll();
   }
 }
 function beginPoll(){
-  setStatus('<span class="spin">⏳</span> 等待付款…（每 15 秒自动检测一次）');
+  setStatus(_i18n('<span class="spin">⏳</span> 等待付款…（每 15 秒自动检测一次）'));
   poll();
   orderTimer=setInterval(poll,15000);
 }
@@ -1249,15 +1273,15 @@ function resumePay(o){
 }
 function cancelOrder(id){
   if(!sb || !id) return;
-  if(!confirm("确定取消这笔待支付订单吗？")) return;
+  if(!confirm(_i18n("确定取消这笔待支付订单吗？"))) return;
   sb.from("orders").delete().eq("id", id).then(function(r){
-    if(r.error){ alert("取消失败：" + r.error.message); }
+    if(r.error){ alert(_i18n("取消失败：") + r.error.message); }
     loadMyOrders();
-  }).catch(function(e){ alert("取消失败：" + (e.message || e)); loadMyOrders(); });
+  }).catch(function(e){ alert(_i18n("取消失败：") + (e.message || e)); loadMyOrders(); });
 }
 function poll(){
   if(!order) return;
-  if(Date.now()>order.deadline){ stopOrder(); setStatus("订单已超时（30 分钟）。如已付款请联系店主确认，或重新下单。"); return; }
+  if(Date.now()>order.deadline){ stopOrder(); setStatus(_i18n("订单已超时（30 分钟）。如已付款请联系店主确认，或重新下单。")); return; }
   var kind = order.net.kind || "evm";
   if(kind==="solana") pollSolana();
   else if(kind==="aptos") pollAptos();
@@ -1266,12 +1290,12 @@ function poll(){
 function pollErr(){
   if(!order) return;
   order.errs++;
-  setStatus("检测遇到网络波动，正在重试…（"+order.errs+"）");
+  setStatus(_i18n("检测遇到网络波动，正在重试…（")+order.errs+"）");
 }
 function pollWait(){
   if(!order) return;
   order.errs=0;
-  setStatus('<span class="spin">⏳</span> 等待付款…（每 15 秒自动检测一次）');
+  setStatus(_i18n('<span class="spin">⏳</span> 等待付款…（每 15 秒自动检测一次）'));
 }
 function pollEvm(){
   var topic = order.net.topicAddr || toTopic(order.net.seller);
@@ -1401,8 +1425,8 @@ function onPaid(tx){
   var key=order.key, net=order.net, prod=order.prod, dbId=order.dbId;
   var txl = (net.kind==="solana") ? String(tx) : String(tx).toLowerCase();
   order.lastTry=txl;
-  if(!sb || !myUser){ stopOrder(); setStatus("登录已失效，请重新登录后再点「我已付款，立即检测」。"); return; }
-  setStatus('<span class="spin">⏳</span> 已检测到付款，正在登记订单…');
+  if(!sb || !myUser){ stopOrder(); setStatus(_i18n("登录已失效，请重新登录后再点「我已付款，立即检测」。")); return; }
+  setStatus(_i18n('<span class="spin">⏳</span> 已检测到付款，正在登记订单…'));
   // 后端自动发货可能已先完成（买家曾离开页面）：先查状态，已发货则直接展示，避免重复登记/重复发码
   function doClaim(){
     var job;
@@ -1424,10 +1448,10 @@ function onPaid(tx){
         sb.from("orders").select("id").eq("user_id", myUser.id).eq("tx", txl).limit(1).then(function(r2){
           var id = (r2.data && r2.data[0]) ? r2.data[0].id : null;
           if(id){ tryAutoShip(id).then(function(a){ showPaidSuccess(txl, key, net, prod, id, a); }); }
-          else { setStatus("这笔交易已被其他订单登记，请确认是你本人的付款后再试。"); }
+          else { setStatus(_i18n("这笔交易已被其他订单登记，请确认是你本人的付款后再试。")); }
         });
       } else {
-        setStatus("订单登记失败：" + (e.message || e) + "。请点「我已付款，立即检测」重试。");
+        setStatus(_i18n("订单登记失败：") + (e.message || e) + _i18n("。请点「我已付款，立即检测」重试。"));
       }
     });
   }
@@ -1443,28 +1467,28 @@ function onPaid(tx){
 }
 function showPaidSuccess(txl, key, net, prod, orderId, auto){
   stopOrder(); show("view-success");
-  document.getElementById("successTitle").textContent = "支付成功！";
+  document.getElementById("successTitle").textContent = _i18n("支付成功！");
   paidOrder={ tx:txl, net:net, name:prod.name, price:prod.price, time:new Date().toLocaleString("zh-CN",{hour12:false}) };
   paidOrderId = orderId;
   var box=document.getElementById("orderBox");
   function row(k,v){ var d=document.createElement("div"); d.className="rowline"; var a=document.createElement("span"); a.textContent=k; var b=document.createElement("span"); b.textContent=v; d.appendChild(a); d.appendChild(b); return d; }
   box.innerHTML="";
-  box.appendChild(row("订单号", shortId(orderId)));
-  box.appendChild(row("商品", paidOrder.name));
-  box.appendChild(row("金额", fmtPrice(paidOrder.price)+"（"+net.label+"）"));
-  box.appendChild(row("付款时间", paidOrder.time));
+  box.appendChild(row(_i18n("订单号"), shortId(orderId)));
+  box.appendChild(row(_i18n("商品"), paidOrder.name));
+  box.appendChild(row(_i18n("金额"), fmtPrice(paidOrder.price)+"（"+net.label+"）"));
+  box.appendChild(row(_i18n("付款时间"), paidOrder.time));
   var txrow=document.createElement("div"); txrow.className="rowline";
-  var ka=document.createElement("span"); ka.textContent="交易哈希";
+  var ka=document.createElement("span"); ka.textContent=_i18n("交易哈希");
   var va=document.createElement("span"); var link=document.createElement("a"); link.href=net.scan+txl; link.target="_blank"; link.rel="noopener"; link.textContent=txl.slice(0,10)+"…"+txl.slice(-8); link.style.color="var(--link)"; va.appendChild(link);
   txrow.appendChild(ka); txrow.appendChild(va); box.appendChild(txrow);
   if(auto && auto.ok){
-    box.appendChild(row("发货状态", "✅ 已自动发货"));
+    box.appendChild(row(_i18n("发货状态"), _i18n("✅ 已自动发货")));
     var goBtn2 = document.createElement("button"); goBtn2.className = "check-btn"; goBtn2.style.cssText = "margin:6px 0 10px;font-size:.9rem;padding:10px 24px;";
-    goBtn2.textContent = "去我的订单查看卡密 →";
+    goBtn2.textContent = _i18n("去我的订单查看卡密 →");
     goBtn2.onclick = function(){ goMyOrders(orderId); };
     box.appendChild(goBtn2);
   } else if(auto && auto.noCodes){
-    box.appendChild(row("发货状态", "待发货（卡密暂时不足，卖家补充后自动发出）"));
+    box.appendChild(row(_i18n("发货状态"), _i18n("待发货（卡密暂时不足，卖家补充后自动发出）")));
   }
   setOrderStatus((auto && auto.ok) ? "shipped" : "pending");
   refreshOrderStatus();
@@ -1527,7 +1551,7 @@ async function ctAiAsk(text) {
   ctAddMsg("ct-ai-msgs", text, "ct-user");
 
   // 关键词：人工 / 人工客服 → 直接转人工实时聊天
-  if (/人工客服|人工/.test(text)) {
+  if (/人工客服|人工|\bhuman\b|\bagent\b/i.test(text)) {
     ctSwitchToHuman();
     return;
   }
@@ -1536,7 +1560,7 @@ async function ctAiAsk(text) {
 
   var typing = document.createElement("div");
   typing.className = "ct-typing";
-  typing.textContent = "正在输入…";
+  typing.textContent = _i18n("正在输入…");
   document.getElementById("ct-ai-msgs").appendChild(typing);
   document.getElementById("ct-ai-msgs").scrollTop = document.getElementById("ct-ai-msgs").scrollHeight;
   try {
@@ -1547,29 +1571,29 @@ async function ctAiAsk(text) {
     });
     var d = await r.json();
     typing.remove();
-    var reply = (d && d.reply) ? d.reply : "抱歉，服务开小差了，请稍后再试。";
+    var reply = (d && d.reply) ? d.reply : _i18n("抱歉，服务开小差了，请稍后再试。");
     ctAddMsg("ct-ai-msgs", reply, "ct-bot");
     ctAiHistory.push({role: "model", parts: [{text: reply}]});
   } catch(e) {
     typing.remove();
-    ctAddMsg("ct-ai-msgs", "网络开小差了，请稍后再试。", "ct-bot");
+    ctAddMsg("ct-ai-msgs", _i18n("网络开小差了，请稍后再试。"), "ct-bot");
   }
 }
 
 // ---- 转人工：在同一聊天框内切换为人工实时聊天 ----
 async function ctSwitchToHuman() {
   if (!sb || !myUser) {
-    ctAddMsg("ct-ai-msgs", "使用人工客服需要先登录。", "ct-sys");
+    ctAddMsg("ct-ai-msgs", _i18n("使用人工客服需要先登录。"), "ct-sys");
     if (typeof openAuth === "function") {
       setTimeout(function(){
         closeContact();
-        openAuth("使用人工客服需要先登录 / 注册。");
+        openAuth(_i18n("使用人工客服需要先登录 / 注册。"));
       }, 800);
     }
     return;
   }
   ctMode = "human";
-  ctAddMsg("ct-ai-msgs", "正在为你转接人工客服…", "ct-sys");
+  ctAddMsg("ct-ai-msgs", _i18n("正在为你转接人工客服…"), "ct-sys");
   // 初始化 Supabase 会话
   if (!ctHumanTid) {
     try {
@@ -1586,7 +1610,7 @@ async function ctSwitchToHuman() {
     } catch(e){}
   }
   if (!ctHumanTid) {
-    ctAddMsg("ct-ai-msgs", "转接失败，请稍后再试。", "ct-sys");
+    ctAddMsg("ct-ai-msgs", _i18n("转接失败，请稍后再试。"), "ct-sys");
     ctMode = "ai";
     return;
   }
@@ -1601,7 +1625,7 @@ async function ctSwitchToHuman() {
     }
     await sb.from("chat_threads").update({unread_buyer: 0}).eq("id", ctHumanTid);
   } catch(e){}
-  ctAddMsg("ct-ai-msgs", "已接通人工客服，请直接发送消息。", "ct-sys");
+  ctAddMsg("ct-ai-msgs", _i18n("已接通人工客服，请直接发送消息。"), "ct-sys");
   // 订阅实时消息
   if (ctHumanChannel) { try { sb.removeChannel(ctHumanChannel); } catch(e){} }
   var tid = ctHumanTid;
@@ -1636,7 +1660,7 @@ async function ctHumanSend(text) {
       unread_seller: un + 1
     }).eq("id", ctHumanTid);
   } catch(e) {
-    ctAddMsg("ct-ai-msgs", "发送失败，请重试。", "ct-sys");
+    ctAddMsg("ct-ai-msgs", _i18n("发送失败，请重试。"), "ct-sys");
   }
 }
 
@@ -1655,14 +1679,14 @@ function openContact(){
 
   var h = document.createElement("div");
   h.style.cssText = "font-weight:700;font-size:1.05rem;margin-bottom:10px;text-align:center;flex-shrink:0;";
-  h.textContent = "联系商家";
+  h.textContent = _i18n("联系商家");
   box.appendChild(h);
 
   var tabs = document.createElement("div");
   tabs.style.cssText = "display:flex;gap:8px;margin-bottom:10px;flex-shrink:0;";
   tabs.innerHTML =
-    '<button class="ct-tab active" data-ct="ai">客服</button>' +
-    '<button class="ct-tab" data-ct="other">其他方式</button>';
+    _i18n('<button class="ct-tab active" data-ct="ai">客服</button>') +
+    _i18n('<button class="ct-tab" data-ct="other">其他方式</button>');
   box.appendChild(tabs);
   tabs.querySelectorAll(".ct-tab").forEach(function(t){
     t.onclick = function(){ ctSwitchTab(t.getAttribute("data-ct")); };
@@ -1673,8 +1697,8 @@ function openContact(){
   aiP.id = "ct-ai"; aiP.className = "ct-panel";
   aiP.innerHTML =
     '<div id="ct-ai-msgs" class="ct-msgs"></div>' +
-    '<form class="ct-form" id="ct-ai-form"><input class="ct-input" id="ct-ai-input" placeholder="输入问题…" autocomplete="off" maxlength="500"/>' +
-    '<button class="ct-send" type="submit">发送</button></form>';
+    _i18n('<form class="ct-form" id="ct-ai-form"><input class="ct-input" id="ct-ai-input" placeholder="输入问题…" autocomplete="off" maxlength="500"/>') +
+    _i18n('<button class="ct-send" type="submit">发送</button></form>');
   box.appendChild(aiP);
 
   // 其他方式面板
@@ -1688,7 +1712,7 @@ function openContact(){
   var cls = document.createElement("button");
   cls.className = "check-btn";
   cls.style.cssText = "width:100%;margin-top:10px;flex-shrink:0;";
-  cls.textContent = "关闭";
+  cls.textContent = _i18n("关闭");
   cls.onclick = closeContact;
   box.appendChild(cls);
 
@@ -1712,7 +1736,7 @@ function openContact(){
   if (ctHumanChannel && sb) { try { sb.removeChannel(ctHumanChannel); } catch(e){} ctHumanChannel = null; }
   ctAiHistory = [];
   document.getElementById("ct-ai-msgs").innerHTML = "";
-  ctAddMsg("ct-ai-msgs", "你好，我是万能手客服，可以问我：怎么下单、USDT 怎么付、卡密多久到、没收到货怎么办。如需人工帮助，请发送“人工客服”。", "ct-bot");
+  ctAddMsg("ct-ai-msgs", _i18n("你好，我是万能手客服，可以问我：怎么下单、USDT 怎么付、卡密多久到、没收到货怎么办。如需人工帮助，请发送“人工客服”。"), "ct-bot");
   ctSwitchTab("ai");
 
   modal.classList.remove("hidden");
@@ -1722,7 +1746,7 @@ function ctRenderOther(body) {
   body.innerHTML = "";
   var hint = document.createElement("div");
   hint.style.cssText = "color:var(--muted);font-size:.8rem;text-align:center;margin-bottom:4px;";
-  hint.textContent = "点击图标直接跳转";
+  hint.textContent = _i18n("点击图标直接跳转");
   body.appendChild(hint);
   var c = CONTACT || {};
   var qq = (c.qq != null) ? String(c.qq).trim() : "";
@@ -1739,7 +1763,7 @@ function ctRenderOther(body) {
     if(recommended){
       var b = document.createElement("span");
       b.style.cssText = "position:absolute;top:-8px;right:-16px;font-size:.68rem;background:#e33;color:#fff;border-radius:8px;padding:2px 7px;white-space:nowrap;";
-      b.textContent = "推荐"; a.appendChild(b);
+      b.textContent = _i18n("推荐"); a.appendChild(b);
     }
     return a;
   }
@@ -1752,14 +1776,14 @@ function ctRenderOther(body) {
   if(!qq && !tg && !em){
     var p = document.createElement("p");
     p.style.color = "var(--muted)"; p.style.textAlign = "center";
-    p.textContent = "商家暂未设置联系方式。";
+    p.textContent = _i18n("商家暂未设置联系方式。");
     body.appendChild(p);
   } else {
     var wrap = document.createElement("div");
     wrap.style.cssText = "display:flex;gap:32px;justify-content:center;margin:16px 0 8px;";
     if(qq) wrap.appendChild(iconBtn(QQ_SVG, "https://wpa.qq.com/msgrd?v=3&uin=" + encodeURIComponent(qq) + "&site=qq&menu=yes", "QQ", c.recommended === "qq"));
     if(tg) wrap.appendChild(iconBtn(TG_SVG, tgLink(tg), "Telegram", c.recommended === "telegram"));
-    if(em) wrap.appendChild(iconBtn(EMAIL_SVG, "mailto:" + em, "邮箱", c.recommended === "email"));
+    if(em) wrap.appendChild(iconBtn(EMAIL_SVG, "mailto:" + em, _i18n("邮箱"), c.recommended === "email"));
     body.appendChild(wrap);
   }
 }
@@ -1829,7 +1853,7 @@ function ensureTotpTicker(){
         if(!codeEl) return;
         var step = Math.floor(Date.now() / 30000);
         var remain = 30 - (Math.floor(Date.now() / 1000) % 30);
-        if(leftEl) leftEl.textContent = "（" + remain + " 秒后刷新）";
+        if(leftEl) leftEl.textContent = "（" + remain + _i18n(" 秒后刷新）");
         if(el._step !== step){
           el._step = step;
           totpNow(el.getAttribute("data-totp")).then(function(c){ if(codeEl.isConnected) codeEl.textContent = c; }).catch(function(){});
@@ -1843,23 +1867,23 @@ function totpBox(secret){
   tb.setAttribute("data-totp", secret);
   tb.style.cssText = "margin-top:10px;border:2px solid #111;border-radius:10px;padding:10px 12px;background:#fff;color:#111";
   var head = document.createElement("div"); head.style.cssText = "font-weight:900;font-size:.95rem";
-  head.appendChild(document.createTextNode("🔐 2FA 验证码 "));
+  head.appendChild(document.createTextNode(_i18n("🔐 2FA 验证码 ")));
   var code = document.createElement("span"); code.className = "totp-code"; code.style.cssText = "font-size:1.4rem;font-weight:900;letter-spacing:3px";
   code.textContent = "······";
   head.appendChild(code);
   var left = document.createElement("span"); left.className = "totp-left"; left.style.cssText = "font-size:.82rem;font-weight:700";
   head.appendChild(left);
-  var cp = document.createElement("button"); cp.className = "copy-btn"; cp.textContent = "复制验证码"; cp.style.cssText = "margin-left:10px;font-size:.8rem;padding:4px 10px";
+  var cp = document.createElement("button"); cp.className = "copy-btn"; cp.textContent = _i18n("复制验证码"); cp.style.cssText = "margin-left:10px;font-size:.8rem;padding:4px 10px";
   cp.onclick = function(){
     var c = tb.querySelector(".totp-code").textContent;
-    function done(){ cp.textContent = "已复制"; setTimeout(function(){ cp.textContent = "复制验证码"; }, 1500); }
+    function done(){ cp.textContent = _i18n("已复制"); setTimeout(function(){ cp.textContent = _i18n("复制验证码"); }, 1500); }
     if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(c).then(done).catch(function(){ done(); });
     else done();
   };
   head.appendChild(cp);
   tb.appendChild(head);
   var note = document.createElement("div"); note.style.cssText = "font-size:.82rem;margin-top:4px;font-weight:700";
-  note.textContent = "登录账号要两步验证时就填这个码，每 30 秒换一次。";
+  note.textContent = _i18n("登录账号要两步验证时就填这个码，每 30 秒换一次。");
   tb.appendChild(note);
   ensureTotpTicker();
   return tb;
@@ -1870,7 +1894,7 @@ function shipBox(o){
   var box = document.createElement("div"); box.className = "ship-box";
   var title = document.createElement("div"); title.className = "sh-title";
   if(ship.type === "virtual"){
-    title.textContent = "📧 虚拟商品发货信息（已发送至你的邮箱）";
+    title.textContent = _i18n("📧 虚拟商品发货信息（已发送至你的邮箱）");
     box.appendChild(title);
     var oid = o.id;
     if(revealedShips[oid]){
@@ -1881,32 +1905,32 @@ function shipBox(o){
     } else {
       var lock = document.createElement("div"); lock.style.cssText = "margin-top:8px;";
       var lmsg = document.createElement("div"); lmsg.style.cssText = "color:var(--muted);font-size:.9rem;";
-      lmsg.textContent = "🔒 发货内容已隐藏，输入账号登录密码后查看";
+      lmsg.textContent = _i18n("🔒 发货内容已隐藏，输入账号登录密码后查看");
       lock.appendChild(lmsg);
-      var inp = document.createElement("input"); inp.type = "password"; inp.placeholder = "账号登录密码"; inp.autocomplete = "current-password";
+      var inp = document.createElement("input"); inp.type = "password"; inp.placeholder = _i18n("账号登录密码"); inp.autocomplete = "current-password";
       inp.className = "auth-input"; inp.style.cssText = "margin:8px 0 4px;";
       lock.appendChild(inp);
       var err = document.createElement("div"); err.style.cssText = "display:none;color:#111;font-size:.85rem;margin:4px 0;";
       lock.appendChild(err);
-      var btn = document.createElement("button"); btn.className = "check-btn"; btn.style.fontSize = ".85rem"; btn.textContent = "验证并查看";
+      var btn = document.createElement("button"); btn.className = "check-btn"; btn.style.fontSize = ".85rem"; btn.textContent = _i18n("验证并查看");
       btn.onclick = function(){
         var pwd = inp.value || "";
-        if(!pwd){ err.textContent = "请输入密码。"; err.style.display = "block"; return; }
-        err.style.display = "none"; btn.disabled = true; btn.textContent = "验证中…";
+        if(!pwd){ err.textContent = _i18n("请输入密码。"); err.style.display = "block"; return; }
+        err.style.display = "none"; btn.disabled = true; btn.textContent = _i18n("验证中…");
         sb.auth.signInWithPassword({ email: (myUser && myUser.email) || "", password: pwd }).then(function(r){
           if(r.error) throw r.error;
           revealedShips[oid] = true;
           loadMyOrders();
         }).catch(function(e){
-          btn.disabled = false; btn.textContent = "验证并查看";
-          err.textContent = "密码错误，请重试。"; err.style.display = "block";
+          btn.disabled = false; btn.textContent = _i18n("验证并查看");
+          err.textContent = _i18n("密码错误，请重试。"); err.style.display = "block";
         });
       };
       lock.appendChild(btn);
       box.appendChild(lock);
     }
   } else {
-    title.textContent = "🚚 " + (ship.carrierLabel || "快递") + " · 单号 " + (ship.trackingNo || "");
+    title.textContent = "🚚 " + (ship.carrierLabel || _i18n("快递")) + _i18n(" · 单号 ") + (ship.trackingNo || "");
     box.appendChild(title);
     var tr = ship.tracking || [];
     if(tr.length){
@@ -1919,7 +1943,7 @@ function shipBox(o){
       });
       box.appendChild(ul);
     } else {
-      var nz = document.createElement("div"); nz.style.color = "var(--muted)"; nz.textContent = "物流信息更新中，稍后再来刷新查看。";
+      var nz = document.createElement("div"); nz.style.color = "var(--muted)"; nz.textContent = _i18n("物流信息更新中，稍后再来刷新查看。");
       box.appendChild(nz);
     }
   }
@@ -1941,7 +1965,7 @@ function isOrderOld(o){
 var myOrdersRaw = [];
 function loadMyOrders(){
   if(!myUser || !sb) return;
-  document.getElementById("myOrderList").innerHTML = '<p class="empty">加载中…</p>';
+  document.getElementById("myOrderList").innerHTML = _i18n('<p class="empty">加载中…</p>');
   sb.from("orders").select("*").eq("user_id", myUser.id).order("created_at",{ascending:false}).then(function(r){
     myOrdersRaw = r.data || [];
     renderMyOrders();
@@ -1963,18 +1987,18 @@ function renderMyOrders(){
     }
     var list = myOrdersRaw.filter(function(o){ return !isCancelledGone(o) && !isOrderOld(o); });
     var box = document.getElementById("myOrderList"); box.innerHTML = "";
-    if(!list.length){ box.innerHTML = '<div class="empty">还没有订单</div>'; return; }
+    if(!list.length){ box.innerHTML = _i18n('<div class="empty">还没有订单</div>'); return; }
     list.forEach(function(o){
       var div = document.createElement("div"); div.className = "ord"; div.id = "ord-" + o.id;
       var t = document.createElement("div"); t.className = "t";
-      t.textContent = (o.product_name || "商品") + " · " + fmtPrice(o.price) + " ";
+      t.textContent = (o.product_name || _i18n("商品")) + " · " + fmtPrice(o.price) + " ";
       var badge = document.createElement("span"); badge.className = "obadge " + (o.status||"pending"); badge.textContent = OSTATUS_BADGE[o.status] || o.status;
       t.appendChild(badge);
       var d = document.createElement("div"); d.className = "d";
-      var net = NETS[o.chain] || (o.chain === "freebie" ? { label: "免费领取" } : (o.chain === "xianyu" ? { label: "闲鱼" } : {}));
+      var net = NETS[o.chain] || (o.chain === "freebie" ? { label: _i18n("免费领取") } : (o.chain === "xianyu" ? { label: _i18n("闲鱼") } : {}));
       d.innerHTML = "";
-      d.appendChild(document.createTextNode("订单号 " + shortId(o.id) + " · " + fmtTime(o.created_at) + " · " + (net.label || o.chain || "") + " · "));
-      if(o.tx && net.scan){ var a=document.createElement("a"); a.href=net.scan+o.tx; a.target="_blank"; a.rel="noopener"; a.style.color="var(--link)"; a.textContent="交易 "+String(o.tx).slice(0,10)+"…"; d.appendChild(a); }
+      d.appendChild(document.createTextNode(_i18n("订单号 ") + shortId(o.id) + " · " + fmtTime(o.created_at) + " · " + (net.label || o.chain || "") + " · "));
+      if(o.tx && net.scan){ var a=document.createElement("a"); a.href=net.scan+o.tx; a.target="_blank"; a.rel="noopener"; a.style.color="var(--link)"; a.textContent=_i18n("交易 ")+String(o.tx).slice(0,10)+"…"; d.appendChild(a); }
       div.appendChild(t); div.appendChild(d);
       if(o.status === "shipped" || o.status === "completed"){
         var sbx = shipBox(o);
@@ -1982,13 +2006,13 @@ function renderMyOrders(){
       }
       if((o.status || "") === "unpaid" && o.chain === "xianyu"){
         var xyClaimed = !!(o.ship && o.ship.xyClaimed);
-        badge.textContent = xyClaimed ? "等商家确认" : "闲鱼待付款";
+        badge.textContent = xyClaimed ? _i18n("等商家确认") : _i18n("闲鱼待付款");
         var xnote = document.createElement("div"); xnote.className = "d"; xnote.style.marginTop = "4px";
-        xnote.textContent = xyClaimed ? "你已标记在闲鱼付款，卖家确认收款后会自动发货到这笔订单。" : "在闲鱼付完款后，把闲鱼订单号填进来再点「我已在闲鱼付款」，卖家照单号核对到账后自动发货。";
+        xnote.textContent = xyClaimed ? _i18n("你已标记在闲鱼付款，卖家确认收款后会自动发货到这笔订单。") : _i18n("在闲鱼付完款后，把闲鱼订单号填进来再点「我已在闲鱼付款」，卖家照单号核对到账后自动发货。");
         div.appendChild(xnote);
         if(!xyClaimed){
           var xrow = document.createElement("div"); xrow.style.cssText = "margin-top:8px;display:flex;gap:8px";
-          var xin = document.createElement("input"); xin.id = "xyNo-" + o.id; xin.type = "text"; xin.inputMode = "numeric"; xin.placeholder = "填闲鱼订单号（闲鱼 App 订单详情里有）"; xin.maxLength = 30;
+          var xin = document.createElement("input"); xin.id = "xyNo-" + o.id; xin.type = "text"; xin.inputMode = "numeric"; xin.placeholder = _i18n("填闲鱼订单号（闲鱼 App 订单详情里有）"); xin.maxLength = 30;
           xin.style.cssText = "flex:1;padding:8px 10px;border:1px solid #bbb;border-radius:8px;font-size:.85rem;background:#fff;color:#111;box-sizing:border-box";
           xin.value = (o.ship && o.ship.xyOrderNo) || "";
           xrow.appendChild(xin);
@@ -1996,8 +2020,8 @@ function renderMyOrders(){
         }
         if(xyClaimed && o.ship && o.ship.xyOrderNo){
           var xno = document.createElement("div"); xno.className = "d"; xno.style.marginTop = "4px";
-          xno.appendChild(document.createTextNode("闲鱼订单号：" + o.ship.xyOrderNo + " "));
-          var xedit = document.createElement("button"); xedit.className = "textbtn"; xedit.textContent = "填错了？修改";
+          xno.appendChild(document.createTextNode(_i18n("闲鱼订单号：") + o.ship.xyOrderNo + " "));
+          var xedit = document.createElement("button"); xedit.className = "textbtn"; xedit.textContent = _i18n("填错了？修改");
           xedit.onclick = function(){ editXianyuNo(o); };
           xno.appendChild(xedit);
           div.appendChild(xno);
@@ -2007,24 +2031,24 @@ function renderMyOrders(){
           var xprod = null; (PRODUCTS || []).forEach(function(pp){ if(String(pp.id) === String(o.product_id)) xprod = pp; });
           var xu2 = xprod ? firstUrl(xprod.xianyu_url) : "";
           if(xu2){
-            var gx = document.createElement("button"); gx.className = "check-btn"; gx.style.fontSize = ".82rem"; gx.style.padding = "6px 18px"; gx.textContent = "去闲鱼付款";
+            var gx = document.createElement("button"); gx.className = "check-btn"; gx.style.fontSize = ".82rem"; gx.style.padding = "6px 18px"; gx.textContent = _i18n("去闲鱼付款");
             gx.onclick = function(){ window.open(xu2, "_blank"); };
             ops.appendChild(gx);
           }
-          var xp1 = document.createElement("button"); xp1.className = "check-btn"; xp1.style.fontSize = ".82rem"; xp1.style.padding = "6px 18px"; xp1.textContent = "我已在闲鱼付款";
+          var xp1 = document.createElement("button"); xp1.className = "check-btn"; xp1.style.fontSize = ".82rem"; xp1.style.padding = "6px 18px"; xp1.textContent = _i18n("我已在闲鱼付款");
           xp1.onclick = function(){ claimXianyuPaid(o, xp1); };
           ops.appendChild(xp1);
         }
-        var cancel = document.createElement("button"); cancel.className = "textbtn"; cancel.textContent = "取消订单";
+        var cancel = document.createElement("button"); cancel.className = "textbtn"; cancel.textContent = _i18n("取消订单");
         cancel.onclick = function(){ cancelOrder(o.id); };
         ops.appendChild(cancel);
         div.appendChild(ops);
       }
       else if((o.status || "") === "unpaid"){
         var ops = document.createElement("div"); ops.style.marginTop = "8px"; ops.style.display = "flex"; ops.style.gap = "8px";
-        var go = document.createElement("button"); go.className = "check-btn"; go.style.fontSize = ".82rem"; go.style.padding = "6px 18px"; go.textContent = "去支付";
+        var go = document.createElement("button"); go.className = "check-btn"; go.style.fontSize = ".82rem"; go.style.padding = "6px 18px"; go.textContent = _i18n("去支付");
         go.onclick = function(){ resumePay(o); };
-        var cancel = document.createElement("button"); cancel.className = "textbtn"; cancel.textContent = "取消订单";
+        var cancel = document.createElement("button"); cancel.className = "textbtn"; cancel.textContent = _i18n("取消订单");
         cancel.onclick = function(){ cancelOrder(o.id); };
         ops.appendChild(go); ops.appendChild(cancel);
         div.appendChild(ops);
@@ -2059,65 +2083,65 @@ function fillClaimProds(){
   var sel = document.getElementById("claimProd"); sel.innerHTML = "";
   var unpaid = (typeof myOrdersRaw !== "undefined" && myOrdersRaw ? myOrdersRaw : []).filter(function(o){ return (o.status || "") === "unpaid"; });
   if(!unpaid.length){
-    var op0 = document.createElement("option"); op0.value = ""; op0.textContent = "暂无待支付订单";
+    var op0 = document.createElement("option"); op0.value = ""; op0.textContent = _i18n("暂无待支付订单");
     sel.appendChild(op0); return;
   }
   unpaid.forEach(function(o){
     var op = document.createElement("option");
     op.value = o.id;
-    op.textContent = (o.product_name || "商品") + "（" + fmtPrice(o.price) + " · 订单 " + shortId(o.id) + "）";
+    op.textContent = (o.product_name || _i18n("商品")) + "（" + fmtPrice(o.price) + _i18n(" · 订单 ") + shortId(o.id) + "）";
     sel.appendChild(op);
   });
 }
 function setClaim(msg){ document.getElementById("claimStatus").textContent = msg; }
 document.getElementById("claimBtn").onclick = function(){
-  if(!myUser || !sb) return setClaim("请先登录。");
+  if(!myUser || !sb) return setClaim(_i18n("请先登录。"));
   var net0 = NETS[claimNet], kind0 = net0.kind || "evm";
   var txRaw = document.getElementById("claimTx").value.trim();
   var tx = (kind0==="solana") ? txRaw : txRaw.toLowerCase();
   if(kind0==="solana"){
-    if(!/^[1-9A-HJ-NP-Za-km-z]{32,88}$/.test(tx)) return setClaim("Solana 交易签名格式不对，请粘贴完整的交易签名。");
+    if(!/^[1-9A-HJ-NP-Za-km-z]{32,88}$/.test(tx)) return setClaim(_i18n("Solana 交易签名格式不对，请粘贴完整的交易签名。"));
   } else if(claimNet==="tron"){
-    if(!/^(0x)?[0-9a-f]{64}$/.test(tx)) return setClaim("TRON 交易哈希格式不对，应为 64 位十六进制（可带 0x）。");
+    if(!/^(0x)?[0-9a-f]{64}$/.test(tx)) return setClaim(_i18n("TRON 交易哈希格式不对，应为 64 位十六进制（可带 0x）。"));
     tx = "0x" + tx.replace(/^0x/, "");
-  } else if(!/^0x[0-9a-f]{64}$/.test(tx)) return setClaim("交易哈希格式不对，应为 0x 开头的 64 位十六进制。");
+  } else if(!/^0x[0-9a-f]{64}$/.test(tx)) return setClaim(_i18n("交易哈希格式不对，应为 0x 开头的 64 位十六进制。"));
   var oid = document.getElementById("claimProd").value;
   var ord = null;
   (myOrdersRaw || []).forEach(function(o){ if(String(o.id) === String(oid) && (o.status || "") === "unpaid") ord = o; });
-  if(!ord) return setClaim("请先选择一笔待支付订单（没有待支付订单时无需补登）。");
+  if(!ord) return setClaim(_i18n("请先选择一笔待支付订单（没有待支付订单时无需补登）。"));
   var prod = { id: ord.product_id, name: ord.product_name, price: ord.price };
   var usdtClaim = usdtOf(prod.price);
-  if(usdtClaim === null){ loadRate(); return setClaim("汇率还没加载好，请等几秒再点补登。"); }
+  if(usdtClaim === null){ loadRate(); return setClaim(_i18n("汇率还没加载好，请等几秒再点补登。")); }
   var net = NETS[claimNet], need = toUnits(usdtClaim, net.dec);
-  setClaim("正在链上核验这笔转账…（应付约 " + usdtClaim + " USDT）");
+  setClaim(_i18n("正在链上核验这笔转账…（应付约 ") + usdtClaim + " USDT）");
   var btn = this; btn.disabled = true;
   sb.from("orders").select("id").eq("user_id", myUser.id).eq("tx", tx).limit(1).then(function(dup){
-    if(dup.data && dup.data.length) throw { claimMsg: "这笔交易已经登记过了，无需重复补登。" };
+    if(dup.data && dup.data.length) throw { claimMsg: _i18n("这笔交易已经登记过了，无需重复补登。") };
     return verifyClaimTx(net, tx, need);
   }).then(function(ok){
-    if(!ok) throw { claimMsg: "核验失败：这笔交易里没有给店主地址转约 " + usdtClaim + " USDT 的记录，请检查哈希和网络是否选对。" };
+    if(!ok) throw { claimMsg: _i18n("核验失败：这笔交易里没有给店主地址转约 ") + usdtClaim + _i18n(" USDT 的记录，请检查哈希和网络是否选对。") };
     return sb.from("orders").update({ tx: tx, chain: claimNet, status: "pending" }).eq("id", ord.id).select("id");
   }).then(function(ins){
     if(ins.error){
-      if(ins.error.code === "23505") throw { claimMsg: "这笔交易已经被登记过了（一笔交易只能绑定一个账号），无需重复补登。" };
-      throw { claimMsg: "登记失败：" + ins.error.message };
+      if(ins.error.code === "23505") throw { claimMsg: _i18n("这笔交易已经被登记过了（一笔交易只能绑定一个账号），无需重复补登。") };
+      throw { claimMsg: _i18n("登记失败：") + ins.error.message };
     }
     var nid = (ins.data && ins.data[0]) ? ins.data[0].id : null;
     return tryAutoShip(nid).then(function(a){
-      if(a.ok) setClaim("补登成功！卡密已自动发出 🎉 去「我的订单」输入登录密码查看。");
-      else if(a.noCodes) setClaim("补登成功！订单为「待发货」。卡密暂时不足，卖家补充后会自动发货。");
-      else setClaim("补登成功！订单状态为「待发货」。");
+      if(a.ok) setClaim(_i18n("补登成功！卡密已自动发出 🎉 去「我的订单」输入登录密码查看。"));
+      else if(a.noCodes) setClaim(_i18n("补登成功！订单为「待发货」。卡密暂时不足，卖家补充后会自动发货。"));
+      else setClaim(_i18n("补登成功！订单状态为「待发货」。"));
       document.getElementById("claimTx").value = "";
       loadMyOrders(); loadSold().then(render);
     });
   }).catch(function(e){
-    setClaim((e && e.claimMsg) ? e.claimMsg : ("出错了：" + (e.message || e)));
+    setClaim((e && e.claimMsg) ? e.claimMsg : (_i18n("出错了：") + (e.message || e)));
   }).finally(function(){ btn.disabled = false; });
 };
-document.getElementById("checkBtn").onclick=function(){ if(order) poll(); else setStatus("请先选择支付网络。"); };
+document.getElementById("checkBtn").onclick=function(){ if(order) poll(); else setStatus(_i18n("请先选择支付网络。")); };
 document.getElementById("copyAddrBtn").onclick=function(){
   var t=((order&&order.net)?order.net.seller:NETS.bsc.seller), btn=this;
-  function done(){ btn.textContent="已复制 ✓"; setTimeout(function(){ btn.textContent="复制地址"; },1500); }
+  function done(){ btn.textContent=_i18n("已复制 ✓"); setTimeout(function(){ btn.textContent=_i18n("复制地址"); },1500); }
   function fallback(){ var ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); }catch(e){} ta.remove(); done(); }
   if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(done).catch(fallback); } else fallback();
 };
@@ -2130,7 +2154,7 @@ document.getElementById("profileOrders").onclick=function(){ goMyOrders(); };
 document.getElementById("cancelOrder").onclick=function(){
   var dbId = order && order.dbId;
   if(dbId && sb && myUser){
-    if(!confirm("确定取消这笔待支付订单吗？")) return;
+    if(!confirm(_i18n("确定取消这笔待支付订单吗？"))) return;
     sb.from("orders").delete().eq("id", dbId).then(function(){ backList(); }).catch(function(){ backList(); });
   } else backList();
 };
@@ -2165,7 +2189,7 @@ document.getElementById("cancelOrder").onclick=function(){
 /* 新版导航 / 页脚 / 详情页绑定 */
 (function(){
   function toList(e){ if(e) e.preventDefault(); catFilter=""; var si=document.getElementById("searchInput"); if(si) si.value=""; searchKw=""; var bar=document.getElementById("searchBar"); if(bar) bar.classList.add("hidden"); renderCats(); render(); stopOrder(); stopStatus(); show("view-list"); }
-  function toOrders(e){ if(e) e.preventDefault(); if(!myUser){ openAuth("查看订单需要先登录 / 注册。"); return; } stopOrder(); stopStatus(); loadMyOrders(); show("view-myorders"); }
+  function toOrders(e){ if(e) e.preventDefault(); if(!myUser){ openAuth(_i18n("查看订单需要先登录 / 注册。")); return; } stopOrder(); stopStatus(); loadMyOrders(); show("view-myorders"); }
   var navAll = document.getElementById("navAll"); if(navAll) navAll.onclick = toList;
   var navContact = document.getElementById("navContact"); if(navContact) navContact.onclick = function(e){ e.preventDefault(); openContact(); };
   var catAll = document.getElementById("catAll"); if(catAll) catAll.onclick = toList;
