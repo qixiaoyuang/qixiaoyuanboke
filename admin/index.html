@@ -131,6 +131,7 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
   <button id="tabContact" onclick="showTab('contact');loadContact();loadNotice()">联系方式</button>
   <!-- 在线客服标签页 -->
 <button id="tabChat" onclick="showTab('chat');loadChatThreads()">在线客服 <span id="chatTabBadge" style="background:#fff;color:#1a1a1a;border:1px solid #1a1a1a;font-size:11px;border-radius:10px;padding:1px 7px;display:none;font-weight:700"></span></button>
+<button id="tabTexts" onclick="showTab('texts');loadTextsList()">页面编辑</button>
   
 </div>
 
@@ -267,6 +268,33 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
   <p class="hint">买家打开商城时实时读取这里的内容；改完不用等部署，刷新即可见。</p>
 </div>
 
+<div id="paneTexts" class="hidden">
+  <p class="hint">点预览里的文字就能改（带红虚线框的都能改）。保存后商城立即生效：固定文字当场变，订单页等动态区域重新打开时生效。商品名、分类名不在这里改。</p>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">
+    <div>
+      <div style="margin:0 0 8px;display:flex;gap:8px;">
+        <button type="button" class="mini" id="teWidthBtn">手机宽/全宽</button>
+        <button type="button" class="mini" id="teReloadBtn">刷新预览</button>
+      </div>
+      <iframe id="teFrame" src="../shop.html?edit=1" style="width:400px;max-width:94vw;height:660px;border:1px solid #ccc;border-radius:10px;background:#fff;"></iframe>
+    </div>
+    <div style="flex:1;min-width:260px;max-width:520px;">
+      <p style="font-weight:800;font-size:1rem;margin:0 0 6px;">编辑文案</p>
+      <p class="hint" id="teKeyHint">先在预览里点一段文字。</p>
+      <label>中文（留空 = 用原文）</label>
+      <textarea id="teZh" rows="3" style="width:100%;box-sizing:border-box;min-height:64px;"></textarea>
+      <label>English（留空 = 用原文 / 原译文）</label>
+      <textarea id="teEn" rows="3" style="width:100%;box-sizing:border-box;min-height:64px;"></textarea>
+      <p class="hint" id="teBuiltin"></p>
+      <button class="publish" id="teSaveBtn">保存文案</button>
+      <button type="button" class="mini" id="teResetBtn" style="background:#6b6b6b;">恢复默认</button>
+      <hr style="margin:22px 0;border:none;border-top:1px solid #ddd">
+      <p style="font-weight:800;font-size:1rem;margin:0 0 8px;">已修改的文案</p>
+      <div id="teList"></div>
+    </div>
+  </div>
+</div>
+
 <div id="paneChat" class="hidden">
   <div id="chatPaneWrap" style="display:flex;gap:12px;min-height:480px">
     <div id="chatThreadPane" style="width:280px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column">
@@ -301,10 +329,12 @@ function showTab(which) {
   $("paneOrders").classList.toggle("hidden", which !== "orders");
   $("paneContact").classList.toggle("hidden", which !== "contact");
   $("paneChat").classList.toggle("hidden", which !== "chat");
+  $("paneTexts").classList.toggle("hidden", which !== "texts");
   $("tabShop").classList.toggle("active", which === "shop");
   $("tabOrders").classList.toggle("active", which === "orders");
   $("tabContact").classList.toggle("active", which === "contact");
   $("tabChat").classList.toggle("active", which === "chat");
+  $("tabTexts").classList.toggle("active", which === "texts");
 }
 
 var adminCats = [];
@@ -1071,6 +1101,74 @@ $("noticeSaveBtn").onclick = async () => {
   }catch(e){ setStatus("保存失败：" + e.message, "err"); }
   finally{ btn.disabled = false; }
 };
+/* ===== 页面编辑（Supabase site_texts，商城实时读取） ===== */
+var teKey = null;
+function teFrameWin(){ var f = $("teFrame"); return f ? f.contentWindow : null; }
+window.addEventListener("message", function(e){
+  if(e.origin !== location.origin) return;
+  var d = e.data || {};
+  if(d.type !== "wns-text-edit") return;
+  teKey = d.key;
+  $("teKeyHint").textContent = "正在编辑：" + d.key;
+  $("teZh").value = d.zh || "";
+  $("teEn").value = d.en || "";
+  $("teBuiltin").textContent = "原文：" + d.key + (d.builtinEn ? "｜原英文：" + d.builtinEn : "");
+});
+async function loadTextsList(){
+  var box = $("teList"); if(!box || !sbs) return;
+  try{
+    const r = await sbs.from("site_texts").select("key,zh,en").order("updated_at", { ascending: false });
+    if(r.error) throw new Error(r.error.message);
+    if(!r.data || !r.data.length){ box.innerHTML = "<p class=\"hint\">还没有改过任何文案。</p>"; return; }
+    box.innerHTML = "";
+    r.data.forEach(function(row){
+      var div = document.createElement("div");
+      div.style.cssText = "border:1px solid #ddd;border-radius:8px;padding:8px 10px;margin:0 0 8px;";
+      var t = document.createElement("div");
+      t.style.cssText = "font-size:.85rem;word-break:break-all;";
+      t.textContent = (row.zh || row.key) + (row.en ? " ｜ " + row.en : "");
+      var sub = document.createElement("div"); sub.className = "hint"; sub.textContent = "原文：" + row.key;
+      var b = document.createElement("button"); b.type = "button"; b.className = "mini"; b.textContent = "编辑";
+      b.onclick = function(){ teKey = row.key; $("teKeyHint").textContent = "正在编辑：" + row.key; $("teZh").value = row.zh || ""; $("teEn").value = row.en || ""; $("teBuiltin").textContent = "原文：" + row.key; };
+      div.appendChild(t); div.appendChild(sub); div.appendChild(b);
+      box.appendChild(div);
+    });
+  }catch(e){ box.innerHTML = "<p class=\"hint\">加载失败：" + e.message + "</p>"; }
+}
+$("teSaveBtn").onclick = async () => {
+  if(!teKey) return setStatus("先在预览里点一段文字，或在已修改列表里点编辑。", "err");
+  if(!sbs) return setStatus("账号服务未就绪，请先登录商城账号。", "err");
+  var zh = $("teZh").value.trim(), en = $("teEn").value.trim();
+  var btn = $("teSaveBtn"); btn.disabled = true;
+  try{
+    setStatus("正在保存文案…", "info");
+    if(!zh && !en){
+      const del = await sbs.from("site_texts").delete().eq("key", teKey);
+      if(del.error) throw new Error(del.error.message);
+    } else {
+      const up = await sbs.from("site_texts").upsert({ key: teKey, zh: zh || null, en: en || null, updated_at: new Date().toISOString() });
+      if(up.error) throw new Error(up.error.message);
+    }
+    var w = teFrameWin(); if(w) w.postMessage({ type: "wns-text-saved", key: teKey, zh: zh, en: en }, location.origin);
+    setStatus("文案已保存，商城立即生效。", "ok");
+    loadTextsList();
+  }catch(e){ setStatus("保存失败：" + e.message, "err"); }
+  finally{ btn.disabled = false; }
+};
+$("teResetBtn").onclick = async () => {
+  if(!teKey) return setStatus("先选一段文案。", "err");
+  if(!sbs) return setStatus("账号服务未就绪，请先登录商城账号。", "err");
+  try{
+    const del = await sbs.from("site_texts").delete().eq("key", teKey);
+    if(del.error) throw new Error(del.error.message);
+    var w = teFrameWin(); if(w) w.postMessage({ type: "wns-text-reset", key: teKey }, location.origin);
+    $("teZh").value = ""; $("teEn").value = "";
+    setStatus("已恢复默认文案。", "ok");
+    loadTextsList();
+  }catch(e){ setStatus("恢复失败：" + e.message, "err"); }
+};
+$("teReloadBtn").onclick = () => { var f = $("teFrame"); if(f) f.src = f.src; };
+$("teWidthBtn").onclick = () => { var f = $("teFrame"); if(f) f.style.width = (f.style.width === "100%") ? "400px" : "100%"; };
 /* ===== 订单管理（Supabase） ===== */
 var SB_URL = "https://vvwyheyojnmeyzbisxnq.supabase.co";
 var SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2d3loZXlvam5tZXl6YmlzeG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MTE0MTQsImV4cCI6MjEwNjE4NzQxNH0.U2ZMJZbgm-5cxP7M383ymjX22UW9ZuvtgU8owXV8oR8";
