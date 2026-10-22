@@ -259,7 +259,7 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
   <button class="publish" id="ctSaveBtn">保存联系方式</button>
   <p class="hint">保存后写入仓库 contact.json，几分钟后买家在商城点"联系商家"就能看到。</p>
   <hr style="margin:24px 0;border:none;border-top:1px solid #ddd">
-  <p style="font-weight:800;font-size:1rem;margin:0 0 6px;">购买须知（商城进站弹窗，保存立即生效）</p>
+  <p id="noticeCard" style="font-weight:800;font-size:1rem;margin:0 0 6px;">购买须知（商城进站弹窗，保存立即生效）</p>
   <label>中文版（一行一条；最后一行在商城里红色加粗，一般放退款）</label>
   <textarea id="noticeZh" rows="5" style="width:100%;box-sizing:border-box;min-height:110px;"></textarea>
   <label>English 版（写中文时自动翻译到这里，会覆盖框里现有内容）</label>
@@ -270,7 +270,7 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
 </div>
 
 <div id="paneTexts" class="hidden">
-  <p class="hint">点预览里的文字就能改（带红虚线框的都能改）。保存后商城立即生效：固定文字当场变，订单页等动态区域重新打开时生效。商品名、分类名不在这里改。</p>
+  <p class="hint">点预览里的文字就能改（带红虚线框的都能改）。保存后商城立即生效：固定文字当场变，订单页等动态区域重新打开时生效。商品名、分类名不在这里改。购买须知：在预览里点须知的文字，会自动跳到它的编辑卡。</p>
   <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">
     <div>
       <div style="margin:0 0 8px;display:flex;gap:8px;">
@@ -1160,6 +1160,12 @@ function teFrameWin(){ var f = $("teFrame"); return f ? f.contentWindow : null; 
 window.addEventListener("message", function(e){
   if(e.origin !== location.origin) return;
   var d = e.data || {};
+  if(d.type === "wns-edit-notice"){
+    showTab("contact");
+    setStatus("购买须知在这里改：改中文，英文自动翻译，改完点「保存购买须知」。", "info");
+    setTimeout(function(){ var c = $("noticeCard"); if(c) c.scrollIntoView({ behavior: "smooth", block: "start" }); var z = $("noticeZh"); if(z) z.focus(); }, 80);
+    return;
+  }
   if(d.type !== "wns-text-edit") return;
   teKey = d.key;
   $("teKeyHint").textContent = "正在编辑：" + d.key;
