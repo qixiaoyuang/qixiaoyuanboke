@@ -262,8 +262,9 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
   <p style="font-weight:800;font-size:1rem;margin:0 0 6px;">购买须知（商城进站弹窗，保存立即生效）</p>
   <label>中文版（一行一条；最后一行在商城里红色加粗，一般放退款）</label>
   <textarea id="noticeZh" rows="5" style="width:100%;box-sizing:border-box;min-height:110px;"></textarea>
-  <label>English 版（一行一条；最后一行同样红色加粗）</label>
+  <label>English 版（一行一条；留空保存时自动按中文翻译）</label>
   <textarea id="noticeEn" rows="5" style="width:100%;box-sizing:border-box;min-height:110px;"></textarea>
+  <button type="button" class="mini" id="noticeTransBtn">自动翻译英文</button>
   <button class="publish" id="noticeSaveBtn">保存购买须知</button>
   <p class="hint">买家打开商城时实时读取这里的内容；改完不用等部署，刷新即可见。</p>
 </div>
@@ -283,8 +284,9 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
       <p class="hint" id="teKeyHint">先在预览里点一段文字。</p>
       <label>中文（留空 = 用原文）</label>
       <textarea id="teZh" rows="3" style="width:100%;box-sizing:border-box;min-height:64px;"></textarea>
-      <label>English（留空 = 用原文 / 原译文）</label>
+      <label>English（留空保存时自动按中文翻译；含代码片段的文案不自动翻，保留原译文）</label>
       <textarea id="teEn" rows="3" style="width:100%;box-sizing:border-box;min-height:64px;"></textarea>
+      <button type="button" class="mini" id="teTransBtn">自动翻译英文</button>
       <p class="hint" id="teBuiltin"></p>
       <button class="publish" id="teSaveBtn">保存文案</button>
       <button type="button" class="mini" id="teResetBtn" style="background:#6b6b6b;">恢复默认</button>
@@ -1081,6 +1083,29 @@ $("ctSaveBtn").onclick = async () => {
   }catch(e){ setStatus("保存失败：" + e.message, "err"); }
   finally{ btn.disabled = false; }
 };
+/* ===== 中译英自动翻译（Google 免费接口优先，失败换 MyMemory；任一行失败整体放弃） ===== */
+async function translateLineEn(s){
+  try{
+    var r = await fetch("https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=en&dt=t&q=" + encodeURIComponent(s));
+    if(r.ok){ var j = await r.json(); var t = ((j && j[0]) || []).map(function(x){ return x[0] || ""; }).join(""); if(t) return t; }
+  }catch(e){}
+  try{
+    var r2 = await fetch("https://api.mymemory.translated.net/get?langpair=zh-CN|en&q=" + encodeURIComponent(s.slice(0, 480)));
+    if(r2.ok){ var j2 = await r2.json(); var t2 = j2 && j2.responseData && j2.responseData.translatedText; if(t2 && !/MYMEMORY|AVAILABLE FREE|QUERY LENGTH/i.test(t2)) return t2; }
+  }catch(e){}
+  return "";
+}
+async function translateZhEn(text){
+  var lines = String(text).split(/\r?\n/);
+  var out = [];
+  for(var i = 0; i < lines.length; i++){
+    if(!lines[i].trim()){ out.push(""); continue; }
+    var t = await translateLineEn(lines[i]);
+    if(!t) return "";
+    out.push(t);
+  }
+  return out.join("\n");
+}
 /* ===== 购买须知（Supabase purchase_notice，商城实时读取） ===== */
 async function loadNotice(){
   if(!sbs) return;
@@ -1090,12 +1115,27 @@ async function loadNotice(){
     if(r.data){ $("noticeZh").value = r.data.zh || ""; $("noticeEn").value = r.data.en || ""; }
   }catch(e){ setStatus("购买须知加载失败：" + e.message, "err"); }
 }
+$("noticeTransBtn").onclick = async () => {
+  var zh = $("noticeZh").value.trim();
+  if(!zh) return setStatus("先填中文版。", "err");
+  setStatus("正在翻译…", "info");
+  var en = await translateZhEn(zh);
+  if(en){ $("noticeEn").value = en; setStatus("已翻译，检查后点保存。", "ok"); }
+  else setStatus("翻译失败，检查网络后重试。", "err");
+};
 $("noticeSaveBtn").onclick = async () => {
   if(!sbs) return setStatus("账号服务未就绪，请先登录商城账号。", "err");
   const btn = $("noticeSaveBtn"); btn.disabled = true;
   try{
+    var nzh = $("noticeZh").value.trim(), nen = $("noticeEn").value.trim();
+    if(!nen && nzh){
+      setStatus("英文留空，正在自动翻译…", "info");
+      nen = await translateZhEn(nzh);
+      if(!nen){ setStatus("自动翻译失败，这次没保存。检查网络后重试，或手动填英文。", "err"); return; }
+      $("noticeEn").value = nen;
+    }
     setStatus("正在保存购买须知…", "info");
-    const up = await sbs.from("purchase_notice").upsert({ id: 1, zh: $("noticeZh").value.trim(), en: $("noticeEn").value.trim(), updated_at: new Date().toISOString() });
+    const up = await sbs.from("purchase_notice").upsert({ id: 1, zh: nzh, en: nen, updated_at: new Date().toISOString() });
     if(up.error) throw new Error(up.error.message);
     setStatus("购买须知已保存，商城立即生效。", "ok");
   }catch(e){ setStatus("保存失败：" + e.message, "err"); }
@@ -1139,6 +1179,11 @@ $("teSaveBtn").onclick = async () => {
   if(!teKey) return setStatus("先在预览里点一段文字，或在已修改列表里点编辑。", "err");
   if(!sbs) return setStatus("账号服务未就绪，请先登录商城账号。", "err");
   var zh = $("teZh").value.trim(), en = $("teEn").value.trim();
+  if(!en && zh && !/[<>]/.test(zh)){
+    setStatus("英文留空，正在自动翻译…", "info");
+    var autoEn = await translateZhEn(zh);
+    if(autoEn){ en = autoEn; $("teEn").value = en; }
+  }
   var btn = $("teSaveBtn"); btn.disabled = true;
   try{
     setStatus("正在保存文案…", "info");
@@ -1166,6 +1211,15 @@ $("teResetBtn").onclick = async () => {
     setStatus("已恢复默认文案。", "ok");
     loadTextsList();
   }catch(e){ setStatus("恢复失败：" + e.message, "err"); }
+};
+$("teTransBtn").onclick = async () => {
+  var zh = $("teZh").value.trim();
+  if(!zh) return setStatus("先填中文。", "err");
+  if(/[<>]/.test(zh)) return setStatus("这段含代码片段，自动翻译会弄坏它，英文保留原译文即可。", "err");
+  setStatus("正在翻译…", "info");
+  var en = await translateZhEn(zh);
+  if(en){ $("teEn").value = en; setStatus("已翻译，检查后点保存。", "ok"); }
+  else setStatus("翻译失败，检查网络后重试。", "err");
 };
 $("teReloadBtn").onclick = () => { var f = $("teFrame"); if(f) f.src = f.src; };
 $("teWidthBtn").onclick = () => { var f = $("teFrame"); if(f) f.style.width = (f.style.width === "100%") ? "400px" : "100%"; };
