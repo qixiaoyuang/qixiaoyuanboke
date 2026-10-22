@@ -128,7 +128,7 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
 <div class="tabs">
   <button id="tabShop" class="active" onclick="showTab('shop')">商品管理</button>
   <button id="tabOrders" onclick="showTab('orders')">订单管理</button>
-  <button id="tabContact" onclick="showTab('contact');loadContact()">联系方式</button>
+  <button id="tabContact" onclick="showTab('contact');loadContact();loadNotice()">联系方式</button>
   <!-- 在线客服标签页 -->
 <button id="tabChat" onclick="showTab('chat');loadChatThreads()">在线客服 <span id="chatTabBadge" style="background:#fff;color:#1a1a1a;border:1px solid #1a1a1a;font-size:11px;border-radius:10px;padding:1px 7px;display:none;font-weight:700"></span></button>
   
@@ -257,6 +257,14 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
   </div>
   <button class="publish" id="ctSaveBtn">保存联系方式</button>
   <p class="hint">保存后写入仓库 contact.json，几分钟后买家在商城点"联系商家"就能看到。</p>
+  <hr style="margin:24px 0;border:none;border-top:1px solid #ddd">
+  <p style="font-weight:800;font-size:1rem;margin:0 0 6px;">购买须知（商城进站弹窗，保存立即生效）</p>
+  <label>中文版（一行一条；最后一行在商城里红色加粗，一般放退款）</label>
+  <textarea id="noticeZh" rows="5" style="width:100%;box-sizing:border-box;min-height:110px;"></textarea>
+  <label>English 版（一行一条；最后一行同样红色加粗）</label>
+  <textarea id="noticeEn" rows="5" style="width:100%;box-sizing:border-box;min-height:110px;"></textarea>
+  <button class="publish" id="noticeSaveBtn">保存购买须知</button>
+  <p class="hint">买家打开商城时实时读取这里的内容；改完不用等部署，刷新即可见。</p>
 </div>
 
 <div id="paneChat" class="hidden">
@@ -1040,6 +1048,26 @@ $("ctSaveBtn").onclick = async () => {
     if(sha) body.sha = sha;
     await gh("contact.json", token, "PUT", body);
     setStatus("已保存！几分钟后买家在商城点「联系商家」就能看到。", "ok");
+  }catch(e){ setStatus("保存失败：" + e.message, "err"); }
+  finally{ btn.disabled = false; }
+};
+/* ===== 购买须知（Supabase purchase_notice，商城实时读取） ===== */
+async function loadNotice(){
+  if(!sbs) return;
+  try{
+    const r = await sbs.from("purchase_notice").select("zh,en").eq("id", 1).single();
+    if(r.error) throw new Error(r.error.message);
+    if(r.data){ $("noticeZh").value = r.data.zh || ""; $("noticeEn").value = r.data.en || ""; }
+  }catch(e){ setStatus("购买须知加载失败：" + e.message, "err"); }
+}
+$("noticeSaveBtn").onclick = async () => {
+  if(!sbs) return setStatus("账号服务未就绪，请先登录商城账号。", "err");
+  const btn = $("noticeSaveBtn"); btn.disabled = true;
+  try{
+    setStatus("正在保存购买须知…", "info");
+    const up = await sbs.from("purchase_notice").upsert({ id: 1, zh: $("noticeZh").value.trim(), en: $("noticeEn").value.trim(), updated_at: new Date().toISOString() });
+    if(up.error) throw new Error(up.error.message);
+    setStatus("购买须知已保存，商城立即生效。", "ok");
   }catch(e){ setStatus("保存失败：" + e.message, "err"); }
   finally{ btn.disabled = false; }
 };
