@@ -128,7 +128,8 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
 <div class="tabs">
   <button id="tabShop" class="active" onclick="showTab('shop')">商品管理</button>
   <button id="tabOrders" onclick="showTab('orders')">订单管理</button>
-  <button id="tabContact" onclick="showTab('contact');loadContact();loadNotice()">联系方式</button>
+  <button id="tabContact" onclick="showTab('contact');loadContact()">联系方式</button>
+  <button id="tabNotice" onclick="showTab('notice');loadNotice()">购买须知</button>
   <!-- 在线客服标签页 -->
 <button id="tabChat" onclick="showTab('chat');loadChatThreads()">在线客服 <span id="chatTabBadge" style="background:#fff;color:#1a1a1a;border:1px solid #1a1a1a;font-size:11px;border-radius:10px;padding:1px 7px;display:none;font-weight:700"></span></button>
 <button id="tabTexts" onclick="showTab('texts');loadTextsList()">页面编辑</button>
@@ -258,7 +259,9 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
   </div>
   <button class="publish" id="ctSaveBtn">保存联系方式</button>
   <p class="hint">保存后写入仓库 contact.json，几分钟后买家在商城点"联系商家"就能看到。</p>
-  <hr style="margin:24px 0;border:none;border-top:1px solid #ddd">
+</div>
+
+<div id="paneNotice" class="hidden">
   <p id="noticeCard" style="font-weight:800;font-size:1rem;margin:0 0 6px;">购买须知（商城进站弹窗，保存立即生效）</p>
   <label>中文版（一行一条；最后一行在商城里红色加粗，一般放退款）</label>
   <textarea id="noticeZh" rows="5" style="width:100%;box-sizing:border-box;min-height:110px;"></textarea>
@@ -330,11 +333,13 @@ function showTab(which) {
   $("paneShop").classList.toggle("hidden", which !== "shop");
   $("paneOrders").classList.toggle("hidden", which !== "orders");
   $("paneContact").classList.toggle("hidden", which !== "contact");
+  $("paneNotice").classList.toggle("hidden", which !== "notice");
   $("paneChat").classList.toggle("hidden", which !== "chat");
   $("paneTexts").classList.toggle("hidden", which !== "texts");
   $("tabShop").classList.toggle("active", which === "shop");
   $("tabOrders").classList.toggle("active", which === "orders");
   $("tabContact").classList.toggle("active", which === "contact");
+  $("tabNotice").classList.toggle("active", which === "notice");
   $("tabChat").classList.toggle("active", which === "chat");
   $("tabTexts").classList.toggle("active", which === "texts");
 }
@@ -1161,7 +1166,7 @@ window.addEventListener("message", function(e){
   if(e.origin !== location.origin) return;
   var d = e.data || {};
   if(d.type === "wns-edit-notice"){
-    showTab("contact");
+    showTab("notice"); loadNotice();
     setStatus("购买须知在这里改：改中文，英文自动翻译，改完点「保存购买须知」。", "info");
     setTimeout(function(){ var c = $("noticeCard"); if(c) c.scrollIntoView({ behavior: "smooth", block: "start" }); var z = $("noticeZh"); if(z) z.focus(); }, 80);
     return;
