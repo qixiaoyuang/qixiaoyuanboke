@@ -2290,6 +2290,18 @@ document.getElementById("cancelOrder").onclick=function(){
         try{ parent.postMessage({ type: "wns-text-edit", key: key, zh: ov.zh || "", en: ov.en || "", builtinEn: I18N_EN[key] || "" }, location.origin); }catch(err){}
       }, true);
     });
+    var nb = document.getElementById("noticeBody");
+    if(nb){
+      nb.style.outline = "1px dashed rgba(229,57,53,.55)";
+      nb.style.outlineOffset = "2px";
+      nb.style.cursor = "pointer";
+      nb.title = "购买须知在这里点开改";
+      nb.addEventListener("click", function(e){
+        if(!editOn.on) return;
+        e.preventDefault(); e.stopPropagation();
+        try{ parent.postMessage({ type: "wns-edit-notice" }, location.origin); }catch(err){}
+      }, true);
+    }
   }
   window.addEventListener("message", function(e){
     if(e.origin !== location.origin) return;
