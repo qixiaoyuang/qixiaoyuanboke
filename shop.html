@@ -343,7 +343,7 @@ html[data-theme="dark"]{
 <div id="noticeModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9999;">
   <div style="background:var(--djn-card,#fff);color:var(--djn-text,#1a1a1a);border-radius:14px;padding:24px;width:400px;max-width:90vw;max-height:82vh;overflow-y:auto;">
     <p style="margin:0 0 10px;font-weight:800;font-size:1.05rem;">购买须知</p>
-    <div style="font-size:.92rem;color:#1a1a1a;line-height:1.9;">
+    <div id="noticeBody" style="font-size:.92rem;color:#1a1a1a;line-height:1.9;">
       <p style="margin:0 0 8px;">1. 下单与发货：注册登录后下单，须在 30 分钟内付款。链上确认后，虚拟商品通常 1 分钟内自动发货；支持闲鱼购买的商品，请按页面指引完成付款并登记订单号。</p>
       <p style="margin:0 0 8px;">2. 订单与售后：商品内容可在「我的订单」及邮箱（含垃圾箱）查看。账号类商品请及时修改密码、换绑邮箱并重置 2FA。已付款未发货，可通过「补登订单」登记交易哈希，或联系商家处理。所有商品请正常使用，不要频繁更换 IP 或短时间大量发信息。有问题联系客服。</p>
       <p style="margin:0;color:#e53935;font-weight:700;">3. 关于退款：如果刚购买的账号或卡密出现使用不了的，请联系客服退款和更换。（注意：超过一小时不支持退款）</p>
@@ -2205,6 +2205,27 @@ document.getElementById("cancelOrder").onclick=function(){
   var noticeClose = document.getElementById("noticeClose"); if(noticeClose) noticeClose.onclick = function(){ document.getElementById("noticeModal").classList.add("hidden"); };
   var noticeModal = document.getElementById("noticeModal"); if(noticeModal) noticeModal.addEventListener("click", function(e){ if(e.target && e.target.id==="noticeModal") noticeModal.classList.add("hidden"); });
   if(noticeModal) noticeModal.classList.remove("hidden"); /* 每次进站自动弹出购买须知 */
+  applyPurchaseNotice();
+  async function applyPurchaseNotice(){
+    try{
+      if(!sb) return;
+      var r = await sb.from("purchase_notice").select("zh,en").eq("id", 1).single();
+      if(r.error || !r.data) return;
+      var txt = (_LANG === "en" ? (r.data.en || r.data.zh) : (r.data.zh || r.data.en)) || "";
+      var lines = txt.split(/\r?\n/).map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+      var box = document.getElementById("noticeBody");
+      if(!lines.length || !box) return;
+      box.innerHTML = "";
+      lines.forEach(function(line, i){
+        var p = document.createElement("p");
+        p.textContent = line;
+        p.style.cssText = (i === lines.length - 1 && lines.length > 1)
+          ? "margin:0;color:#e53935;font-weight:700;"
+          : "margin:0 0 8px;";
+        box.appendChild(p);
+      });
+    }catch(e){}
+  }
   var loginBtn = document.getElementById("loginBtn"); if(loginBtn) loginBtn.onclick = function(){ openAuth(""); };
 })();
 </script>
