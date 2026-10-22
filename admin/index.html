@@ -262,7 +262,7 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
   <p style="font-weight:800;font-size:1rem;margin:0 0 6px;">购买须知（商城进站弹窗，保存立即生效）</p>
   <label>中文版（一行一条；最后一行在商城里红色加粗，一般放退款）</label>
   <textarea id="noticeZh" rows="5" style="width:100%;box-sizing:border-box;min-height:110px;"></textarea>
-  <label>English 版（写中文时自动翻译到这里；框里已有内容时不覆盖，想重翻先清空）</label>
+  <label>English 版（写中文时自动翻译到这里，会覆盖框里现有内容）</label>
   <textarea id="noticeEn" rows="5" style="width:100%;box-sizing:border-box;min-height:110px;"></textarea>
   <p class="hint" id="noticeTransHint"></p>
   <button class="publish" id="noticeSaveBtn">保存购买须知</button>
@@ -284,7 +284,7 @@ select.psel { padding:8px 10px; font-size:.9rem; border:1px solid var(--border);
       <p class="hint" id="teKeyHint">先在预览里点一段文字。</p>
       <label>中文（留空 = 用原文）</label>
       <textarea id="teZh" rows="3" style="width:100%;box-sizing:border-box;min-height:64px;"></textarea>
-      <label>English（写中文时自动翻译到这里；框里已有内容时不覆盖，想重翻先清空）</label>
+      <label>English（写中文时自动翻译到这里，会覆盖框里现有内容）</label>
       <textarea id="teEn" rows="3" style="width:100%;box-sizing:border-box;min-height:64px;"></textarea>
       <p class="hint" id="teTransHint"></p>
       <p class="hint" id="teBuiltin"></p>
@@ -1106,25 +1106,23 @@ async function translateZhEn(text){
   }
   return out.join("\n");
 }
-/* 写中文时自动把英文填好：英文框是空的、或内容是上次自动翻译的，才更新；手动改过就不覆盖 */
+/* 写中文时自动把英文填好：只要中文有变化就重新翻译并覆盖英文框 */
 function bindAutoTrans(zhId, enId, hintId){
   var zhEl = $(zhId), enEl = $(enId), hint = hintId ? $(hintId) : null;
   if(!zhEl || !enEl) return;
-  enEl._lastAuto = "";
   var timer = null, seq = 0;
   zhEl.addEventListener("input", function(){
     if(timer) clearTimeout(timer);
     timer = setTimeout(async function(){
       var zh = zhEl.value.trim();
-      var cur = enEl.value;
-      if(!zh){ if(cur && cur === enEl._lastAuto){ enEl.value = ""; enEl._lastAuto = ""; } if(hint) hint.textContent = ""; return; }
+      if(!zh){ if(hint) hint.textContent = ""; return; }
       if(/[<>]/.test(zh)){ if(hint) hint.textContent = "这段含代码片段，不自动翻译。"; return; }
-      if(cur && cur !== enEl._lastAuto) return;
+      if(zhEl._lastZh === zh) return;
       var my = ++seq;
       if(hint) hint.textContent = "翻译中…";
       var en = await translateZhEn(zh);
       if(my !== seq) return;
-      if(en){ enEl.value = en; enEl._lastAuto = en; if(hint) hint.textContent = "已根据中文自动翻译，也可以直接改。"; }
+      if(en){ enEl.value = en; zhEl._lastZh = zh; if(hint) hint.textContent = "已根据中文自动翻译，也可以直接改。"; }
       else if(hint) hint.textContent = "自动翻译失败（网络），保存时英文留空会再试一次。";
     }, 700);
   });
@@ -1135,7 +1133,7 @@ async function loadNotice(){
   try{
     const r = await sbs.from("purchase_notice").select("zh,en").eq("id", 1).single();
     if(r.error) throw new Error(r.error.message);
-    if(r.data){ $("noticeZh").value = r.data.zh || ""; $("noticeEn").value = r.data.en || ""; $("noticeEn")._lastAuto = ""; }
+    if(r.data){ $("noticeZh").value = r.data.zh || ""; $("noticeEn").value = r.data.en || ""; $("noticeZh")._lastZh = $("noticeZh").value; }
   }catch(e){ setStatus("购买须知加载失败：" + e.message, "err"); }
 }
 $("noticeSaveBtn").onclick = async () => {
@@ -1167,7 +1165,7 @@ window.addEventListener("message", function(e){
   $("teKeyHint").textContent = "正在编辑：" + d.key;
   $("teZh").value = d.zh || "";
   $("teEn").value = d.en || "";
-  $("teEn")._lastAuto = "";
+  $("teZh")._lastZh = $("teZh").value;
   $("teBuiltin").textContent = "原文：" + d.key + (d.builtinEn ? "｜原英文：" + d.builtinEn : "");
 });
 async function loadTextsList(){
@@ -1185,7 +1183,7 @@ async function loadTextsList(){
       t.textContent = (row.zh || row.key) + (row.en ? " ｜ " + row.en : "");
       var sub = document.createElement("div"); sub.className = "hint"; sub.textContent = "原文：" + row.key;
       var b = document.createElement("button"); b.type = "button"; b.className = "mini"; b.textContent = "编辑";
-      b.onclick = function(){ teKey = row.key; $("teKeyHint").textContent = "正在编辑：" + row.key; $("teZh").value = row.zh || ""; $("teEn").value = row.en || ""; $("teEn")._lastAuto = ""; $("teBuiltin").textContent = "原文：" + row.key; };
+      b.onclick = function(){ teKey = row.key; $("teKeyHint").textContent = "正在编辑：" + row.key; $("teZh").value = row.zh || ""; $("teEn").value = row.en || ""; $("teZh")._lastZh = $("teZh").value; $("teBuiltin").textContent = "原文：" + row.key; };
       div.appendChild(t); div.appendChild(sub); div.appendChild(b);
       box.appendChild(div);
     });
