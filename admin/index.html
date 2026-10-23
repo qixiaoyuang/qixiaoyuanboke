@@ -346,6 +346,7 @@ function showTab(which) {
 
 var adminCats = [];
 var catDeletedIds = [];
+var catNameById = {};
 function escQ(v){ return String(v==null?"":v).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
 async function loadCatsAdmin(){
   try{
@@ -353,6 +354,7 @@ async function loadCatsAdmin(){
     var r = await sbs.from("categories").select("id,name,icon,ptype,sort_order").order("sort_order",{ascending:true});
     if(r.error) throw r.error;
     adminCats = r.data || [];
+    catNameById = {}; adminCats.forEach(function(c){ if(c.id) catNameById[c.id] = c.name; });
     catDeletedIds = [];
     renderCatsAdmin();
     setStatus("共 "+adminCats.length+" 个分类。","ok");
@@ -523,7 +525,7 @@ function renderCatsAdmin(){
     PT.forEach(function(p){ h += '<option value="'+p[0]+'"'+(c.ptype===p[0]?" selected":"")+'>'+p[1]+'</option>'; });
     h += '</select>';
     h += '<input type="number" data-f="sort_order" value="'+(c.sort_order==null?0:c.sort_order)+'" title="排序（小的在前）" style="width:70px;flex:none">';
-    var prods = catProds(ptypeNorm(c.ptype || "virtual"));
+    var prods = catProds(c);
     var ck = catKey(c, idx);
     h += '<button type="button" class="mini" data-act="quickadd" style="flex:none">＋上架</button>';
     h += '<button type="button" class="mini" data-act="prods" style="flex:none;background:#fff;color:#1a1a1a;border:1px solid var(--border)">商品(' + prods.length + ')' + (catExpanded[ck] ? ' ▾' : ' ▸') + '</button>';
@@ -634,7 +636,7 @@ function renderCatsAdmin(){
           setStatus("正在上架…", "info");
           var cur = await gh("products.json", "");
           var list = JSON.parse(b64dec(cur.content));
-          list.unshift({ id: Date.now().toString(36), name: name, price: price, ptype: cc.ptype || "virtual", image: panel._imgs[0] || "", images: panel._imgs.slice(), desc: "", stock: stock === "" ? null : parseInt(stock, 10), xianyu_url: xianyu });
+          list.unshift({ id: Date.now().toString(36), name: name, price: price, ptype: cc.ptype || "virtual", category: cc.name || "", image: panel._imgs[0] || "", images: panel._imgs.slice(), desc: "", stock: stock === "" ? null : parseInt(stock, 10), xianyu_url: xianyu });
           await gh("products.json", "", "PUT", { message: "从分类上架：" + name, content: b64(JSON.stringify(list)), branch: BRANCH });
           setStatus("「" + name + "」已上架到「" + (cc.name || "") + "」。", "ok");
           panel.querySelector('[data-q="name"]').value = "";
@@ -669,6 +671,7 @@ $("catAddBtn").onclick = function(){
 };
 $("catSaveBtn").onclick = async function(){
   var btn = $("catSaveBtn"); btn.disabled = true;
+  var deletedNames = catDeletedIds.map(function(id){ return catNameById[id]; }).filter(Boolean);
   try{
     setStatus("正在保存…","info");
     for(var i=0;i<adminCats.length;i++){
@@ -685,6 +688,22 @@ $("catSaveBtn").onclick = async function(){
       var r = c.id ? await sbs.from("categories").update(row).eq("id", c.id)
                    : await sbs.from("categories").insert(row);
       if(r.error) throw r.error;
+    }
+    // 分类改名/删除时，同步商品的所属分类（改名跟随新名，删除则清空归属）
+    var renamed = [];
+    for(var m=0;m<adminCats.length;m++){ var cc2 = adminCats[m]; if(cc2.id && catNameById[cc2.id] && catNameById[cc2.id] !== cc2.name.trim()) renamed.push([catNameById[cc2.id], cc2.name.trim()]); }
+    if(renamed.length || deletedNames.length){
+      try{
+        var cur2 = await gh("products.json", "");
+        var list2 = JSON.parse(b64dec(cur2.content));
+        var touched = false;
+        list2.forEach(function(p){
+          if(!p.category) return;
+          for(var q=0;q<renamed.length;q++){ if(p.category === renamed[q][0]){ p.category = renamed[q][1]; touched = true; } }
+          if(deletedNames.indexOf(p.category) >= 0){ p.category = ""; touched = true; }
+        });
+        if(touched) await gh("products.json", "", "PUT", { message: "分类改名/删除同步商品", content: b64(JSON.stringify(list2)), branch: BRANCH });
+      }catch(e2){ /* 同步失败不阻塞分类保存 */ }
     }
     setStatus("保存成功，商城分类已更新。","ok");
     loadCatsAdmin();
@@ -725,7 +744,9 @@ async function gh(path, token, method, body) {
     if (path === "products.json") {
       if (!sbs) throw new Error("Supabase 未初始化");
       if (!method || method === "GET") {
-        var r = await sbs.from("products").select("id,name,price,ptype,image,images,desc,stock,xianyu_url").order("created_at", {ascending: false});
+        var r = await sbs.from("products").select("id,name,price,ptype,category,image,images,desc,stock,xianyu_url").order("created_at", {ascending: false});
+        if (r.error) { window.__SB_CAT_OK = false; r = await sbs.from("products").select("id,name,price,ptype,image,images,desc,stock,xianyu_url").order("created_at", {ascending: false}); }
+        else { window.__SB_CAT_OK = true; }
         if (r.error) throw new Error(r.error.message);
         return { content: b64(JSON.stringify(r.data || [])), sha: "sb-" + Date.now() };
       }
@@ -745,7 +766,8 @@ async function gh(path, token, method, body) {
               images: p.images || [],
               desc: p.desc || "",
               stock: (p.stock === null || p.stock === undefined || p.stock === "") ? null : parseInt(p.stock, 10),
-              xianyu_url: p.xianyu_url || ""
+              xianyu_url: p.xianyu_url || "",
+              category: (window.__SB_CAT_OK ? (p.category || null) : undefined)
             };
           });
           var ins = await sbs.from("products").insert(rows);
@@ -1042,7 +1064,7 @@ $("editSave").onclick = async () => {
 var allProducts = [];
 var catExpanded = {};
 function ptypeNorm(pt){ return pt === "physical" ? "physical" : (pt === "freebie" ? "freebie" : "virtual"); }
-function catProds(pt){ return allProducts.filter(function(p){ return ptypeNorm(p.ptype) === pt; }); }
+function catProds(c){ var pt = ptypeNorm(c.ptype || "virtual"); var firstPt = null; for(var i=0;i<adminCats.length;i++){ if(ptypeNorm(adminCats[i].ptype || "virtual") === pt){ firstPt = adminCats[i]; break; } } return allProducts.filter(function(p){ if(p.category) return p.category === c.name; return ptypeNorm(p.ptype) === pt && firstPt === c; }); }
 function catKey(c, idx){ return c.id ? "id:" + c.id : "new:" + idx; }
 async function loadProductsList(){
   try{
