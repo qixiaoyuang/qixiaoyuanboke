@@ -124,8 +124,8 @@ html[data-theme="dark"]{
 .djn-tools{ margin-left:auto; display:flex; align-items:center; gap:6px; }
 .djn-iconbtn{ width:38px; height:38px; border-radius:50%; border:none; background:var(--djn-grbg); color:var(--djn-text); font-size:1.05rem; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
 .djn-iconbtn:hover{ background:var(--djn-border); }
-.djn-loginbtn{ border:none; background:var(--djn-text); color:var(--djn-bg); font-weight:700; font-size:.92rem; padding:9px 26px; border-radius:999px; cursor:pointer; margin-left:6px; }
-.djn-loginbtn:hover{ filter:brightness(1.1); }
+.djn-loginbtn{ border:1.5px solid #111; background:#fff; color:#111; font-weight:700; font-size:.92rem; padding:9px 26px; border-radius:999px; cursor:pointer; margin-left:6px; }
+.djn-loginbtn:hover{ background:#eee; }
 .djn-searchbar{ max-width:1180px; margin:0 auto; padding:0 20px 12px; }
 .djn-searchbar input{ width:100%; padding:11px 16px; border:1px solid var(--djn-border); border-radius:999px; background:var(--djn-bg); color:var(--djn-text); font-size:.95rem; outline:none; }
 .djn-searchbar input:focus{ border-color:var(--djn-primary); }
@@ -362,7 +362,7 @@ html[data-theme="dark"]{
     <p id="authErr" style="display:none;color:#111;font-size:.85rem;margin:8px 0 0;"></p>
     <div style="display:flex;gap:10px;margin-top:14px;">
       <button id="authCancel" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">取消</button>
-      <button id="authGo" style="flex:1;padding:10px;border:none;border-radius:8px;background:#1a1a1a;color:#fff;font-weight:700;cursor:pointer;">登录</button>
+      <button id="authGo" style="flex:1;padding:10px;border:1.5px solid #111;border-radius:8px;background:#fff;color:#111;font-weight:700;cursor:pointer;">登录</button>
     </div>
     <p style="margin:12px 0 0;font-size:.85rem;"><a href="#" id="authSwitch" style="color:#111;">没有账号？去注册</a></p>
     <p id="authForgotRow" style="margin:8px 0 0;font-size:.85rem;"><a href="#" id="authForgot" style="color:#111;">忘记密码？</a></p>
@@ -750,7 +750,7 @@ function loadSold(){
 }
 loadRate();
 loadContactInfo();
-fetch("payment.json").then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }).then(function(cfg){ applyPaymentConfig(cfg); return sb.from("products").select("id,name,price,ptype,image,images,desc,stock,xianyu_url").order("created_at", {ascending:false}); }).then(function(r){ PRODUCTS=r.data||[]; return loadSold(); }).then(function(){ return loadCats(); }).then(function(){ renderCats(); render(); fillClaimProds(); fillClaimNets(); }).catch(function(){ document.getElementById("emptyShop").classList.remove("hidden"); });
+fetch("payment.json").then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }).then(function(cfg){ applyPaymentConfig(cfg); return qProducts(); }).then(function(r){ PRODUCTS=r.data||[]; return loadSold(); }).then(function(){ return loadCats(); }).then(function(){ renderCats(); render(); fillClaimProds(); fillClaimNets(); }).catch(function(){ document.getElementById("emptyShop").classList.remove("hidden"); });
 function stockLeft(p){
   if(p.stock === null || p.stock === undefined || p.stock === "") return null;
   var s = Number(p.stock);
@@ -773,9 +773,9 @@ function ptypeLabel(p){ var t = ptypeOf(p); return t === "physical" ? _i18n("实
 var catFilter = "";
 var CATS = [];
 var CATS_DEFAULT = [
-  { k:"virtual", t:_i18n("虚拟商品"), icon:"\u26a1", cls:"c-virtual" },
-  { k:"physical", t:_i18n("实物商品"), icon:"📦", cls:"c-physical" },
-  { k:"freebie", t:_i18n("免费福利"), icon:"🎁", cls:"c-freebie" }
+  { k:"virtual", t:_i18n("虚拟商品"), pt:"virtual", icon:"\u26a1", cls:"c-virtual" },
+  { k:"physical", t:_i18n("实物商品"), pt:"physical", icon:"📦", cls:"c-physical" },
+  { k:"freebie", t:_i18n("免费福利"), pt:"freebie", icon:"🎁", cls:"c-freebie" }
 ];
 function catClsFor(pt){ return pt==="physical" ? "c-physical" : (pt==="freebie" ? "c-freebie" : "c-virtual"); }
 function loadCats(){
@@ -783,12 +783,25 @@ function loadCats(){
     if(r.data && r.data.length){
       CATS = r.data.map(function(c){
         var pt = (c.ptype==="physical" || c.ptype==="freebie") ? c.ptype : "virtual";
-        return { k: pt, t: c.name, icon: c.icon || "\u26a1", cls: catClsFor(pt) };
+        return { k: c.name, t: c.name, pt: pt, icon: c.icon || "\u26a1", cls: catClsFor(pt) };
       });
     } else { CATS = []; } /* 分类表为空时：商城不显示分类区（不要默认三个兜底分类） */
   }).catch(function(){ CATS = CATS_DEFAULT.slice(); }); /* 网络异常兜底，保证老数据页可逛 */
 }
 function catLabel(k){ for(var i=0;i<CATS.length;i++){ if(CATS[i].k===k) return CATS[i].t; } return _i18n("全部商品"); }
+function qProducts(){
+  return sb.from("products").select("id,name,price,ptype,category,image,images,desc,stock,xianyu_url").order("created_at", {ascending:false}).then(function(r){
+    if(r.error) return sb.from("products").select("id,name,price,ptype,image,images,desc,stock,xianyu_url").order("created_at", {ascending:false});
+    return r;
+  });
+}
+function firstCatOfPt(pt){ for(var i=0;i<CATS.length;i++){ if(CATS[i].pt===pt) return CATS[i]; } return null; }
+function matchCat(p, c){
+  if(!c) return false;
+  if(p.category) return p.category === c.t;
+  return firstCatOfPt(c.pt) === c && ptypeOf(p) === c.pt;
+}
+function prodCatLabel(p){ if(p.category) return p.category; var f = firstCatOfPt(ptypeOf(p)); return f ? f.t : ptypeLabel(p); }
 var BRAND_COLORS = {"arcticons:iqiyi":"#00BE06","brandico:youku":"#00AAFF","arcticons:youku":"#00AAFF","arcticons:pinduoduo":"#E02E24","arcticons:jd-com":"#E1251B","ic:baseline-tiktok":"#000000","simple-icons:tiktok":"#000000","ri:taobao-fill":"#FF4400","ri:alipay-fill":"#1677FF","ic:baseline-wechat":"#07C160","ri:wechat-fill":"#07C160","ri:qq-fill":"#12B7F5","mingcute:qq-fill":"#12B7F5","ri:weibo-fill":"#E6162D","mingcute:weibo-fill":"#E6162D","ri:bilibili-fill":"#00A1D6","mingcute:bilibili-fill":"#00A1D6","ri:zhihu-fill":"#0066FF"};
 function firstUrl(t){
   var m = String(t || "").match(/https?:\/\/[^\s　"'<>]+/);
@@ -827,7 +840,7 @@ function renderCats(){
   }
   if(head) head.style.display = ""; box.style.display = "";
   CATS.forEach(function(c){
-    var n = PRODUCTS.filter(function(p){ return ptypeOf(p)===c.k; }).length;
+    var n = PRODUCTS.filter(function(p){ return matchCat(p, c); }).length;
     var b = document.createElement("button");
     b.className = "djn-cat " + c.cls + (catFilter===c.k ? " active" : "");
     b.innerHTML = '<span class="ic">'+iconHtml(c.icon)+'</span><span class="t">'+c.t+'</span>';
@@ -861,7 +874,7 @@ function bindDots(root){
 function openDetail(p){
   detailP = p;
   document.getElementById("crumbName").textContent = p.name || "";
-  document.getElementById("detailCat").textContent = catLabel(ptypeOf(p));
+  document.getElementById("detailCat").textContent = prodCatLabel(p);
   document.getElementById("detailName").textContent = p.name || "";
   var left = stockLeft(p);
   document.getElementById("detailBadges").innerHTML = djnBadges(p, left);
@@ -880,7 +893,7 @@ function openDetail(p){
 function render(){
   var g = document.getElementById("productGrid"); g.innerHTML="";
   var list = PRODUCTS;
-  if(catFilter){ list = list.filter(function(p){ return ptypeOf(p)===catFilter; }); }
+  if(catFilter){ var _fc = null; for(var i=0;i<CATS.length;i++){ if(CATS[i].k===catFilter) _fc = CATS[i]; } list = list.filter(function(p){ return matchCat(p, _fc); }); }
   if(searchKw){ list = list.filter(function(p){ return ((p.name||"")+(p.desc||"")).toLowerCase().indexOf(searchKw) >= 0; }); }
   var st = document.getElementById("secTitle"); if(st) st.textContent = catFilter ? catLabel(catFilter) : "\u7cbe\u9009\u5546\u54c1";
   if(!list.length){ document.getElementById("emptyShop").classList.remove("hidden"); return; }
@@ -894,7 +907,7 @@ function render(){
     if(!_ih) iw.classList.add("noimg");
     iw.onclick = function(){ openDetail(p); };
     var body = document.createElement("div"); body.className = "djn-cbody";
-    var cc = document.createElement("p"); cc.className = "djn-ccat"; cc.textContent = catLabel(ptypeOf(p));
+    var cc = document.createElement("p"); cc.className = "djn-ccat"; cc.textContent = prodCatLabel(p);
     var nm = document.createElement("p"); nm.className = "djn-cname"; nm.textContent = p.name || "";
     nm.onclick = function(){ openDetail(p); };
     var bd = document.createElement("div"); bd.className = "djn-cbadges"; bd.innerHTML = djnBadges(p, left);
