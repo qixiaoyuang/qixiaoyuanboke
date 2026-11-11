@@ -20,28 +20,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: 循环检测并发货（定时触发，每分钟一轮）
-        if: github.event_name == 'schedule'
-        env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          SMTP_FROM: ${{ secrets.SMTP_FROM }}
-        run: |
-          for i in 1 2 3 4; do
-            echo "=== 第 $i 轮 ==="
-            node scripts/order-sync.mjs || echo "scan failed"
-            node scripts/auto-fulfill.mjs || echo "fulfill failed"
-            node scripts/auto-ship-email.mjs || echo "email failed"
-            sleep 60
-          done
-      - name: 单次检测并发货（手动/外部触发）
-        if: github.event_name != 'schedule'
+      - name: 检测并发货（每5分钟单次运行）
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
